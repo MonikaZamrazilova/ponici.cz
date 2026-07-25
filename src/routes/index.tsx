@@ -154,62 +154,28 @@ function Nav() {
 
 function Hero() {
   return (
-    <section
-      id="top"
-      className="relative w-full overflow-hidden md:snap-start md:min-h-[100svh]"
-    >
-      <div className="absolute inset-0 will-change-transform motion-safe:animate-[heroZoom_24s_ease-out_forwards]">
-        <img
-          src={img("hero-skupina-deti-kone.jpg")}
-          alt="Skupina dětí s koňmi na louce u řeky v Praze"
-          width={1920}
-          height={1280}
-          fetchPriority="high"
-          className="h-full w-full object-cover object-[center_48%]"
-        />
-      </div>
-      {/* Warm gradient at top for nav contrast */}
-      <div className="absolute inset-0 bg-gradient-to-b from-cream/25 via-transparent to-transparent pointer-events-none" />
-      {/* Reading layer: warm cream from left for text readability */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to right, rgba(247,241,229,0.78) 0%, rgba(247,241,229,0.55) 30%, rgba(247,241,229,0.2) 50%, transparent 62%)",
-        }}
-      />
-      {/* Subtle dark gradient at bottom for depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/8 via-transparent to-transparent pointer-events-none" />
-
-      <div className="relative z-10 flex flex-col pt-24 md:pt-20 md:min-h-[100svh]">
-        <div className="mx-auto w-full max-w-7xl px-6 md:px-10">
-          <div className="max-w-3xl fade-up">
-            <span className="mt-4 mb-8 hidden sm:inline-flex items-center gap-2 text-micro uppercase tracking-kicker text-foreground/80">
-              <span className="h-px w-8 bg-foreground/40" /> Praha ·
-              Císařský ostrov
-            </span>
-            <span className="mb-8 hidden sm:inline-flex items-center gap-2 text-micro uppercase tracking-kicker text-foreground/60">
-              <span className="h-px w-8 bg-foreground/30" /> Více než 20 let
-              zkušeností
+    <section id="top" className="relative w-full overflow-hidden">
+      <div className="mx-auto max-w-7xl px-6 md:px-10">
+        <div className="flex flex-col-reverse md:grid md:grid-cols-12 md:items-center md:gap-12 md:min-h-screen md:py-24">
+          <div className="md:col-span-5 pt-8 md:pt-0 pb-8 md:pb-0">
+            <span className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-foreground/70">
+              <span className="inline-block h-px w-6 bg-foreground/30" />
+              Praha · Císařský ostrov
             </span>
 
-            <Heading as="h1" size="xl">
+            <Heading as="h1" size="xl" className="mt-8">
               Jezdecká škola
               <br />
               pro děti
               <br />i&nbsp;dospělé.
             </Heading>
 
-            <p className="mt-7 max-w-md text-[15px] leading-[1.7] text-foreground/95 md:text-[17px]">
+            <p className="mt-7 max-w-sm text-[15px] leading-[1.65] font-medium text-[#3C2D19] md:text-[17px]">
               Individuální lekce, skokový výcvik, vyjížďky do Stromovky
               a&nbsp;tábory s&nbsp;koňmi na&nbsp;Císařském ostrově v&nbsp;Praze.
             </p>
-          </div>
-        </div>
 
-        <div className="flex flex-1 flex-col gap-10 md:gap-12">
-          <div className="mx-auto w-full max-w-7xl px-6 md:px-10">
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button href="#contact" variant="primary">
                 Domluvit jízdu
               </Button>
@@ -223,20 +189,17 @@ function Hero() {
             </div>
           </div>
 
-          <div className="w-full border-t border-foreground/8 bg-cream/80 mt-auto mb-8 md:mb-12">
-            <div className="mx-auto max-w-7xl px-6 py-5 md:px-10">
-              <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-[10.5px] uppercase tracking-caption text-foreground sm:grid-cols-4">
-                {[
-                  { icon: Trees, text: "Císařský ostrov" },
-                  { icon: ShieldCheck, text: "Skokový výcvik" },
-                  { icon: Sun, text: "Tábory od 6 let" },
-                  { icon: GraduationCap, text: "Příprava na ZZVJ" },
-                ].map(({ icon: Icon, text }) => (
-                  <div key={text} className="flex items-center gap-2">
-                    <Icon className="h-3.5 w-3.5" /> {text}
-                  </div>
-                ))}
-              </div>
+          <div className="md:col-span-7 pt-24 md:pt-0">
+            <div className="overflow-hidden rounded-3xl shadow-[0_20px_50px_-30px_rgba(60,45,25,0.25)]">
+              <img
+                src={img("hero-skupina-deti-kone.jpg")}
+                alt="Skupina dětí s koňmi na louce u řeky v Praze"
+                width={1920}
+                height={1280}
+                fetchPriority="high"
+                className="w-full object-cover"
+                style={{ aspectRatio: "3/2", objectPosition: "center 48%" }}
+              />
             </div>
           </div>
         </div>
@@ -244,6 +207,13 @@ function Hero() {
     </section>
   );
 }
+
+const heroFeatures = [
+  { icon: Trees, text: "Císařský ostrov" },
+  { icon: ShieldCheck, text: "Skokový výcvik" },
+  { icon: Sun, text: "Tábory od 6 let" },
+  { icon: GraduationCap, text: "Příprava na ZZVJ" },
+];
 
 function About() {
   return (
@@ -1204,11 +1174,10 @@ function Faq() {
 }
 
 function Contact() {
-  const { state: contactState, handleSubmit: handleContactSubmit } = useFormspree(FORMSPREE_ID);
   return (
     <Section id="contact">
       <div className="grid grid-cols-1 gap-16 md:grid-cols-12">
-        <Reveal className="md:col-span-5">
+        <Reveal className="md:col-span-6">
           <Kicker>— Kontakt</Kicker>
           <Heading className="mt-8">
             Kontaktujte
@@ -1294,71 +1263,9 @@ function Contact() {
             domluvíme další krok.
           </Expandable>
 
-          <div className="mt-12 border-t border-border pt-10">
-            <h3 className="text-xl font-semibold text-foreground">
-              Domluvit jízdu
-            </h3>
-            <form
-              onSubmit={handleContactSubmit}
-              className="mt-6 space-y-4"
-            >
-              <input type="hidden" name="_subject" value="Poptávka jízdy - Jezdecká škola" />
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <label className="block text-sm text-foreground/75">
-                  <span>Jméno</span>
-                  <input
-                    name="jmeno"
-                    type="text"
-                    className="mt-2 w-full rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground outline-none focus:border-sage-deep"
-                  />
-                </label>
-                <label className="block text-sm text-foreground/75">
-                  <span>Telefon</span>
-                  <input
-                    name="telefon"
-                    type="tel"
-                    className="mt-2 w-full rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground outline-none focus:border-sage-deep"
-                  />
-                </label>
-              </div>
-              <label className="block text-sm text-foreground/75">
-                <span>E-mail</span>
-                <input
-                  name="email"
-                  type="email"
-                  className="mt-2 w-full rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground outline-none focus:border-sage-deep"
-                />
-              </label>
-              <label className="block text-sm text-foreground/75">
-                <span>Zpráva</span>
-                <textarea
-                  name="zprava"
-                  rows={4}
-                  className="mt-2 w-full rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground outline-none focus:border-sage-deep"
-                />
-              </label>
-              <button
-                type="submit"
-                disabled={contactState.status === "submitting"}
-                className="inline-flex rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-foreground disabled:opacity-50"
-              >
-                {contactState.status === "submitting" ? "Odesílám…" : "Odeslat poptávku"}
-              </button>
-              {contactState.status === "success" && (
-                <p className="mt-4 text-sm font-medium text-green-700">
-                  Poptávka byla odeslána. Brzy se vám ozveme.
-                </p>
-              )}
-              {contactState.status === "error" && (
-                <p className="mt-4 text-sm font-medium text-red-600">
-                  {contactState.message}
-                </p>
-              )}
-            </form>
-          </div>
         </Reveal>
 
-        <Reveal delay={80} className="md:col-span-7 md:pl-10">
+        <Reveal delay={80} className="md:col-span-6">
           <div className="overflow-hidden rounded-2xl border border-border">
             <iframe
               title="Mapa — Císařský ostrov, Praha"
@@ -1461,6 +1368,17 @@ function Index() {
       <Nav />
       <div>
         <Hero />
+        <div className="border-t border-foreground/8 bg-cream/80">
+          <div className="mx-auto max-w-7xl px-6 py-5 md:px-10">
+            <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-[10.5px] uppercase tracking-caption text-foreground sm:grid-cols-4">
+              {heroFeatures.map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-center gap-2">
+                  <Icon className="h-3.5 w-3.5" /> {text}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
         <About />
         <PonyPortrait />
         <Programy />
