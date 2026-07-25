@@ -807,7 +807,7 @@ function Pricing() {
             <div>
               <Kicker>— 3 měsíční kurz</Kicker>
               <h3 className="mt-4 text-2xl font-semibold text-foreground md:text-3xl">
-                Středa od 9. 9., 16:30-18:00
+                Kurz začíná každoročně ve středu 9.&nbsp;9., 16:30–18:00
               </h3>
               <p className="mt-3 text-[15px] leading-[1.75] text-foreground/70">
                 Pravidelný kurz v malé skupině, celkem 12 lekcí.
@@ -1040,7 +1040,7 @@ function Faq() {
               },
               {
                 q: "Kdy začíná 3 měsíční kurz?",
-                a: "Kurz začíná 9. 9. a probíhá ve středu od 16:30 do 18:00. Cena je 8 500 Kč.",
+                a: "Kurz začíná každoročně ve středu 9. 9., 16:30–18:00. Cena je 8 500 Kč.",
               },
               {
                 q: "Jak dlouho platí permanentka?",
