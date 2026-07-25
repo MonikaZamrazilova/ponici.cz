@@ -238,10 +238,9 @@ function About() {
               a&nbsp;klidný vztah ke koním.
             </p>
             <p>
-              Začít může každý, kdo má chuť poznat koně blíž. Někdo přijde
-              za prvními kroky v sedle, jiný už míří ke skokovým lekcím nebo
-              přípravě na ZZVJ. Společné ale zůstává radost z pohybu, pobyt
-              venku a respekt ke koním.
+              Od prvních jízd v sedle až po skokový výcvik a přípravu
+              na ZZVJ – každého u nás spojuje láska ke koním, radost
+              z pohybu a čas strávený venku.
             </p>
           </div>
         </Reveal>
