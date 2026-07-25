@@ -42,7 +42,10 @@
     font-family: var(--font-sans);
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
+
   h1, h2, h3, h4 {
     font-family: var(--font-sans);
     font-optical-sizing: auto;
