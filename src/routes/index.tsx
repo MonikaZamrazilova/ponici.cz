@@ -298,8 +298,8 @@ function PonyPortrait() {
             </Heading>
             <p className="mt-6 text-[15.5px] leading-[1.85] text-foreground/80">
               Nejde jen o jízdy. Jde o vztah a o moment, kdy si člověk
-              ke koni najde cestu sám. Poznává jeho povahu, učí se naslouchat
-              a respektovat. Více než 20 let zkušeností nás naučilo, že každý
+              ke koni najde cestu sám.               Poznává jeho povahu, učí se mu naslouchat
+              a respektovat ho. Více než 20 let zkušeností nás naučilo, že každý
               kůň i&nbsp;každý jezdec potřebuje svůj čas.
             </p>
           </Reveal>
