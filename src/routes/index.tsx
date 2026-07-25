@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Trees,
   ShieldCheck,
@@ -10,8 +10,7 @@ import {
   GraduationCap,
   Menu,
   X,
-  ChevronLeft,
-  ChevronRight,
+
 } from "lucide-react";
 import { Section } from "@/components/section";
 import { Kicker, Heading } from "@/components/heading";
@@ -23,7 +22,7 @@ const SITE_URL = "https://www.jezdecka-skola.cz";
 
 const img = (name: string) => `/images/ponici/${name}`;
 
-const FORMSPREE_ID = "YOUR_FORMSPREE_ID";
+const FORMSPREE_ID = "mzdnkvwl";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -218,69 +217,58 @@ const heroFeatures = [
 function About() {
   return (
     <Section id="about">
-      <div className="grid grid-cols-1 gap-14 md:grid-cols-12 md:items-stretch md:gap-16">
-        <Reveal className="md:col-span-5 md:h-full">
-          <div className="relative h-full">
-            <img
-              src={img("objimani-kun.jpg")}
-              alt="Osoba objímá bílého koně ve stáji"
-              loading="lazy"
-              className="h-full w-full rounded-2xl object-cover shadow-[0_40px_80px_-50px_rgba(60,45,25,0.45)]"
-            />
+      <div className="mx-auto max-w-2xl text-center">
+        <Reveal>
+          <Kicker>— O nás</Kicker>
+          <Heading className="mt-8">
+            Jízdy, péče
+            <br />a&nbsp;radost z&nbsp;pohybu.
+          </Heading>
+
+          <div className="mt-10 space-y-6 text-[16px] leading-[1.85] text-foreground/75 md:text-[17px]">
+            <p>
+              Jsme jezdecká škola, kde mohou děti i dospělí trávit čas
+              venku, poznávat koně a získávat jistotu v sedle. Na
+              Císařském ostrově v Praze nabízíme individuální lekce,
+              pravidelný výcvik i vyjížďky do Stromovky.
+            </p>
+            <p>
+              Jezdecké lekce vedeme už více než 20 let. Za tu dobu jsme
+              pomohli stovkám dětí i dospělých najít jistotu v sedle
+              a&nbsp;klidný vztah ke koním.
+            </p>
+            <p>
+              Začít může každý, kdo má chuť poznat koně blíž. Někdo přijde
+              za prvními kroky v sedle, jiný už míří ke skokovým lekcím nebo
+              přípravě na ZZVJ. Společné ale zůstává radost z pohybu, pobyt
+              venku a respekt ke koním.
+            </p>
           </div>
         </Reveal>
-
-        <div className="md:col-span-7 md:pl-8">
-          <Reveal>
-            <Kicker>— O nás</Kicker>
-            <Heading className="mt-8">
-              Jízdy, péče
-              <br />a&nbsp;radost z&nbsp;pohybu.
-            </Heading>
-
-            <div className="mt-10 space-y-6 text-[16px] leading-[1.85] text-foreground/75 md:text-[17px]">
-              <p>
-                Jsme jezdecká škola, kde mohou děti i dospělí trávit čas
-                venku, poznávat koně a získávat jistotu v sedle. Na
-                Císařském ostrově v Praze nabízíme individuální lekce,
-                pravidelný výcvik i vyjížďky do Stromovky.
-              </p>
-              <p>
-                Jezdecké lekce vedeme už více než 20 let. Za tu dobu jsme
-                pomohli stovkám dětí i dospělých najít jistotu v sedle
-                a&nbsp;klidný vztah ke koním.
-              </p>
-              <p>
-                Začít může každý, kdo má chuť poznat koně blíž. Někdo přijde
-                za prvními kroky v sedle, jiný už míří ke skokovým lekcím nebo
-                přípravě na ZZVJ. Společné ale zůstává radost z pohybu, pobyt
-                venku a respekt ke koním.
-              </p>
-            </div>
-          </Reveal>
-        </div>
       </div>
 
       <Reveal>
-        <div className="mt-14 grid grid-cols-2 gap-3 border-t border-border pt-8 sm:grid-cols-4 md:gap-4">
-          {[
-            { n: "20+", l: "let zkušeností" },
-            { n: "Císařský ostrov", l: "Praha" },
-            { n: "Stromovka", l: "v okolí" },
-            {
-              n: "Příprava na ZZVJ",
-              l: "Zkoušky základního výcviku jezdce",
-            },
-          ].map((s) => (
-            <div key={s.n} className="rounded-2xl bg-cream px-5 py-7 md:px-6 md:py-9">
-              <div className="text-[1rem] font-bold leading-[1.2] text-foreground md:text-[1.125rem]">
-                {s.n}
-                <div className="mt-0.5 text-[11px] font-normal leading-[1.4] text-muted-foreground/80 md:text-[12px]">
+        <div className="mt-16 border-t border-border pt-10">
+          <div className="flex flex-wrap justify-center gap-x-14 gap-y-8">
+            {[
+              { n: "20+", l: "let zkušeností" },
+              { n: "Císařský ostrov", l: "Praha" },
+              { n: "Stromovka", l: "v okolí" },
+              {
+                n: "Příprava na ZZVJ",
+                l: "Zkoušky základního výcviku jezdce",
+              },
+            ].map((s) => (
+              <div key={s.n} className="text-center">
+                <div className="text-[1.75rem] font-semibold leading-none tracking-tight text-foreground md:text-[2.25rem]">
+                  {s.n}
+                </div>
+                <div className="mt-1.5 text-[11px] uppercase tracking-caption text-foreground/40">
                   {s.l}
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </Reveal>
     </Section>
@@ -289,50 +277,41 @@ function About() {
 
 function PonyPortrait() {
   return (
-    <Section>
-      <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-12 md:items-stretch md:gap-16">
-        <Reveal className="md:col-span-7 md:h-full">
-          <div className="overflow-hidden rounded-lg md:h-full">
-            <img
-              src={img("detail-tvar-ponika.jpg")}
-              alt="Detailní portrét bílého koně — jeho měkký čumák a zvědavé oči"
-              loading="lazy"
-              className="h-full w-full object-cover"
-            />
-          </div>
-        </Reveal>
-
-        <Reveal delay={80} className="md:col-span-5">
-          <Kicker>— Setkání</Kicker>
-          <Heading className="mt-8" size="md">
-            Každý kůň má
-            <br />
-            svou povahu.
-          </Heading>
-          <p className="mt-6 text-[15.5px] leading-[1.85] text-foreground/75">
-            Nejde jen o jízdy. Jde o vztah a o moment, kdy si člověk
-            ke koni najde cestu sám. Poznává jeho povahu, učí se naslouchat
-            a respektovat. Více než 20 let zkušeností nás naučilo, že každý
-            kůň i&nbsp;každý jezdec potřebuje svůj čas.
-          </p>
-        </Reveal>
+    <section className="relative overflow-hidden">
+      <div className="absolute inset-0">
+        <img
+          src={img("detail-tvar-ponika.jpg")}
+          alt="Detailní portrét bílého koně — jeho měkký čumák a zvědavé oči"
+          loading="lazy"
+          className="h-full w-full object-cover"
+          style={{ objectPosition: "center 35%" }}
+        />
       </div>
-    </Section>
+      <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/20 to-transparent" />
+      <div className="relative z-10 mx-auto max-w-7xl px-6 py-32 md:px-10 md:py-52">
+        <div className="max-w-lg">
+          <Reveal>
+            <Kicker>— Setkání</Kicker>
+            <Heading className="mt-8" size="md">
+              Každý kůň má
+              <br />
+              svou povahu.
+            </Heading>
+            <p className="mt-6 text-[15.5px] leading-[1.85] text-foreground/80">
+              Nejde jen o jízdy. Jde o vztah a o moment, kdy si člověk
+              ke koni najde cestu sám. Poznává jeho povahu, učí se naslouchat
+              a respektovat. Více než 20 let zkušeností nás naučilo, že každý
+              kůň i&nbsp;každý jezdec potřebuje svůj čas.
+            </p>
+          </Reveal>
+        </div>
+      </div>
+    </section>
   );
 }
 
-const programyPhotos = [
-  { src: img("deti-kone-strom.jpg"), alt: "Skupina s koněm pod kvetoucím stromem na jaře" },
-  { src: img("portret-dite-kun-jizdarna.jpg"), alt: "Jezdec stojí vedle koně na jízdárně a hladí ho" },
-  { src: img("objimani-kun.jpg"), alt: "Osoba objímá bílého koně ve stáji" },
-  { src: img("zapad-slunce-dite.jpg"), alt: "Jezdec na koni při západu slunce" },
-];
 
 function Programy() {
-  const [current, setCurrent] = useState(0);
-  const total = programyPhotos.length;
-  const goTo = (i: number) => setCurrent(Math.max(0, Math.min(total - 1, i)));
-
   return (
     <Section id="programy" background="cream">
       <Reveal>
@@ -352,78 +331,54 @@ function Programy() {
         </div>
       </Reveal>
 
-      <div className="mt-14 grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-16">
-        <div className="md:col-span-5">
-          <p className="text-[15.5px] leading-[1.85] text-foreground/75">
+      <div className="mt-14 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+        <Reveal className="col-span-2 row-span-2">
+          <img
+            src={img("deti-kone-strom.jpg")}
+            alt="Skupina s koněm pod kvetoucím stromem na jaře"
+            loading="lazy"
+            className="h-full w-full rounded-xl object-cover"
+            style={{ aspectRatio: "4/5", objectPosition: "center 35%" }}
+          />
+        </Reveal>
+        <Reveal delay={60} className="col-span-2">
+          <img
+            src={img("portret-dite-kun-jizdarna.jpg")}
+            alt="Jezdec stojí vedle koně na jízdárně a hladí ho"
+            loading="lazy"
+            className="h-full w-full rounded-xl object-cover"
+            style={{ aspectRatio: "16/9", objectPosition: "center 40%" }}
+          />
+        </Reveal>
+        <Reveal delay={120}>
+          <img
+            src={img("zapad-slunce-dite.jpg")}
+            alt="Jezdec na koni při západu slunce"
+            loading="lazy"
+            className="h-full w-full rounded-xl object-cover"
+            style={{ aspectRatio: "4/3", objectPosition: "center" }}
+          />
+        </Reveal>
+        <Reveal delay={180}>
+          <img
+            src={img("objimani-kun.jpg")}
+            alt="Osoba objímá bílého koně ve stáji"
+            loading="lazy"
+            className="h-full w-full rounded-xl object-cover"
+            style={{ aspectRatio: "4/3", objectPosition: "center" }}
+          />
+        </Reveal>
+      </div>
+
+      <Reveal>
+        <div className="mt-10">
+          <p className="max-w-2xl text-[15.5px] leading-[1.85] text-foreground/75">
             Nabízíme individuální i skupinové lekce, skokový výcvik, přípravu
             na ZZVJ a narozeninové oslavy. Každý program přizpůsobíme věku,
             zkušenostem a cílům jezdce.
           </p>
         </div>
-
-        <div className="md:col-span-7">
-          <div className="relative overflow-hidden rounded-xl bg-background">
-            <div
-              className="flex transition-transform duration-400 ease-out"
-              style={{ transform: `translateX(-${current * 100}%)` }}
-            >
-              {programyPhotos.map((p) => (
-                <div key={p.alt} className="w-full shrink-0">
-                  <div className="aspect-[3/4] md:aspect-[4/5]">
-                    <img
-                      src={p.src}
-                      alt={p.alt}
-                      loading="lazy"
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {total > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => goTo(current - 1)}
-                  disabled={current === 0}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-0"
-                  aria-label="Předchozí"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goTo(current + 1)}
-                  disabled={current === total - 1}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-0"
-                  aria-label="Další"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </>
-            )}
-          </div>
-
-          {total > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-1.5">
-              {programyPhotos.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => goTo(i)}
-                  className={`rounded-full transition-all ${
-                    i === current
-                      ? "h-1.5 w-5 bg-foreground"
-                      : "h-1.5 w-1.5 bg-foreground/20 hover:bg-foreground/40"
-                  }`}
-                  aria-label={`Foto ${i + 1}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      </Reveal>
     </Section>
   );
 }
@@ -435,6 +390,7 @@ const jizdy = [
     title: "Individuální lekce",
     body: "První i\u00A0další kroky v\u00A0sedle. Začínáme v\u00A0klidném tempu, postupně budujeme jistotu, rovnováhu a\u00A0samostatnost. Vhodné pro děti i\u00A0dospělé.",
     img: img("jizdarna-pohyb.jpg"),
+    layout: "wide",
   },
   {
     icon: ShieldCheck,
@@ -442,6 +398,7 @@ const jizdy = [
     title: "Skokový výcvik",
     body: "Skokové lekce od jednoduchých překážek po náročnější práci na jízdárně pod vedením zkušených lektorů. Vždy podle věku, jistoty a\u00A0zkušeností jezdce.",
     img: img("jizda-ponik-zepredu.jpg"),
+    layout: "tall",
   },
   {
     icon: Sun,
@@ -449,63 +406,124 @@ const jizdy = [
     title: "Příprava na ZZVJ",
     body: "Pro jezdce, kteří se chtějí připravit na zkoušky základního výcviku jezdce. Systematická příprava na jízdárně i\u00A0v\u00A0teorii.",
     img: img("jizdarna-dve-jezdkyne.jpg"),
+    layout: "split",
   },
 ];
 
 function Jezdeni() {
   return (
     <Section id="jizdy">
-      <Reveal>
-        <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
-          <div className="max-w-xl">
-            <Kicker>— Jízdy a výcvik</Kicker>
-            <Heading className="mt-8">
-              Jízdy na koních
-              <br />a&nbsp;jezdecký výcvik.
-            </Heading>
-          </div>
-          <p className="max-w-sm text-[15px] leading-[1.75] text-foreground/70">
+      <div className="text-center">
+        <Reveal>
+          <Kicker>— Jízdy a výcvik</Kicker>
+          <Heading className="mt-8">
+            Jízdy na koních
+            <br />a&nbsp;jezdecký výcvik.
+          </Heading>
+          <p className="mx-auto mt-6 max-w-md text-[15px] leading-[1.75] text-foreground/70">
             Od prvních krůčků v sedle po přípravu na zkoušky základního výcviku
             jezdce.
           </p>
-        </div>
-      </Reveal>
+        </Reveal>
+      </div>
 
-      <div className="mt-20 space-y-24 md:space-y-32">
+      <div className="mt-20 space-y-16 md:space-y-24">
         {jizdy.map((s, i) => {
           const Icon = s.icon;
-          const reversed = i % 2 === 1;
-
           return (
             <Reveal key={s.title}>
-              <article className="grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:items-stretch md:gap-16">
-                <div
-                  className={`md:col-span-7 md:h-full${reversed ? " md:order-2" : ""}`}
-                >
-                  <div className="overflow-hidden rounded-lg md:h-full">
-                    <img
-                      src={s.img}
-                      alt={s.title}
-                      loading="lazy"
-                      className="h-full w-full object-cover" />
-  </div>
-</div>
-<div
-  className={`md:col-span-5${reversed ? " md:order-1 md:pr-6" : " md:pl-6"}`}
-                >
-                  <span className="inline-flex items-center gap-2 text-micro uppercase tracking-caption text-sage-deep">
-                    <Icon className="h-3.5 w-3.5" /> {s.kicker}
-                  </span>
-                  <Heading as="h3" size="md" className="mt-6">
-                    {s.title}
-                  </Heading>
-                  <p className="mt-5 text-[15.5px] leading-[1.85] text-foreground/75">
-                    {s.body}
-                  </p>
-                  <Button href="#contact" variant="link" className="mt-8">
-                    Domluvit jízdy
-                  </Button>
-                </div>
+              <article
+                className={`grid grid-cols-1 items-center gap-8 md:grid-cols-12 md:gap-10 ${
+                  s.layout === "wide"
+                    ? "md:grid-cols-[7fr_5fr]"
+                    : s.layout === "tall"
+                      ? "md:grid-cols-[5fr_7fr]"
+                      : "md:grid-cols-12"
+                }`}
+              >
+                {s.layout === "wide" && (
+                  <>
+                    <div className="md:col-span-7 overflow-hidden rounded-xl">
+                      <img
+                        src={s.img}
+                        alt={s.title}
+                        loading="lazy"
+                        className="w-full object-cover"
+                        style={{ aspectRatio: "16/10", objectPosition: "center 40%" }}
+                      />
+                    </div>
+                    <div className="md:col-span-5">
+                      <span className="inline-flex items-center gap-2 text-micro uppercase tracking-caption text-sage-deep">
+                        <Icon className="h-3.5 w-3.5" /> {s.kicker}
+                      </span>
+                      <Heading as="h3" size="md" className="mt-6">
+                        {s.title}
+                      </Heading>
+                      <p className="mt-5 text-[15.5px] leading-[1.85] text-foreground/75">
+                        {s.body}
+                      </p>
+                      <Button href="#contact" variant="link" className="mt-8">
+                        Domluvit jízdy
+                      </Button>
+                    </div>
+                  </>
+                )}
+
+                {s.layout === "tall" && (
+                  <>
+                    <div className="md:col-span-5 md:order-2">
+                      <span className="inline-flex items-center gap-2 text-micro uppercase tracking-caption text-sage-deep">
+                        <Icon className="h-3.5 w-3.5" /> {s.kicker}
+                      </span>
+                      <Heading as="h3" size="md" className="mt-6">
+                        {s.title}
+                      </Heading>
+                      <p className="mt-5 text-[15.5px] leading-[1.85] text-foreground/75">
+                        {s.body}
+                      </p>
+                      <Button href="#contact" variant="link" className="mt-8">
+                        Domluvit jízdy
+                      </Button>
+                    </div>
+                    <div className="md:col-span-7 md:order-1 overflow-hidden rounded-xl">
+                      <img
+                        src={s.img}
+                        alt={s.title}
+                        loading="lazy"
+                        className="w-full object-cover"
+                        style={{ aspectRatio: "3/4", objectPosition: "center 45%" }}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {s.layout === "split" && (
+                  <>
+                    <div className="md:col-span-6">
+                      <img
+                        src={s.img}
+                        alt={s.title}
+                        loading="lazy"
+                        className="w-full rounded-xl object-cover"
+                        style={{ aspectRatio: "4/3", objectPosition: "center" }}
+                      />
+                    </div>
+                    <div className="md:col-span-6">
+                      <span className="inline-flex items-center gap-2 text-micro uppercase tracking-caption text-sage-deep">
+                        <Icon className="h-3.5 w-3.5" /> {s.kicker}
+                      </span>
+                      <Heading as="h3" size="md" className="mt-6">
+                        {s.title}
+                      </Heading>
+                      <p className="mt-5 text-[15.5px] leading-[1.85] text-foreground/75">
+                        {s.body}
+                      </p>
+                      <Button href="#contact" variant="link" className="mt-8">
+                        Domluvit jízdy
+                      </Button>
+                    </div>
+                  </>
+                )}
               </article>
             </Reveal>
           );
@@ -523,18 +541,7 @@ function Jezdeni() {
   );
 }
 
-const vyletyPhotos = [
-  { src: img("vyjizdka-les-skupina.jpg"), alt: "Skupina na koních na vyjížďce" },
-  { src: img("vyjizdka-podzim.jpg"), alt: "Podzimní vyjížďka s koňmi" },
-  { src: img("reka-skupina-kone.jpg"), alt: "Skupina s koněm u řeky" },
-  { src: img("deti-reka-ponici.jpg"), alt: "Skupina s bílými koňmi v řece" },
-];
-
 function Vylety() {
-  const [current, setCurrent] = useState(0);
-  const total = vyletyPhotos.length;
-  const goTo = (i: number) => setCurrent(Math.max(0, Math.min(total - 1, i)));
-
   return (
     <Section id="vylety" background="cream">
       <Reveal>
@@ -553,234 +560,89 @@ function Vylety() {
         </div>
       </Reveal>
 
-      <div className="mt-14 grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-16">
-        <div className="md:col-span-5">
+      <Reveal className="mt-14">
+        <img
+          src={img("vyjizdka-les-skupina.jpg")}
+          alt="Skupina na koních na vyjížďce lesem"
+          loading="lazy"
+          className="w-full rounded-xl object-cover"
+          style={{ aspectRatio: "21/9", objectPosition: "center 40%" }}
+        />
+      </Reveal>
+
+      <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-3">
+        <Reveal>
           <p className="text-[15.5px] leading-[1.85] text-foreground/75">
             Vyjížďky do Stromovky a okolí Císařského ostrova jsou ideální
             pro jezdce, kteří si chtějí užít jízdu v terénu. Trasy
             přizpůsobíme zkušenostem a náladě.
           </p>
-        </div>
-
-        <div className="md:col-span-7">
-          <div className="relative overflow-hidden rounded-xl bg-background">
-            <div
-              className="flex transition-transform duration-400 ease-out"
-              style={{ transform: `translateX(-${current * 100}%)` }}
-            >
-              {vyletyPhotos.map((p) => (
-                <div key={p.alt} className="w-full shrink-0">
-                  <div className="aspect-[3/4] md:aspect-[4/5]">
-                    <img
-                      src={p.src}
-                      alt={p.alt}
-                      loading="lazy"
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {total > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => goTo(current - 1)}
-                  disabled={current === 0}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-0"
-                  aria-label="Předchozí"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goTo(current + 1)}
-                  disabled={current === total - 1}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-0"
-                  aria-label="Další"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </>
-            )}
-          </div>
-
-          {total > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-1.5">
-              {vyletyPhotos.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => goTo(i)}
-                  className={`rounded-full transition-all ${
-                    i === current
-                      ? "h-1.5 w-5 bg-foreground"
-                      : "h-1.5 w-1.5 bg-foreground/20 hover:bg-foreground/40"
-                  }`}
-                  aria-label={`Foto ${i + 1}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        </Reveal>
+        <Reveal delay={60} className="hidden md:block">
+          <img
+            src={img("vyjizdka-podzim.jpg")}
+            alt="Podzimní vyjížďka s koňmi"
+            loading="lazy"
+            className="h-full w-full rounded-lg object-cover"
+            style={{ aspectRatio: "4/3", objectPosition: "center" }}
+          />
+        </Reveal>
+        <Reveal delay={120} className="hidden md:block">
+          <img
+            src={img("reka-skupina-kone.jpg")}
+            alt="Skupina s koněm u řeky"
+            loading="lazy"
+            className="h-full w-full rounded-lg object-cover"
+            style={{ aspectRatio: "4/3", objectPosition: "center" }}
+          />
+        </Reveal>
       </div>
     </Section>
   );
 }
 
-const stajPhotos = [
-  { src: img("staj-dva-ponici.jpg"), alt: "Dva bílí koně vedle sebe ve stáji" },
-  { src: img("staj-ponik-dvere.jpg"), alt: "Bílý kůň nakukuje ze dveří stáje" },
-  { src: img("staj-deti-ponik.jpg"), alt: "Seznamování s koněm ve stáji" },
-  { src: img("pece-kopyta.jpg"), alt: "Čištění kopýtek koně" },
-];
-
 function Staj() {
-  const [current, setCurrent] = useState(0);
-  const total = stajPhotos.length;
-  const goTo = (i: number) => setCurrent(Math.max(0, Math.min(total - 1, i)));
-
   return (
     <Section id="staj">
-      <Reveal>
-        <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
-          <div className="max-w-xl">
-            <Kicker>— Stáj a péče</Kicker>
-            <Heading className="mt-8">
-              Vztah ke koním
-              <br />
-              začíná ve stáji.
-            </Heading>
+      <div className="grid grid-cols-1 gap-0 md:grid-cols-12 md:items-center md:gap-0">
+        <Reveal className="md:col-span-8 md:pr-12">
+          <div className="overflow-hidden rounded-xl">
+            <img
+              src={img("staj-dva-ponici.jpg")}
+              alt="Dva bílí koně vedle sebe ve stáji"
+              loading="lazy"
+              className="w-full object-cover"
+              style={{ aspectRatio: "4/3", objectPosition: "center" }}
+            />
           </div>
-          <p className="max-w-sm text-[15px] leading-[1.75] text-foreground/70">
-            Nejen jízdy, ale i péče, naslouchání a trpělivost.
-          </p>
-        </div>
-      </Reveal>
+        </Reveal>
 
-      <div className="mt-14 grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-16">
-        <div className="md:col-span-5">
-          <p className="text-[15.5px] leading-[1.85] text-foreground/75">
+        <Reveal delay={80} className="md:col-span-4 mt-8 md:mt-0">
+          <Kicker>— Stáj a péče</Kicker>
+          <Heading className="mt-6">
+            Vztah ke koním
+            <br />
+            začíná ve stáji.
+          </Heading>
+          <p className="mt-5 text-[15.5px] leading-[1.85] text-foreground/75">
             Péče o koně je stejně důležitá jako samotné jízdy. Učíme se
             starat se o zvíře, poznáváme jeho potřeby a získáváme zodpovědnost.
             Právě tady se rodí ten nejupřímnější vztah.
           </p>
-        </div>
-
-        <div className="md:col-span-7">
-          <div className="relative overflow-hidden rounded-xl bg-background">
-            <div
-              className="flex transition-transform duration-400 ease-out"
-              style={{ transform: `translateX(-${current * 100}%)` }}
-            >
-              {stajPhotos.map((p) => (
-                <div key={p.alt} className="w-full shrink-0">
-                  <div className="aspect-[3/4] md:aspect-[4/5]">
-                    <img
-                      src={p.src}
-                      alt={p.alt}
-                      loading="lazy"
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {total > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => goTo(current - 1)}
-                  disabled={current === 0}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-0"
-                  aria-label="Předchozí"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goTo(current + 1)}
-                  disabled={current === total - 1}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-0"
-                  aria-label="Další"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </>
-            )}
-          </div>
-
-          {total > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-1.5">
-              {stajPhotos.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => goTo(i)}
-                  className={`rounded-full transition-all ${
-                    i === current
-                      ? "h-1.5 w-5 bg-foreground"
-                      : "h-1.5 w-1.5 bg-foreground/20 hover:bg-foreground/40"
-                  }`}
-                  aria-label={`Foto ${i + 1}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+          <p className="mt-4 text-[14px] leading-[1.7] text-foreground/60">
+            Nejen jízdy, ale i péče, naslouchání a trpělivost.
+          </p>
+        </Reveal>
       </div>
     </Section>
   );
 }
 
-const galleryGroups = [
-  {
-    title: "Jízdy a výcvik",
-    photos: [
-      { src: img("jizdarna-skupina.jpg"), alt: "Skupina jezdců na koních na jízdárně", span: "md:col-span-4" },
-      { src: img("jizdarna-pohyb.jpg"), alt: "Hnědý kůň v pohybu na jízdárně", span: "md:col-span-8" },
-    ],
-  },
-  {
-    title: "Venku a v přírodě",
-    photos: [
-      { src: img("vyjizdka-podzim.jpg"), alt: "Podzimní vyjížďka lesní cestou", span: "md:col-span-5" },
-      { src: img("reka-skupina-kone.jpg"), alt: "Skupina s koněm u řeky", span: "md:col-span-7" },
-      { src: img("deti-reka-ponici.jpg"), alt: "Skupina s koňmi v řece", span: "md:col-span-6" },
-      { src: img("zapad-slunce-dite.jpg"), alt: "Jezdec na koni při západu slunce", span: "md:col-span-6" },
-    ],
-  },
-  {
-    title: "Stáj a péče",
-    photos: [
-      { src: img("staj-dva-ponici.jpg"), alt: "Dva bílí koně ve stáji", span: "md:col-span-6" },
-      { src: img("pece-kopyta.jpg"), alt: "Péče o kopýtka koně", span: "md:col-span-3" },
-      { src: img("staj-ponik-dvere.jpg"), alt: "Kůň ve dveřích stáje", span: "md:col-span-3" },
-    ],
-  },
-  {
-    title: "Atmosféra",
-    photos: [
-      { src: img("detail-tvar-ponika.jpg"), alt: "Portrét bílého koně", span: "md:col-span-4" },
-      { src: img("vecerni-jizda.jpg"), alt: "Večerní jízda na koni", span: "md:col-span-4" },
-      { src: img("zima-portret.jpg"), alt: "Zimní portrét jezdce s koněm", span: "md:col-span-4" },
-    ],
-  },
-];
-
 function Gallery() {
-  const allPhotos = galleryGroups.flatMap((g) => g.photos);
-  const [current, setCurrent] = useState(0);
-  const total = allPhotos.length;
-
-  const goTo = (i: number) => setCurrent(Math.max(0, Math.min(total - 1, i)));
-
   return (
     <Section id="gallery" background="cream">
       <Reveal>
-        <div className="mb-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div>
             <Kicker>— Galerie</Kicker>
             <Heading className="mt-8">
@@ -790,81 +652,66 @@ function Gallery() {
             </Heading>
           </div>
           <p className="max-w-sm text-[15px] leading-[1.75] text-foreground/70">
-            Vybrané okamžiky z&nbsp;našich dní.
+            Vybrané okamžiky z&nbsp;našich dní. Bez filtrů, bez inscenace.
           </p>
         </div>
       </Reveal>
 
-      <div className="mt-14 grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-16">
-        <div className="md:col-span-5">
-          <p className="text-[15.5px] leading-[1.85] text-foreground/75">
-            Vybrané okamžiky z&nbsp;našich dní. Bez filtrů, bez inscenace.
-            Atmosféra jezdecké školy, radost z pohybu a klidné chvíle s koňmi.
-          </p>
-        </div>
-
-        <div className="md:col-span-7">
-          <div className="relative overflow-hidden rounded-xl bg-background">
-            <div
-              className="flex transition-transform duration-400 ease-out"
-              style={{ transform: `translateX(-${current * 100}%)` }}
-            >
-              {allPhotos.map((p) => (
-                <div key={p.alt} className="w-full shrink-0">
-                  <div className="aspect-[3/4] md:aspect-[4/5]">
-                    <img
-                      src={p.src}
-                      alt={p.alt}
-                      loading="lazy"
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {total > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => goTo(current - 1)}
-                  disabled={current === 0}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-0"
-                  aria-label="Předchozí"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goTo(current + 1)}
-                  disabled={current === total - 1}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-0"
-                  aria-label="Další"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </>
-            )}
-          </div>
-
-          {total > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-1.5">
-              {allPhotos.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => goTo(i)}
-                  className={`rounded-full transition-all ${
-                    i === current
-                      ? "h-1.5 w-5 bg-foreground"
-                      : "h-1.5 w-1.5 bg-foreground/20 hover:bg-foreground/40"
-                  }`}
-                  aria-label={`Foto ${i + 1}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="mt-14 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+        <Reveal className="col-span-2">
+          <img
+            src={img("jizdarna-skupina.jpg")}
+            alt="Skupina jezdců na koních na jízdárně"
+            loading="lazy"
+            className="h-full w-full rounded-xl object-cover"
+            style={{ aspectRatio: "16/9", objectPosition: "center" }}
+          />
+        </Reveal>
+        <Reveal delay={60}>
+          <img
+            src={img("staj-ponik-dvere.jpg")}
+            alt="Kůň ve dveřích stáje"
+            loading="lazy"
+            className="h-full w-full rounded-xl object-cover"
+            style={{ aspectRatio: "3/4", objectPosition: "center" }}
+          />
+        </Reveal>
+        <Reveal delay={120}>
+          <img
+            src={img("vyjizdka-podzim.jpg")}
+            alt="Podzimní vyjížďka lesní cestou"
+            loading="lazy"
+            className="h-full w-full rounded-xl object-cover"
+            style={{ aspectRatio: "3/4", objectPosition: "center" }}
+          />
+        </Reveal>
+        <Reveal delay={180}>
+          <img
+            src={img("reka-skupina-kone.jpg")}
+            alt="Skupina s koněm u řeky"
+            loading="lazy"
+            className="h-full w-full rounded-xl object-cover"
+            style={{ aspectRatio: "4/3", objectPosition: "center" }}
+          />
+        </Reveal>
+        <Reveal delay={240}>
+          <img
+            src={img("vecerni-jizda.jpg")}
+            alt="Večerní jízda na koni"
+            loading="lazy"
+            className="h-full w-full rounded-xl object-cover"
+            style={{ aspectRatio: "4/3", objectPosition: "center" }}
+          />
+        </Reveal>
+        <Reveal delay={300} className="col-span-2">
+          <img
+            src={img("deti-reka-ponici.jpg")}
+            alt="Skupina s koňmi v řece"
+            loading="lazy"
+            className="h-full w-full rounded-xl object-cover"
+            style={{ aspectRatio: "21/9", objectPosition: "center 30%" }}
+          />
+        </Reveal>
       </div>
     </Section>
   );
@@ -872,50 +719,40 @@ function Gallery() {
 
 function Parties() {
   return (
-    <Section id="parties">
-      <Reveal>
-        <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
-          <div className="max-w-xl">
-            <Kicker>— Oslavy</Kicker>
-            <Heading className="mt-8">
-              Narozeninové
-              <br />
-              oslavy s&nbsp;koňmi.
-            </Heading>
-          </div>
-          <p className="max-w-sm text-[15px] leading-[1.75] text-foreground/70">
-            V krásném prostředí Stromovky.
-          </p>
-        </div>
-      </Reveal>
-
-      <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-2 md:items-stretch">
-        <Reveal delay={80} className="md:order-2 md:h-full">
-          <div className="overflow-hidden rounded-lg md:h-full">
-            <img
-              src={img("deti-kone-strom.jpg")}
-              alt="Děti s koněm pod kvetoucím stromem během oslavy"
-              loading="lazy"
-              className="h-full w-full object-cover"
-            />
-          </div>
-        </Reveal>
-        <Reveal className="md:order-1">
-          <p className="text-[16px] leading-[1.85] text-foreground/75 md:text-[17px]">
+    <section className="relative overflow-hidden">
+      <div className="absolute inset-0">
+        <img
+          src={img("deti-kone-strom.jpg")}
+          alt="Děti s koněm pod kvetoucím stromem během oslavy"
+          loading="lazy"
+          className="h-full w-full object-cover"
+          style={{ objectPosition: "center 40%" }}
+        />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/30 to-background/10" />
+      <div className="relative z-10 mx-auto max-w-7xl px-6 py-28 text-center md:px-10 md:py-44">
+        <Reveal>
+          <Kicker>— Oslavy</Kicker>
+          <Heading className="mt-6" size="md">
+            Narozeninové
+            <br />
+            oslavy s&nbsp;koňmi.
+          </Heading>
+          <p className="mx-auto mt-6 max-w-md text-[16px] leading-[1.85] text-foreground/80 md:text-[17px]">
             Uspořádejte oslavu s koňmi v krásném
             prostředí Stromovky.
           </p>
-
-          <Expandable className="mt-6">
+          <Expandable className="mt-6 text-foreground/70">
             Ozvěte se nám a společně domluvíme možnosti oslavy.
           </Expandable>
-
-          <Button href="tel:+420721208118" variant="primary" className="mt-8">
-            Zavolat a domluvit oslavu
-          </Button>
+          <div className="mt-8">
+            <Button href="tel:+420721208118" variant="primary">
+              Zavolat a domluvit oslavu
+            </Button>
+          </div>
         </Reveal>
       </div>
-    </Section>
+    </section>
   );
 }
 
@@ -1026,6 +863,66 @@ function useFormspree(id: string) {
 
 function CampApplication() {
   const { state: campState, handleSubmit: handleCampSubmit } = useFormspree(FORMSPREE_ID);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [tried, setTried] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const fieldLabels: Record<string, string> = {
+    jmeno_ditete: "Jméno dítěte",
+    jmeno_rodice: "Jméno rodiče",
+    email: "E-mail",
+    telefon: "Telefon",
+  };
+
+  const validate = (): Record<string, string> => {
+    const errs: Record<string, string> = {};
+    const form = formRef.current;
+    if (!form) return errs;
+    const data = new FormData(form);
+    const get = (n: string) => (data.get(n) as string || "").trim();
+
+    const jmeno_ditete = get("jmeno_ditete");
+    const jmeno_rodice = get("jmeno_rodice");
+    const email = get("email");
+    const telefon = get("telefon");
+
+    if (!jmeno_ditete) errs.jmeno_ditete = "Vyplňte jméno dítěte";
+    if (!jmeno_rodice) errs.jmeno_rodice = "Vyplňte jméno rodiče";
+
+    if (!email) {
+      errs.email = "Vyplňte e-mail";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errs.email = "Neplatný formát e-mailu";
+    }
+
+    if (!telefon) {
+      errs.telefon = "Vyplňte telefon";
+    } else if (!/^[\d\s\-\+\(\)]{6,20}$/.test(telefon)) {
+      errs.telefon = "Neplatný formát telefonu";
+    }
+
+    return errs;
+  };
+
+  const focusFirst = (errs: Record<string, string>) => {
+    const key = Object.keys(errs)[0];
+    if (!key || !formRef.current) return;
+    const el = formRef.current.elements.namedItem(key) as HTMLElement | null;
+    if (el) el.focus();
+  };
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setTried(true);
+    const errs = validate();
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      focusFirst(errs);
+      return;
+    }
+    await handleCampSubmit(e);
+  };
+
   return (
     <Section id="tabor">
       <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:items-stretch">
@@ -1056,26 +953,35 @@ function CampApplication() {
 
         <Reveal delay={80} className="md:col-span-7 md:h-full">
           <form
-            onSubmit={handleCampSubmit}
+            ref={formRef}
+            onSubmit={onSubmit}
             className="flex h-full flex-col rounded-lg border border-border bg-cream p-5 md:p-8"
           >
             <input type="hidden" name="_subject" value="Přihláška na tábor - Jezdecká škola" />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {[
-                { label: "Jméno dítěte", name: "jmeno_ditete" },
+                { label: "Jméno dítěte", name: "jmeno_ditete", required: true },
                 { label: "Věk dítěte", name: "vek_ditete" },
-                { label: "Jméno rodiče", name: "jmeno_rodice" },
-                { label: "Telefon", name: "telefon", type: "tel" },
-                { label: "E-mail", name: "email", type: "email" },
+                { label: "Jméno rodiče", name: "jmeno_rodice", required: true },
+                { label: "Telefon", name: "telefon", type: "tel", required: true },
+                { label: "E-mail", name: "email", type: "email", required: true },
                 { label: "Preferovaný termín", name: "termin" },
               ].map((field) => (
                 <label key={field.name} className="block text-sm text-foreground/75">
-                  <span>{field.label}</span>
+                  <span>
+                    {field.label}
+                    {field.required && <span className="text-red-500 ml-0.5">*</span>}
+                  </span>
                   <input
                     name={field.name}
                     type={field.type ?? "text"}
                     className="mt-2 w-full rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground outline-none focus:border-sage-deep"
                   />
+                  {tried && errors[field.name] && (
+                    <span className="mt-1 block text-[12px] leading-snug text-red-600">
+                      {errors[field.name]}
+                    </span>
+                  )}
                 </label>
               ))}
             </div>
@@ -1096,7 +1002,7 @@ function CampApplication() {
             </button>
             {campState.status === "success" && (
               <p className="mt-4 text-sm font-medium text-green-700">
-                Přihláška byla odeslána. Brzy se vám ozveme.
+                Děkujeme! Vaše přihláška byla úspěšně odeslána.
               </p>
             )}
             {campState.status === "error" && (
