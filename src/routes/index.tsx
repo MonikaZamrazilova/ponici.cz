@@ -23,6 +23,8 @@ const SITE_URL = "https://www.jezdecka-skola.cz";
 
 const img = (name: string) => `/images/ponici/${name}`;
 
+const FORMSPREE_ID = "YOUR_FORMSPREE_ID";
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SportsActivityLocation",
@@ -1015,7 +1017,45 @@ function Pricing() {
   );
 }
 
+function useFormspree(id: string) {
+  const [state, setState] = useState<{
+    status: "idle" | "submitting" | "success" | "error";
+    message?: string;
+  }>({ status: "idle" });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setState({ status: "submitting" });
+    const form = e.currentTarget;
+    try {
+      const res = await fetch(`https://formspree.io/f/${id}`, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { Accept: "application/json" },
+      });
+      if (res.ok) {
+        setState({ status: "success" });
+        form.reset();
+      } else {
+        const json = await res.json().catch(() => null);
+        setState({
+          status: "error",
+          message: json?.error ?? "Odeslání se nezdařilo.",
+        });
+      }
+    } catch {
+      setState({
+        status: "error",
+        message: "Chyba připojení. Zkuste to prosím později.",
+      });
+    }
+  };
+
+  return { state, handleSubmit };
+}
+
 function CampApplication() {
+  const { state: campState, handleSubmit: handleCampSubmit } = useFormspree(FORMSPREE_ID);
   return (
     <Section id="tabor">
       <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:items-stretch">
@@ -1046,11 +1086,10 @@ function CampApplication() {
 
         <Reveal delay={80} className="md:col-span-7 md:h-full">
           <form
-            action="mailto:monika.zamrazilova@seznam.cz"
-            method="post"
-            encType="text/plain"
+            onSubmit={handleCampSubmit}
             className="flex h-full flex-col rounded-lg border border-border bg-cream p-5 md:p-8"
           >
+            <input type="hidden" name="_subject" value="Přihláška na tábor - Jezdecká škola" />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {[
                 { label: "Jméno dítěte", name: "jmeno_ditete" },
@@ -1080,10 +1119,21 @@ function CampApplication() {
             </label>
             <button
               type="submit"
-              className="mt-6 inline-flex rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-foreground"
+              disabled={campState.status === "submitting"}
+              className="mt-6 inline-flex rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-foreground disabled:opacity-50"
             >
-              Odeslat přihlášku
+              {campState.status === "submitting" ? "Odesílám…" : "Odeslat přihlášku"}
             </button>
+            {campState.status === "success" && (
+              <p className="mt-4 text-sm font-medium text-green-700">
+                Přihláška byla odeslána. Brzy se vám ozveme.
+              </p>
+            )}
+            {campState.status === "error" && (
+              <p className="mt-4 text-sm font-medium text-red-600">
+                {campState.message}
+              </p>
+            )}
           </form>
         </Reveal>
       </div>
@@ -1154,6 +1204,7 @@ function Faq() {
 }
 
 function Contact() {
+  const { state: contactState, handleSubmit: handleContactSubmit } = useFormspree(FORMSPREE_ID);
   return (
     <Section id="contact">
       <div className="grid grid-cols-1 gap-16 md:grid-cols-12">
@@ -1248,11 +1299,10 @@ function Contact() {
               Domluvit jízdu
             </h3>
             <form
-              action="mailto:monika.zamrazilova@seznam.cz"
-              method="post"
-              encType="text/plain"
+              onSubmit={handleContactSubmit}
               className="mt-6 space-y-4"
             >
+              <input type="hidden" name="_subject" value="Poptávka jízdy - Jezdecká škola" />
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <label className="block text-sm text-foreground/75">
                   <span>Jméno</span>
@@ -1289,10 +1339,21 @@ function Contact() {
               </label>
               <button
                 type="submit"
-                className="inline-flex rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-foreground"
+                disabled={contactState.status === "submitting"}
+                className="inline-flex rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-foreground disabled:opacity-50"
               >
-                Odeslat poptávku
+                {contactState.status === "submitting" ? "Odesílám…" : "Odeslat poptávku"}
               </button>
+              {contactState.status === "success" && (
+                <p className="mt-4 text-sm font-medium text-green-700">
+                  Poptávka byla odeslána. Brzy se vám ozveme.
+                </p>
+              )}
+              {contactState.status === "error" && (
+                <p className="mt-4 text-sm font-medium text-red-600">
+                  {contactState.message}
+                </p>
+              )}
             </form>
           </div>
         </Reveal>
@@ -1301,14 +1362,14 @@ function Contact() {
           <div className="overflow-hidden rounded-2xl border border-border">
             <iframe
               title="Mapa — Císařský ostrov, Praha"
-              src="https://www.google.com/maps?q=C%C3%ADsa%C5%99sk%C3%BD%20ostrov%20Praha&output=embed"
+              src="https://www.google.com/maps?q=4C68%2BWF+Praha+7&output=embed"
               className="h-64 w-full grayscale-[15%] contrast-[0.95] md:h-full md:min-h-[440px]"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
           <div className="mt-3 text-micro uppercase tracking-caption text-muted-foreground">
-            GPS: 50.1162, 14.4169
+            GPS: 4C68+WF Praha 7 (Císařský ostrov)
           </div>
         </Reveal>
       </div>
