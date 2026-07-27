@@ -162,7 +162,7 @@ function Hero() {
             alt="Skupina dětí s koňmi na louce u řeky v Praze"
             fetchPriority="high"
             className="w-full object-cover"
-            style={{ height: "45dvh", objectPosition: "center 45%" }}
+            style={{ height: "45dvh", objectPosition: "center 60%" }}
           />
         </div>
         <div className="px-6 pt-8 pb-8">
@@ -241,16 +241,16 @@ function Hero() {
                 height={1280}
                 fetchPriority="high"
                 className="w-full object-cover"
-                style={{ aspectRatio: "3/2", objectPosition: "center 100%" }}
+                style={{ aspectRatio: "3/2", objectPosition: "center 35%" }}
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Desktop — content overlaid on image */}
+      {/* Desktop — image then text */}
       <div className="hidden lg:block mx-auto max-w-7xl px-6 lg:px-10">
-        <div className="relative overflow-hidden rounded-3xl shadow-[0_20px_50px_-30px_rgba(60,45,25,0.25)]">
+        <div className="overflow-hidden rounded-3xl shadow-[0_20px_50px_-30px_rgba(60,45,25,0.25)]">
           <img
             src={img("hero-skupina-deti-kone.jpg")}
             alt="Skupina dětí s koňmi na louce u řeky v Praze"
@@ -258,38 +258,36 @@ function Hero() {
             height={1280}
             fetchPriority="high"
             className="w-full object-cover"
-            style={{ aspectRatio: "3/4", objectPosition: "center 100%" }}
+            style={{ aspectRatio: "3/2", objectPosition: "center 68%" }}
           />
-          <div className="absolute inset-0">
-            <div className="flex flex-col justify-start h-full px-12 lg:px-16 py-14 lg:py-16">
-              <div className="max-w-[42rem]">
-                <span className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-foreground/70">
-                  <span className="inline-block h-px w-6 bg-foreground/30" />
-                  Praha · Císařský ostrov
-                </span>
-                <Heading as="h1" size="xl" className="mt-8 text-[11vw] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.75rem] leading-[1.05] font-black break-normal" style={{ letterSpacing: "-0.02em" }}>
-                  Jezdecká škola
-                  <br />
-                  pro děti
-                  <br />i&nbsp;dospělé.
-                </Heading>
-                <p className="mt-7 max-w-sm text-[15px] leading-[1.65] font-medium text-[#3C2D19] md:text-[17px]">
-                  Individuální lekce, skokový výcvik, vyjížďky do Stromovky
-                  a&nbsp;tábory s&nbsp;koňmi na&nbsp;Císařském ostrově v&nbsp;Praze.
-                </p>
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <Button href="#contact" variant="primary">
-                    Domluvit jízdu
-                  </Button>
-                  <Button
-                    href="#jizdy"
-                    variant="secondary"
-                    className="bg-cream/75 border-foreground/50"
-                  >
-                    Prozkoumat aktivity
-                  </Button>
-                </div>
-              </div>
+        </div>
+        <div className="mt-14 lg:mt-16">
+          <div className="max-w-[42rem]">
+            <span className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-foreground/70">
+              <span className="inline-block h-px w-6 bg-foreground/30" />
+              Praha · Císařský ostrov
+            </span>
+            <Heading as="h1" size="xl" className="mt-8 text-[11vw] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.75rem] leading-[1.05] font-black break-normal" style={{ letterSpacing: "-0.02em" }}>
+              Jezdecká škola
+              <br />
+              pro děti
+              <br />i&nbsp;dospělé.
+            </Heading>
+            <p className="mt-7 max-w-sm text-[15px] leading-[1.65] font-medium text-[#3C2D19] md:text-[17px]">
+              Individuální lekce, skokový výcvik, vyjížďky do Stromovky
+              a&nbsp;tábory s&nbsp;koňmi na&nbsp;Císařském ostrově v&nbsp;Praze.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Button href="#contact" variant="primary">
+                Domluvit jízdu
+              </Button>
+              <Button
+                href="#jizdy"
+                variant="secondary"
+                className="bg-cream/75 border-foreground/50"
+              >
+                Prozkoumat aktivity
+              </Button>
             </div>
           </div>
         </div>
