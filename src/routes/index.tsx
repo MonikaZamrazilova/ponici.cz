@@ -90,8 +90,8 @@ function Nav() {
     <header
       className={`fixed inset-x-0 top-0 z-40 transition-all duration-500 ${
         scrolled || mobileOpen
-          ? "backdrop-blur-md bg-background/75 border-b border-border/60"
-          : "backdrop-blur-sm bg-background/10 max-sm:bg-background/60"
+          ? "bg-background border-b border-border/60"
+          : "bg-background max-sm:bg-background/60"
       }`}
     >
       <div className="mx-auto grid min-h-14 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-2 md:min-h-20 md:grid-cols-[1fr_auto_1fr] md:px-10 md:py-0">
@@ -162,7 +162,7 @@ function Hero() {
             alt="Skupina dětí s koňmi na louce u řeky v Praze"
             fetchPriority="high"
             className="w-full object-cover"
-            style={{ height: "45dvh", objectPosition: "center 60%" }}
+            style={{ height: "45dvh", objectPosition: "50% 80%" }}
           />
         </div>
         <div className="px-6 pt-8 pb-8">
