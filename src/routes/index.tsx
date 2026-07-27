@@ -241,7 +241,7 @@ function Hero() {
                 height={1280}
                 fetchPriority="high"
             className="w-full object-contain rounded-3xl"
-                style={{ aspectRatio: "3/2", objectPosition: "center" }}
+                style={{ aspectRatio: "16/9", objectPosition: "center" }}
               />
             </div>
           </div>
@@ -258,7 +258,7 @@ function Hero() {
             height={1280}
             fetchPriority="high"
             className="w-full object-contain rounded-3xl"
-            style={{ aspectRatio: "3/2", objectPosition: "center" }}
+            style={{ aspectRatio: "16/9", objectPosition: "center" }}
           />
         </div>
         <div className="mt-14 lg:mt-16">
@@ -801,7 +801,7 @@ function Gallery() {
             alt="Skupina s koňmi v řece"
             loading="lazy"
             className="h-full w-full rounded-xl object-cover"
-            style={{ aspectRatio: "21/9", objectPosition: "center 50%" }}
+            style={{ aspectRatio: "21/9", objectPosition: "center 45%" }}
           />
         </Reveal>
       </div>
