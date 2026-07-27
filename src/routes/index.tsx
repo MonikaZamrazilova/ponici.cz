@@ -154,21 +154,18 @@ function Nav() {
 function Hero() {
   return (
     <section id="top" className="relative w-full overflow-hidden">
-      {/* Mobile — content overlaid on image */}
-      <div className="relative w-full md:hidden overflow-hidden rounded-3xl" style={{ aspectRatio: "5/4" }}>
-        <div className="absolute inset-0">
+      {/* Mobile — image then text */}
+      <div className="md:hidden">
+        <div className="overflow-hidden rounded-b-3xl">
           <img
             src={img("hero-skupina-deti-kone.jpg")}
             alt="Skupina dětí s koňmi na louce u řeky v Praze"
             fetchPriority="high"
-            className="h-full w-full object-cover"
-            style={{ objectPosition: "center 45%" }}
+            className="w-full object-cover"
+            style={{ height: "45dvh", objectPosition: "center 45%" }}
           />
         </div>
-        <div
-          className="absolute bottom-0 left-0 right-0 px-6 pt-8"
-          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}
-        >
+        <div className="px-6 pt-8 pb-8">
           <div className="mx-auto max-w-lg">
             <span className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-foreground/70">
               <span className="inline-block h-px w-6 bg-foreground/30" />
