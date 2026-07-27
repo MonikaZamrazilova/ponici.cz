@@ -156,13 +156,13 @@ function Hero() {
     <section id="top" className="relative w-full overflow-hidden">
       {/* Mobile — image then text */}
       <div className="md:hidden pt-14">
-        <div className="overflow-hidden rounded-b-3xl">
+        <div className="overflow-hidden rounded-3xl">
           <img
             src={img("hero-skupina-deti-kone.jpg")}
             alt="Skupina dětí s koňmi na louce u řeky v Praze"
             fetchPriority="high"
-            className="w-full object-cover"
-            style={{ height: "45dvh", objectPosition: "50% 80%" }}
+            className="w-full object-contain rounded-3xl"
+            style={{ height: "45dvh", objectPosition: "center" }}
           />
         </div>
         <div className="px-6 pt-8 pb-8">
@@ -240,8 +240,8 @@ function Hero() {
                 width={1920}
                 height={1280}
                 fetchPriority="high"
-                className="w-full object-cover"
-                style={{ aspectRatio: "3/2", objectPosition: "center 35%" }}
+            className="w-full object-contain rounded-3xl"
+                style={{ aspectRatio: "3/2", objectPosition: "center" }}
               />
             </div>
           </div>
@@ -257,8 +257,8 @@ function Hero() {
             width={1920}
             height={1280}
             fetchPriority="high"
-            className="w-full object-cover"
-            style={{ aspectRatio: "3/2", objectPosition: "center 68%" }}
+            className="w-full object-contain rounded-3xl"
+            style={{ aspectRatio: "3/2", objectPosition: "center" }}
           />
         </div>
         <div className="mt-14 lg:mt-16">
