@@ -162,10 +162,9 @@ function Hero() {
             alt="Skupina dětí s koňmi na louce u řeky v Praze"
             fetchPriority="high"
             className="h-full w-full object-cover"
-            style={{ objectPosition: "center 100%" }}
+            style={{ objectPosition: "center 45%" }}
           />
         </div>
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent via-[25%] to-background/75 to-[80%]" />
         <div
           className="absolute bottom-0 left-0 right-0 px-6 pt-8"
           style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}
@@ -265,7 +264,6 @@ function Hero() {
             style={{ aspectRatio: "3/4", objectPosition: "center 100%" }}
           />
           <div className="absolute inset-0">
-            <div className="absolute inset-y-0 left-12 lg:left-16 w-[50%] bg-gradient-to-r from-background/80 to-transparent pointer-events-none" />
             <div className="flex flex-col justify-start h-full px-12 lg:px-16 py-14 lg:py-16">
               <div className="max-w-[42rem]">
                 <span className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-foreground/70">
