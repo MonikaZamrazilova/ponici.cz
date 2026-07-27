@@ -749,13 +749,15 @@ function Gallery() {
 
       <div className="mt-14 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         <Reveal className="col-span-2">
+          <div className="overflow-hidden rounded-xl">
           <img
-            src={img("jizdarna-skupina.jpg")}
-            alt="Skupina jezdců na koních na jízdárně"
+            src={img("hero-skupina-deti-kone.jpg")}
+            alt="Skupina dětí s koňmi na louce u řeky v Praze"
             loading="lazy"
-            className="h-full w-full rounded-xl object-cover"
+            className="h-full w-full object-contain"
             style={{ aspectRatio: "16/9", objectPosition: "center" }}
           />
+          </div>
         </Reveal>
         <Reveal delay={60}>
           <img
@@ -799,7 +801,7 @@ function Gallery() {
             alt="Skupina s koňmi v řece"
             loading="lazy"
             className="h-full w-full rounded-xl object-cover"
-            style={{ aspectRatio: "21/9", objectPosition: "center 30%" }}
+            style={{ aspectRatio: "21/9", objectPosition: "center 50%" }}
           />
         </Reveal>
       </div>
