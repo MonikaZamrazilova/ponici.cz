@@ -155,7 +155,7 @@ function Hero() {
   return (
     <section id="top" className="relative w-full overflow-hidden">
       {/* Mobile — image then text */}
-      <div className="md:hidden">
+      <div className="md:hidden pt-14">
         <div className="overflow-hidden rounded-b-3xl">
           <img
             src={img("hero-skupina-deti-kone.jpg")}
