@@ -154,7 +154,55 @@ function Nav() {
 function Hero() {
   return (
     <section id="top" className="relative w-full overflow-hidden">
-      <div className="mx-auto max-w-7xl px-6 md:px-10">
+      {/* Mobile — content overlaid on image */}
+      <div className="relative w-full md:hidden overflow-hidden rounded-3xl" style={{ aspectRatio: "5/4" }}>
+        <div className="absolute inset-0">
+          <img
+            src={img("hero-skupina-deti-kone.jpg")}
+            alt="Skupina dětí s koňmi na louce u řeky v Praze"
+            fetchPriority="high"
+            className="h-full w-full object-cover"
+            style={{ objectPosition: "center 100%" }}
+          />
+        </div>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent via-[25%] to-background/75 to-[80%]" />
+        <div
+          className="absolute bottom-0 left-0 right-0 px-6 pt-8"
+          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}
+        >
+          <div className="mx-auto max-w-lg">
+            <span className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-foreground/70">
+              <span className="inline-block h-px w-6 bg-foreground/30" />
+              Praha · Císařský ostrov
+            </span>
+            <Heading as="h1" size="xl" className="mt-2 text-[11vw] sm:text-[3.25rem] md:text-[4rem] lg:text-[5rem] leading-[1.05] font-black break-normal" style={{ letterSpacing: "-0.02em" }}>
+              Jezdecká škola
+              <br />
+              pro děti
+              <br />i&nbsp;dospělé.
+            </Heading>
+            <p className="mt-2 max-w-sm text-[15px] leading-[1.65] font-medium text-[#3C2D19]">
+              Individuální lekce, skokový výcvik, vyjížďky do Stromovky
+              a&nbsp;tábory s&nbsp;koňmi na&nbsp;Císařském ostrově v&nbsp;Praze.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Button href="#contact" variant="primary">
+                Domluvit jízdu
+              </Button>
+              <Button
+                href="#jizdy"
+                variant="secondary"
+                className="bg-cream/75 border-foreground/50"
+              >
+                Prozkoumat aktivity
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tablet — unchanged */}
+      <div className="hidden md:block lg:hidden mx-auto max-w-7xl px-6 md:px-10">
         <div className="flex flex-col-reverse md:grid md:grid-cols-12 md:items-center md:gap-12 md:min-h-screen md:py-24">
           <div className="md:col-span-5 pt-8 md:pt-0 pb-8 md:pb-0">
             <span className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-foreground/70">
@@ -162,7 +210,7 @@ function Hero() {
               Praha · Císařský ostrov
             </span>
 
-            <Heading as="h1" size="xl" className="mt-8">
+            <Heading as="h1" size="xl" className="mt-8 text-[11vw] sm:text-[3.25rem] md:text-[4rem] lg:text-[5rem] leading-[1.05] font-black break-normal" style={{ letterSpacing: "-0.02em" }}>
               Jezdecká škola
               <br />
               pro děti
@@ -197,8 +245,56 @@ function Hero() {
                 height={1280}
                 fetchPriority="high"
                 className="w-full object-cover"
-                style={{ aspectRatio: "3/2", objectPosition: "center 48%" }}
+                style={{ aspectRatio: "3/2", objectPosition: "center 100%" }}
               />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop — content overlaid on image */}
+      <div className="hidden lg:block mx-auto max-w-7xl px-6 lg:px-10">
+        <div className="relative overflow-hidden rounded-3xl shadow-[0_20px_50px_-30px_rgba(60,45,25,0.25)]">
+          <img
+            src={img("hero-skupina-deti-kone.jpg")}
+            alt="Skupina dětí s koňmi na louce u řeky v Praze"
+            width={1920}
+            height={1280}
+            fetchPriority="high"
+            className="w-full object-cover"
+            style={{ aspectRatio: "3/4", objectPosition: "center 100%" }}
+          />
+          <div className="absolute inset-0">
+            <div className="absolute inset-y-0 left-12 lg:left-16 w-[50%] bg-gradient-to-r from-background/80 to-transparent pointer-events-none" />
+            <div className="flex flex-col justify-start h-full px-12 lg:px-16 py-14 lg:py-16">
+              <div className="max-w-[42rem]">
+                <span className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-foreground/70">
+                  <span className="inline-block h-px w-6 bg-foreground/30" />
+                  Praha · Císařský ostrov
+                </span>
+                <Heading as="h1" size="xl" className="mt-8 text-[11vw] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.75rem] leading-[1.05] font-black break-normal" style={{ letterSpacing: "-0.02em" }}>
+                  Jezdecká škola
+                  <br />
+                  pro děti
+                  <br />i&nbsp;dospělé.
+                </Heading>
+                <p className="mt-7 max-w-sm text-[15px] leading-[1.65] font-medium text-[#3C2D19] md:text-[17px]">
+                  Individuální lekce, skokový výcvik, vyjížďky do Stromovky
+                  a&nbsp;tábory s&nbsp;koňmi na&nbsp;Císařském ostrově v&nbsp;Praze.
+                </p>
+                <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <Button href="#contact" variant="primary">
+                    Domluvit jízdu
+                  </Button>
+                  <Button
+                    href="#jizdy"
+                    variant="secondary"
+                    className="bg-cream/75 border-foreground/50"
+                  >
+                    Prozkoumat aktivity
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -276,36 +372,38 @@ function About() {
 
 function PonyPortrait() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0">
+    <Section id="setkani">
+      <div className="overflow-hidden rounded-3xl">
         <img
           src={img("detail-tvar-ponika.jpg")}
           alt="Detailní portrét bílého koně — jeho měkký čumák a zvědavé oči"
           loading="lazy"
-          className="h-full w-full object-cover"
-          style={{ objectPosition: "center 35%" }}
+          className="w-full object-cover"
+          style={{ aspectRatio: "3/4", objectPosition: "center 35%" }}
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/20 to-transparent" />
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-32 md:px-10 md:py-52">
-        <div className="max-w-lg">
-          <Reveal>
-            <Kicker>— Setkání</Kicker>
-            <Heading className="mt-8" size="md">
-              Každý kůň má
-              <br />
-              svou povahu.
-            </Heading>
-            <p className="mt-6 text-[15.5px] leading-[1.85] text-foreground/80">
-              Nejde jen o jízdy. Jde o vztah a o moment, kdy si člověk
-              ke koni najde cestu sám.               Poznává jeho povahu, učí se mu naslouchat
-              a respektovat ho. Více než 20 let zkušeností nás naučilo, že každý
-              kůň i&nbsp;každý jezdec potřebuje svůj čas.
-            </p>
-          </Reveal>
-        </div>
+      <div className="mt-14 md:mt-20">
+        <Reveal>
+          <Kicker>— Setkání</Kicker>
+          <Heading className="mt-6" size="md">
+            Každý kůň má
+            <br />
+            svou povahu.
+          </Heading>
+          <p className="mt-6 max-w-2xl text-[15.5px] leading-[1.85] text-foreground/80">
+            Nejde jen o jízdy. Jde o vztah a o moment, kdy si člověk
+            ke koni najde cestu sám.               Poznává jeho povahu, učí se mu naslouchat
+            a respektovat ho. Více než 20 let zkušeností nás naučilo, že každý
+            kůň i&nbsp;každý jezdec potřebuje svůj čas.
+          </p>
+          <div className="mt-8">
+            <Button href="#contact" variant="primary">
+              Domluvit jízdu
+            </Button>
+          </div>
+        </Reveal>
       </div>
-    </section>
+    </Section>
   );
 }
 
@@ -718,18 +816,17 @@ function Gallery() {
 
 function Parties() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0">
+    <Section id="oslavy">
+      <div className="overflow-hidden rounded-3xl">
         <img
           src={img("deti-kone-strom.jpg")}
           alt="Děti s koněm pod kvetoucím stromem během oslavy"
           loading="lazy"
-          className="h-full w-full object-cover"
-          style={{ objectPosition: "center 40%" }}
+          className="w-full object-cover"
+          style={{ aspectRatio: "3/4", objectPosition: "center 40%" }}
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/30 to-background/10" />
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-28 text-center md:px-10 md:py-44">
+      <div className="mt-14 md:mt-20">
         <Reveal>
           <Kicker>— Oslavy</Kicker>
           <Heading className="mt-6" size="md">
@@ -737,7 +834,7 @@ function Parties() {
             <br />
             oslavy s&nbsp;koňmi.
           </Heading>
-          <p className="mx-auto mt-6 max-w-md text-[16px] leading-[1.85] text-foreground/80 md:text-[17px]">
+          <p className="mt-6 max-w-2xl text-[16px] leading-[1.85] text-foreground/80 md:text-[17px]">
             Uspořádejte oslavu s koňmi v krásném
             prostředí Stromovky.
           </p>
@@ -751,7 +848,7 @@ function Parties() {
           </div>
         </Reveal>
       </div>
-    </section>
+    </Section>
   );
 }
 
