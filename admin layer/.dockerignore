@@ -5,8 +5,19 @@
 node_modules
 .next
 *.tsbuildinfo
-content
 .git
 **/tests
 Dockerfile
 render.yaml
+scripts/e2e.sh
+
+# content/ se kopíruje do obrazu jako seed (/app/seed-content) —
+# ale jen verzovaná část, nikdy runtime data:
+# - session store (runtime, server-side)
+# - reset kódy / hesla (runtime secrets)
+# - nahrané media soubory (runtime, re-upload)
+# (obsah projektů, store, audit a manifesty zůstávají v obraze)
+content/.sessions/
+content/.secrets/
+content/projects/*/media/*
+!content/projects/*/media/.gitkeep

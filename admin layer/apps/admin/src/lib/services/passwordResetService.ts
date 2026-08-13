@@ -22,7 +22,9 @@ import { isRateLimited } from "../security";
  *
  * Návrat vždy { ok: true } i při neznámém e-mailu — neumožňuje zjistit,
  * jestli e-mail je majitelův. Rate limiting per IP (forgot i reset).
- * Dokud není vyplněno ADMIN_FORMSPREE_ID, odesílání je MOCK (dev log).
+ * Dokud nejsou vyplněné EMAILJS_* proměnné (EMAILJS_SERVICE_ID,
+ * EMAILJS_TEMPLATE_ID, EMAILJS_PUBLIC_KEY, EMAILJS_PRIVATE_KEY),
+ * odesílání je MOCK (dev log).
  */
 
 const FORGOT_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };

@@ -2,6 +2,10 @@
 # 1. Repo admin vrstvy nahraj na GitHub (kořen repa = tento adresář).
 # 2. Render → New → Blueprint → vyber repo → Deploy.
 # 3. Nastav env proměnné (níže). Perzistentní disk /app/content = data.
+#
+# Obsah: při prvním startu (prázdný disk) se verzovaný content/ z obrazu
+# zkopíruje na disk skriptem scripts/seed-content.sh (viz Dockerfile CMD).
+# Existující data na disku se nikdy nepřepisují.
 
 services:
   - type: web
@@ -16,8 +20,16 @@ services:
         value: "86400000"
       - key: ADMIN_RESET_EMAILS
         value: monika.zamrazilova@seznam.cz
-      - key: ADMIN_FORMSPREE_ID
-        sync: false # ID formuláře Moniky (po založení)
+      # Odeslání reset kódu e-mailem (EmailJS, server-side) —
+      # nastav v dashboardu Renderu (sync: false), nikdy do gitu.
+      - key: EMAILJS_SERVICE_ID
+        sync: false
+      - key: EMAILJS_TEMPLATE_ID
+        sync: false
+      - key: EMAILJS_PUBLIC_KEY
+        sync: false
+      - key: EMAILJS_PRIVATE_KEY
+        sync: false
       - key: ADMIN_WEB_URL
         value: https://www.ponici.cz
     disk:

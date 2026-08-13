@@ -2,7 +2,14 @@ import { spawn } from "node:child_process";
 import net from "node:net";
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { defineEventHandler, getRequestHost, getRequestPath, getRequestURL, proxyRequest, readRawBody } from "h3";
+import {
+  defineEventHandler,
+  getRequestHost,
+  getRequestPath,
+  getRequestURL,
+  proxyRequest,
+  readRawBody,
+} from "h3";
 
 /**
  * Single-origin proxy — admin aplikace na stejném portu jako web ("jako live").
@@ -14,8 +21,13 @@ import { defineEventHandler, getRequestHost, getRequestPath, getRequestURL, prox
  *
  * ADMIN ZAPÍNÁNÍ ON-DEMAND: když admin neběží, middleware ho sám
  * nastartuje (next start z ADMIN_APP_DIR) a počká, až bude ready.
- * Když admin nelze spustit, /admin propadne na webovou routu
- * (přesměrování na ADMIN_URL); /login a /api dostanou jasnou hlášku.
+ * Když admin nelze dosáhnout, dostane /admin, /login i /api/* rozumnou
+ * 503 odpověď — NIKDY se nepřesměrovává na jinou doménu (žádný
+ * ADMIN_URL fallback; URL v prohlížeči zůstává na www.ponici.cz).
+ *
+ * Health check: "dostupný" = admin odpovídá HTTP (jakýkoli status,
+ * včetně 503 degraded). "Nedostupný" = síťová chyba (connection
+ * refused, DNS, timeout). Degraded health tedy NEblokuje proxy.
  *
  * x-forwarded-host se nastavuje dynamicky z příchozího requestu, aby
  * CSRF kontrola adminu (assertSameOrigin) viděla skutečný origin.
@@ -28,7 +40,8 @@ const ADMIN_PORT = new URL(ADMIN_TARGET).port || "3101";
 const NEXT_BIN = path.resolve(ADMIN_APP_DIR, "../../node_modules/next/dist/bin/next");
 /** Produkce (Vercel aj.): admin build lokálně neexistuje → jen proxy na ADMIN_TARGET */
 const CAN_SPAWN_ADMIN =
-  process.env.ADMIN_TARGET !== undefined || existsSync(path.join(ADMIN_APP_DIR, ".next", "BUILD_ID"));
+  process.env.ADMIN_TARGET !== undefined ||
+  existsSync(path.join(ADMIN_APP_DIR, ".next", "BUILD_ID"));
 
 const ADMIN_PATH_PREFIXES = ["/admin", "/login", "/api", "/_next"];
 
@@ -44,14 +57,34 @@ const RETRY_AFTER_FAIL_MS = 30_000;
 const START_TIMEOUT_MS = 30_000;
 /** produkce: ADMIN_TARGET je explicitní → čekáme na remote admin (i studený start Renderu) */
 const ADMIN_TARGET_EXPLICIT = process.env.ADMIN_TARGET !== undefined;
-const REMOTE_WAIT_MS = 90_000;
+/**
+ * Jak dlouho čekáme na remote admin (studený start Renderu).
+ * Krátké okno — Vercel serverless request nesmí blokovat 90 s.
+ * Konfigurovatelné přes ADMIN_REMOTE_WAIT_MS (ms), clamp 1–60 s.
+ * Po vypršení vrátí middleware rozumnou 503 (ne 504).
+ */
+const REMOTE_WAIT_MS = clampNumber(process.env.ADMIN_REMOTE_WAIT_MS, 10_000, 1_000, 60_000);
+/** Timeout jednoho health probe requestu. */
+const HEALTH_TIMEOUT_MS = 1_500;
 
-async function isUp(): Promise<boolean> {
+function clampNumber(raw: string | undefined, fallback: number, min: number, max: number): number {
+  const value = raw === undefined ? NaN : Number(raw);
+  if (!Number.isFinite(value)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(value)));
+}
+
+/**
+ * Vrací true, když admin server odpovídá HTTP — jakýkoli status včetně
+ * 503 "degraded". Jediný stav "false" je síťová chyba (server neodpovídá).
+ */
+async function isAdminReachable(): Promise<boolean> {
   try {
     const res = await fetch(`${ADMIN_TARGET}/api/health`, {
-      signal: AbortSignal.timeout(1500),
+      signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
     });
-    return res.ok;
+    // konzumace těla — odhalí polootevřená spojení (headers bez odpovědi)
+    await res.arrayBuffer().catch(() => {});
+    return true;
   } catch {
     return false;
   }
@@ -77,10 +110,10 @@ function startAdminProcess(): void {
 async function waitForUp(timeoutMs: number): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    if (await isUp()) return true;
+    if (await isAdminReachable()) return true;
     await new Promise((r) => setTimeout(r, 300));
   }
-  return isUp();
+  return false;
 }
 
 /** Vrací true, když na portu ADMIN_PORT už něco naslouchá. */
@@ -103,7 +136,7 @@ async function isPortInUse(): Promise<boolean> {
 function ensureAdminRunning(): Promise<boolean> {
   if (startPromise) return startPromise;
   startPromise = (async () => {
-    if (await isUp()) return true;
+    if (await isAdminReachable()) return true;
     if (Date.now() - lastFailAt < RETRY_AFTER_FAIL_MS) return false;
     if (ADMIN_TARGET_EXPLICIT) {
       // produkce: počkat na remote admin (studený start Render free tier)
@@ -131,6 +164,30 @@ function ensureAdminRunning(): Promise<boolean> {
   return startPromise;
 }
 
+/* ─────────────── odpovědi pro nedostupný admin ─────────────── */
+
+const UNAVAILABLE_MESSAGE = "Administrace je momentálně nedostupná. Zkuste to prosím za chvíli.";
+
+function unavailableJson(): Response {
+  return new Response(JSON.stringify({ ok: false, error: { message: UNAVAILABLE_MESSAGE } }), {
+    status: 503,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+function unavailablePage(): Response {
+  return new Response(
+    `<!doctype html><html lang="cs"><head><meta charset="utf-8"/><title>Admin není dostupný</title></head>` +
+      `<body style="margin:0;font-family:system-ui,sans-serif;background:#faf9f6;color:#1c1c1c;display:grid;place-items:center;min-height:100vh">` +
+      `<div style="text-align:center;max-width:28rem;padding:2rem">` +
+      `<h1 style="font-size:1.5rem;margin:0 0 .75rem">Admin není dostupný</h1>` +
+      `<p style="font-size:.9rem;line-height:1.6;color:#5c5244">${UNAVAILABLE_MESSAGE}</p>` +
+      `<p style="margin-top:1.2rem"><a href="/" style="color:#3f6f52">← Zpět na web</a></p>` +
+      `</div></body></html>`,
+    { status: 503, headers: { "content-type": "text/html; charset=utf-8" } },
+  );
+}
+
 /* ─────────────── middleware ─────────────── */
 
 export default defineEventHandler(async (event) => {
@@ -139,26 +196,10 @@ export default defineEventHandler(async (event) => {
   if (!isAdminPath(path)) return;
 
   if (!(await ensureAdminRunning())) {
-    // Admin nelze spustit. /admin propadne na webovou routu
-    // (přesměrování na ADMIN_URL); /login a /api dostanou hlášku.
-    if (path === "/admin" || path.startsWith("/admin/")) return undefined;
-    const message =
-      "Admin aplikaci se nepodařilo spustit. Zkontrolujte produkční build (npm run build -w admin v admin layer/) a zkuste to znovu.";
-    if (path.startsWith("/api/")) {
-      return new Response(JSON.stringify({ ok: false, error: { message } }), {
-        status: 503,
-        headers: { "content-type": "application/json" },
-      });
-    }
-    return new Response(
-      `<!doctype html><html lang="cs"><head><meta charset="utf-8"/><title>Admin není spuštěn</title></head>` +
-        `<body style="margin:0;font-family:system-ui,sans-serif;background:#faf9f6;color:#1c1c1c;display:grid;place-items:center;min-height:100vh">` +
-        `<div style="text-align:center;max-width:28rem;padding:2rem">` +
-        `<h1 style="font-size:1.5rem;margin:0 0 .75rem">Admin není dostupný</h1>` +
-        `<p style="font-size:.9rem;line-height:1.6;color:#5c5244">${message}</p>` +
-        `</div></body></html>`,
-      { status: 503, headers: { "content-type": "text/html; charset=utf-8" } }
-    );
+    // Admin nelze dosáhnout. Nikdy se nepřesměrovává na jinou doménu —
+    // /admin i /login dostanou 503 stránku, /api/* 503 JSON.
+    if (path.startsWith("/api/")) return unavailableJson();
+    return unavailablePage();
   }
 
   const original = getRequestURL(event);
@@ -169,9 +210,10 @@ export default defineEventHandler(async (event) => {
     // (auth middleware), streamovaný body v fetch selže (ECONNRESET)
     // a proxy by spadla na prázdnou 200.
     const method = event.req.method ?? "GET";
-    const rawBody = method === "GET" || method === "HEAD"
-      ? undefined
-      : await readRawBody(event, false).catch(() => undefined);
+    const rawBody =
+      method === "GET" || method === "HEAD"
+        ? undefined
+        : await readRawBody(event, false).catch(() => undefined);
     const proxied = await proxyRequest(event, target.toString(), {
       fetchOptions: {
         method,
@@ -185,6 +227,9 @@ export default defineEventHandler(async (event) => {
     return proxied;
   } catch (err) {
     console.error(`[admin-proxy] ${path} -> PROXY EXCEPTION: ${(err as Error)?.message}`);
-    return undefined;
+    // Admin odpověděl health checkem, ale request selhal — rozumná 503,
+    // ne propad na webové routy (ty /api ani nemají).
+    if (path.startsWith("/api/")) return unavailableJson();
+    return unavailablePage();
   }
 });
