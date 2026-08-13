@@ -28,6 +28,8 @@ const publishedFile = path.resolve(
   projectRoot,
   "../admin layer/content/projects/ponici/store/published.json"
 );
+/** zrcadlo published.json v tomto repo (web ho zabundluje při buildu) */
+const webPublishedFile = path.join(projectRoot, "src/lib/published.json");
 const mediaDir = path.resolve(
   projectRoot,
   "../admin layer/content/projects/ponici/media"
@@ -171,16 +173,17 @@ ${sections}
 
 writeFileSync(baseFile, generated, "utf8");
 
-// ─────────────── vyčištění overrides ───────────────
+// ─────────────── vyčištění overrides (admin store + web zrcadlo) ───────────────
 
 const cleared: Record<string, Record<string, unknown>> = {};
 for (const entry of KINDS) cleared[entry.kind] = {};
 writeFileSync(publishedFile, JSON.stringify(cleared, null, 2) + "\n", "utf8");
 mkdirSync(path.dirname(publishedFile), { recursive: true });
+writeFileSync(webPublishedFile, JSON.stringify(cleared, null, 2) + "\n", "utf8");
 
 console.log("Sync hotov — schválené změny jsou v kódu (base.ts):");
 for (const entry of KINDS) {
   console.log(`  ${entry.kind}: ${mergedCount[entry.kind]} override${mergedCount[entry.kind] === 1 ? "" : "y"} sloučeno, celkem ${entry.current.length} položek`);
 }
 console.log(`  fotky: ${copied} zkopírováno do public/images/ponici${missing ? `, ${missing} chybělo` : ""}`);
-console.log("published.json vyčištěn.");
+console.log("published.json vyčištěn (admin store + web zrcadlo).");

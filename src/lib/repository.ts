@@ -1,14 +1,14 @@
 import type { ContentItem } from "@admin/core";
 import { manifest } from "../manifest/index";
-import publishedJson from "../../../admin layer/content/projects/ponici/store/published.json";
+import publishedJson from "./published.json";
 
 /**
  * Repository webu ponici.cz — čistě business strana.
  *
- * Merges vlastní base obsah (manifest.baseItems) s overrides, které
- * vyprodukoval Admin Layer (admin layer/content/projects/ponici/store/
- * published.json). Web nemá žádný admin kód — jediné napojení je JSON
- * blob publikovaných změn, který si sám zabundluje při buildu.
+ * Merges vlastní base obsah (manifest.baseItems) s overrides (published.json).
+ * published.json je ZRCADLO adminu v tomto repo (src/lib/published.json) —
+ * udržuje ho v souladu `npm run sync:content` (propsání schválených změn
+ * do kódu). Web si ho zabundluje při buildu (funguje i na Vercelu).
  */
 
 const overrides = publishedJson as unknown as Record<string, Record<string, ContentItem>>;
