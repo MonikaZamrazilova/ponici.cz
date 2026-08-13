@@ -1634,7 +1634,7 @@ function Pricing() {
   );
 }
 
-function useFormspree(id: string) {
+function useWeb3Forms(accessKey: string) {
   const [state, setState] = useState<{
     status: "idle" | "submitting" | "success" | "error";
     message?: string;
@@ -1642,22 +1642,35 @@ function useFormspree(id: string) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setState({ status: "submitting" });
     const form = e.currentTarget;
-    try {
-      const res = await fetch(`https://formspree.io/f/${id}`, {
-        method: "POST",
-        body: new FormData(form),
-        headers: { Accept: "application/json" },
+    if (!accessKey) {
+      setState({
+        status: "error",
+        message: "Formulář zatím není nastaven — kontaktujte nás prosím telefonicky.",
       });
-      if (res.ok) {
+      return;
+    }
+    setState({ status: "submitting" });
+    const data = Object.fromEntries(new FormData(form).entries());
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          access_key: accessKey,
+          subject: data["_subject"] ?? "Přihláška na tábor",
+          from_name: "Web — přihláška na tábor",
+          ...data,
+        }),
+      });
+      const json = (await res.json().catch(() => null)) as { success?: boolean; message?: string } | null;
+      if (res.ok && json?.success) {
         setState({ status: "success" });
         form.reset();
       } else {
-        const json = await res.json().catch(() => null);
         setState({
           status: "error",
-          message: json?.error ?? "Odeslání se nezdařilo.",
+          message: json?.message ?? "Odeslání se nezdařilo.",
         });
       }
     } catch {
@@ -1673,7 +1686,7 @@ function useFormspree(id: string) {
 
 function CampApplication() {
   const { site } = useEditMode();
-  const { state: campState, handleSubmit: handleCampSubmit } = useFormspree(site.formspreeId);
+  const { state: campState, handleSubmit: handleCampSubmit } = useWeb3Forms(site.web3formsKey);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [tried, setTried] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);

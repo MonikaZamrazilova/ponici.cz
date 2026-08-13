@@ -62,7 +62,7 @@ const objArr = (v: unknown): Record<string, string>[] =>
 export interface SiteContent {
   siteName: string;
   baseUrl: string;
-  formspreeId: string;
+  web3formsKey: string;
   phone: string;
   email: string;
   locality: string;
@@ -174,7 +174,7 @@ export function siteFromItem(
   return {
     siteName: str(get("siteName")),
     baseUrl: str(get("baseUrl")),
-    formspreeId: str(get("formspreeId")),
+    web3formsKey: str(get("web3formsKey")),
     phone: str(get("phone")),
     email: str(get("email")),
     locality: str(get("locality")),

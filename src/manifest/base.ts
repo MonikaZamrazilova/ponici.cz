@@ -17,7 +17,7 @@ export const baseSite: ContentItem[] = [
     "updatedAt": "2026-08-13T08:16:06.767Z",
     "siteName": "Jezdecká škola",
     "baseUrl": "https://www.ponici.cz",
-    "formspreeId": "mzdnkvwl",
+    "web3formsKey": "",
     "phone": "+420 721 208 118",
     "email": "monika.zamrazilova@seznam.cz",
     "locality": "Císařský ostrov",

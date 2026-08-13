@@ -17,7 +17,7 @@ services:
         value: "86400000"
       - key: ADMIN_RESET_EMAILS
         value: monika.zamrazilova@seznam.cz
-      - key: ADMIN_FORMSPREE_ID
+      - key: WEB3FORMS_ACCESS_KEY
         sync: false # ID formuláře Moniky (po založení)
       - key: ADMIN_WEB_URL
         value: https://www.ponici.cz
