@@ -42,6 +42,9 @@ let startPromise: Promise<boolean> | null = null;
 let lastFailAt = 0;
 const RETRY_AFTER_FAIL_MS = 30_000;
 const START_TIMEOUT_MS = 30_000;
+/** produkce: ADMIN_TARGET je explicitní → čekáme na remote admin (i studený start Renderu) */
+const ADMIN_TARGET_EXPLICIT = process.env.ADMIN_TARGET !== undefined;
+const REMOTE_WAIT_MS = 90_000;
 
 async function isUp(): Promise<boolean> {
   try {
@@ -102,7 +105,13 @@ function ensureAdminRunning(): Promise<boolean> {
   startPromise = (async () => {
     if (await isUp()) return true;
     if (Date.now() - lastFailAt < RETRY_AFTER_FAIL_MS) return false;
-    if (!CAN_SPAWN_ADMIN) return false; // produkce: admin běží jinde (ADMIN_TARGET)
+    if (ADMIN_TARGET_EXPLICIT) {
+      // produkce: počkat na remote admin (studený start Render free tier)
+      const up = await waitForUp(REMOTE_WAIT_MS);
+      if (!up) lastFailAt = Date.now();
+      return up;
+    }
+    if (!CAN_SPAWN_ADMIN) return false;
     // Port už někdo drží (admin se právě startuje jinde / stará instance) —
     // nespouštět druhý proces (EADDRINUSE), jen počkat na ready.
     if (await isPortInUse()) return waitForUp(START_TIMEOUT_MS);
