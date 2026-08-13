@@ -40,8 +40,13 @@ export const adminConfig = {
   ),
   /** e-maily, které smějí žádat obnovu hesla — cíl reset kódu (volitelné; bez nich je funkce vypnutá) */
   resetEmails: env.ADMIN_RESET_EMAILS ?? [],
-  /** Formspree ID — odesílání kódu e-mailem (volitelné; bez něj jen MOCK/dev log) */
-  formspreeId: env.ADMIN_FORMSPREE_ID,
+  /** EmailJS (serverové odeslání kódu) — volitelné; bez ID jen MOCK/dev log */
+  emailjs: {
+    serviceId: env.EMAILJS_SERVICE_ID,
+    templateId: env.EMAILJS_TEMPLATE_ID,
+    publicKey: env.EMAILJS_PUBLIC_KEY,
+    privateKey: env.EMAILJS_PRIVATE_KEY,
+  },
   /** URL webu pro „Vstup do edit web" (single-origin = /, jinak plná URL) */
   webUrl: env.ADMIN_WEB_URL ?? "/",
   /** TTL a pokusy pro kód obnovy hesla */

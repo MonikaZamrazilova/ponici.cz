@@ -55,8 +55,11 @@ export const adminEnvSchema = z.object({
   ADMIN_VIEWER_PASSWORD: z.string().optional(),
   /** E-maily, které smějí žádat obnovu hesla (čárkami). Cíl reset kódu. */
   ADMIN_RESET_EMAILS: emailsListSchema,
-  /** Formspree ID — odesílání kódu e-mailem (bez něj jen MOCK/dev log). */
-  ADMIN_FORMSPREE_ID: z.string().optional(),
+  /** EmailJS (serverové odeslání kódu) — bez ID jen MOCK/dev log. */
+  EMAILJS_SERVICE_ID: z.string().optional(),
+  EMAILJS_TEMPLATE_ID: z.string().optional(),
+  EMAILJS_PUBLIC_KEY: z.string().optional(),
+  EMAILJS_PRIVATE_KEY: z.string().optional(),
   /** URL webu pro „Vstup do edit web" (single-origin = /, jinak plná URL). */
   ADMIN_WEB_URL: z.string().optional(),
   /** TTL kódu pro obnovení hesla (ms; výchozí 15 minut). */

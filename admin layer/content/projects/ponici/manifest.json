@@ -29,8 +29,9 @@
         },
         {
           "type": "text",
-          "name": "formspreeId",
-          "label": "Formspree ID (formulář táboru)"
+          "name": "web3formsKey",
+          "label": "Web3Forms access key (formulář táboru)",
+          "help": "Z web3forms.com — přihlášky jdou na e-mail účtu."
         },
         {
           "type": "text",
@@ -476,7 +477,7 @@
           "updatedAt": "2026-08-13T08:16:06.767Z",
           "siteName": "Jezdecká škola",
           "baseUrl": "https://www.ponici.cz",
-          "formspreeId": "mzdnkvwl",
+          "web3formsKey": "0a16a815-8bdb-45d9-9685-c61f374be991",
           "phone": "+420 721 208 118",
           "email": "monika.zamrazilova@seznam.cz",
           "locality": "Císařský ostrov",

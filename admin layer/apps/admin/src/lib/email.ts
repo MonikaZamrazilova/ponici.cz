@@ -2,16 +2,15 @@ import "server-only";
 import { adminConfig } from "./config";
 
 /**
- * Odesílání e-mailů — Formspree (formulář, na který majitelka dostává
- * e-maily z webu). Výměna providera = nová implementace.
+ * Odesílání e-mailů — EmailJS REST API (server-side, free 200/měsíc).
+ * Kód chodí na e-mail, ke kterému je připojený EmailJS service (majitelka).
  *
- * MOCK režim: dokud není vyplněno ADMIN_FORMSPREE_ID, kód se jen
+ * MOCK režim: dokud nejsou vyplněné EMAILJS_* proměnné, kód se jen
  * loguje na server a (v developmentu) vrací v odpovědi API — flow
- * je testovatelné bez skutečného e-mailu. Po doplnění ID se posílá
- * na formulář (schránku) Moniky.
+ * je testovatelné bez skutečného e-mailu.
  */
 
-const FORMPREE_URL = "https://formspree.io/f/";
+const EMAILJS_URL = "https://api.emailjs.com/api/v1.0/email/send";
 
 export interface SendResult {
   ok: boolean;
@@ -19,42 +18,51 @@ export interface SendResult {
   devCode?: string;
 }
 
+const RESET_CODE_TTL_MIN = Math.round(adminConfig.resetCodeTtlMs / 60000);
+
+function buildResetEmailBody(code: string): string {
+  return [
+    "Dobrý den,",
+    "",
+    "obdrželi jsme žádost o obnovení hesla do administrace webu.",
+    "",
+    `Váš ověřovací kód: ${code}`,
+    "",
+    `Kód platí ${RESET_CODE_TTL_MIN} minut. Pokud jste žádost neodesílali, tento e-mail ignorujte.`,
+    "",
+    "— Administrace webu",
+  ].join("\n");
+}
+
 export async function sendResetCodeEmail(email: string, code: string): Promise<SendResult> {
-  const formspreeId = adminConfig.formspreeId;
+  const { serviceId, templateId, publicKey, privateKey } = adminConfig.emailjs;
   const isDev = process.env.NODE_ENV === "development";
 
-  if (!formspreeId) {
+  if (!serviceId || !templateId || !publicKey || !privateKey) {
     // MOCK — kód zatím nikam nechodí
     console.log(`[admin] MOCK kód pro obnovení hesla (${email}): ${code}`);
     return { ok: true, devCode: isDev ? code : undefined };
   }
 
-  const body = new FormData();
-  body.set("_subject", "Kód pro obnovení hesla — administrace webu");
-  body.set("email", email);
-  body.set(
-    "message",
-    [
-      "Dobrý den,",
-      "",
-      "obdrželi jsme žádost o obnovení hesla do administrace webu.",
-      "",
-      `Váš ověřovací kód: ${code}`,
-      "",
-      `Kód platí ${Math.round(adminConfig.resetCodeTtlMs / 60000)} minut. Pokud jste žádost neodesílali, tento e-mail ignorujte.`,
-      "",
-      "— Administrace webu",
-    ].join("\n")
-  );
-
-  const res = await fetch(`${FORMPREE_URL}${formspreeId}`, {
+  const res = await fetch(EMAILJS_URL, {
     method: "POST",
-    body,
-    headers: { Accept: "application/json" },
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      service_id: serviceId,
+      template_id: templateId,
+      user_id: publicKey,
+      accessToken: privateKey,
+      template_params: {
+        email,
+        code,
+        validity: String(RESET_CODE_TTL_MIN),
+        message: buildResetEmailBody(code),
+      },
+    }),
   });
 
   if (!res.ok) {
-    console.error(`[admin] odeslání kódu přes Formspree selhalo: HTTP ${res.status}`);
+    console.error(`[admin] EmailJS odeslání selhalo: HTTP ${res.status} — ${(await res.text()).slice(0, 300)}`);
     return { ok: false };
   }
   return { ok: true };

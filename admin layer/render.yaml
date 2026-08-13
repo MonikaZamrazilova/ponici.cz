@@ -1,15 +1,14 @@
-# Render.com blueprint — admin vrstva (jedno kliknutí).
-# Repo mates732/Ponici.cz; admin žije ve složce "admin layer".
-# 1. Render → New → Blueprint → vyber repo mates732/Ponici.cz → Deploy.
-# 2. Nastav env proměnné (níže). Perzistentní disk /app/content = data.
+# Render.com blueprint — admin vrstva (jedno kliknutí po nahrání na GitHub)
+# 1. Repo admin vrstvy nahraj na GitHub (kořen repa = tento adresář).
+# 2. Render → New → Blueprint → vyber repo → Deploy.
+# 3. Nastav env proměnné (níže). Perzistentní disk /app/content = data.
 
 services:
   - type: web
     name: ponici-admin
     runtime: docker
-    rootDir: admin layer
     plan: starter # nebo free (usíná po nečinnosti; starter = vždy vzhůru)
-    dockerfilePath: Dockerfile
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: ADMIN_PASSWORD
         sync: false # nastav v dashboardu (silné heslo)
@@ -17,14 +16,8 @@ services:
         value: "86400000"
       - key: ADMIN_RESET_EMAILS
         value: monika.zamrazilova@seznam.cz
-      - key: EMAILJS_SERVICE_ID
-        sync: false # 4 ID z emailjs.com (účet majitelky)
-      - key: EMAILJS_TEMPLATE_ID
-        sync: false
-      - key: EMAILJS_PUBLIC_KEY
-        sync: false
-      - key: EMAILJS_PRIVATE_KEY
-        sync: false
+      - key: ADMIN_FORMSPREE_ID
+        sync: false # ID formuláře Moniky (po založení)
       - key: ADMIN_WEB_URL
         value: https://www.ponici.cz
     disk:
