@@ -1,0 +1,15 @@
+node_modules/
+.next/
+*.tsbuildinfo
+.DS_Store
+
+# Nahrané soubory (nikdy do gitu)
+content/projects/*/media/*
+!content/projects/*/media/.gitkeep
+
+# Server-side session store (nikdy do gitu)
+content/.sessions/
+.env
+
+# Runtime secrets — změněná hesla, reset kódy (nikdy do gitu)
+content/.secrets/

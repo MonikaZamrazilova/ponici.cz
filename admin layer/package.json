@@ -1,0 +1,29 @@
+{
+  "name": "admin-layer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reusable Admin Layer — architektura pro správu obsahu napříč projekty",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n admin,demo -c blue,green \"npm:dev:admin\" \"npm:dev:demo\"",
+    "dev:admin": "npm run dev -w admin",
+    "dev:demo": "npm run dev -w demo-web",
+    "build": "npm run build -w admin && npm run build -w demo-web",
+    "typecheck": "npm run typecheck -w @admin/core && npm run typecheck -w @admin/ui && npm run typecheck -w admin && npm run typecheck -w demo-web",
+    "manifest:export": "npm run manifest:export -w demo-web",
+    "verify": "npm run typecheck && npm run manifest:export",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "bash scripts/e2e.sh"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "vitest": "^4.1.10"
+  }
+}

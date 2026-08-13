@@ -1,0 +1,84 @@
+{
+  "app": {
+    "name": "Ponycedecka.cz",
+    "description": "Jezdecká farma — prvotní kontrakt: obsahové druhy potvrďte exportem z webu (npm run manifest:export).",
+    "repo": "(externí — Ponycedecka.cz)"
+  },
+  "locales": ["cs"],
+  "kinds": [
+    {
+      "kind": "horse",
+      "label": "Koně",
+      "description": "Koně stáje — profil, výkon a foto.",
+      "idField": "slug",
+      "listField": "name",
+      "listColumns": ["name", "breed"],
+      "fields": [
+        { "type": "text", "name": "name", "label": "Jméno", "required": true },
+        { "type": "text", "name": "breed", "label": "Plemeno" },
+        { "type": "number", "name": "age", "label": "Věk (roky)" },
+        { "type": "select", "name": "discipline", "label": "Zaměření", "required": true, "options": [
+          { "value": "drezura", "label": "Drezura" },
+          { "value": "parkur", "label": "Parkur" },
+          { "value": "vyjizdka", "label": "Vyjížďky" },
+          { "value": "children", "label": "Děti" }
+        ]},
+        { "type": "textarea", "name": "description", "label": "Popis" },
+        { "type": "image", "name": "photo", "label": "Fotografie" },
+        { "type": "boolean", "name": "available", "label": "K dispozici k ježdění" }
+      ]
+    },
+    {
+      "kind": "service",
+      "label": "Služby",
+      "description": "Nabídka — lekce, výcvik, ustájení.",
+      "idField": "slug",
+      "listField": "title",
+      "fields": [
+        { "type": "text", "name": "title", "label": "Název", "required": true },
+        { "type": "textarea", "name": "description", "label": "Popis", "required": true },
+        { "type": "text", "name": "price", "label": "Cena (text, např. 450 Kč/h)" },
+        { "type": "multiselect", "name": "targets", "label": "Pro koho", "options": [
+          { "value": "deti", "label": "Děti" },
+          { "value": "zaci", "label": "Žáci" },
+          { "value": "dospeli", "label": "Dospělí" }
+        ]}
+      ]
+    },
+    {
+      "kind": "news",
+      "label": "Aktuality",
+      "description": "Novinky a události farmy.",
+      "idField": "slug",
+      "listField": "title",
+      "fields": [
+        { "type": "text", "name": "title", "label": "Titulek", "required": true },
+        { "type": "text", "name": "publishedOn", "label": "Datum (YYYY-MM-DD)", "required": true },
+        { "type": "richtext", "name": "body", "label": "Obsah", "required": true },
+        { "type": "image", "name": "image", "label": "Obrázek" }
+      ]
+    },
+    {
+      "kind": "site",
+      "label": "Web",
+      "description": "Globální nastavení webu.",
+      "idField": "slug",
+      "listField": "siteName",
+      "fields": [
+        { "type": "text", "name": "siteName", "label": "Název webu", "required": true },
+        { "type": "url", "name": "baseUrl", "label": "URL webu", "required": true },
+        { "type": "textarea", "name": "intro", "label": "Úvodní text" },
+        {
+          "type": "object",
+          "name": "contact",
+          "label": "Kontakt",
+          "fields": [
+            { "type": "text", "name": "phone", "label": "Telefon" },
+            { "type": "text", "name": "email", "label": "E-mail" },
+            { "type": "text", "name": "address", "label": "Adresa" }
+          ]
+        }
+      ]
+    }
+  ]
+}

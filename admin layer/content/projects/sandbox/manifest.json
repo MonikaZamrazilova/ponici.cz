@@ -1,0 +1,32 @@
+{
+  "app": {
+    "name": "Sandbox App",
+    "description": "Druhý projekt — jiné capability (bez media, bez vytváření).",
+    "repo": "(ručně zapsaný kontrakt)"
+  },
+  "locales": ["cs"],
+  "kinds": [
+    {
+      "kind": "note",
+      "label": "Poznámky",
+      "description": "Jednoduché poznámky — demonstruje capability boundary.",
+      "idField": "slug",
+      "listField": "title",
+      "fields": [
+        { "type": "text", "name": "title", "label": "Nadpis", "required": true },
+        { "type": "textarea", "name": "body", "label": "Text" }
+      ],
+      "baseItems": [
+        {
+          "id": "vitani",
+          "slug": "vitani",
+          "status": "published",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-01T00:00:00.000Z",
+          "title": "Vítejte",
+          "body": "Toto je sandbox projekt: bez media knihovny a bez vytváření nových položek."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,420 @@
+{
+  "app": {
+    "name": "Demo Web",
+    "description": "Ukázková veřejná aplikace — obsah spravovaný Admin Layerem.",
+    "repo": "apps/demo-web"
+  },
+  "locales": [
+    "cs",
+    "en"
+  ],
+  "kinds": [
+    {
+      "kind": "project",
+      "label": "Projekty",
+      "description": "Portfoliové projekty zobrazené na domovské stránce.",
+      "idField": "slug",
+      "listField": "name",
+      "listColumns": [
+        "name",
+        "badge"
+      ],
+      "fields": [
+        {
+          "type": "localized",
+          "name": "name",
+          "label": "Název",
+          "required": true,
+          "inner": {
+            "type": "text",
+            "name": "name",
+            "label": "Název"
+          }
+        },
+        {
+          "type": "localized",
+          "name": "tagline",
+          "label": "Podtitulek",
+          "required": true,
+          "inner": {
+            "type": "textarea",
+            "name": "tagline",
+            "label": "Podtitulek"
+          }
+        },
+        {
+          "type": "localized",
+          "name": "badge",
+          "label": "Označení",
+          "inner": {
+            "type": "text",
+            "name": "badge",
+            "label": "Označení"
+          }
+        },
+        {
+          "type": "image",
+          "name": "poster",
+          "label": "Plakát",
+          "help": "Obrázek z media knihovny nebo URL."
+        },
+        {
+          "type": "url",
+          "name": "href",
+          "label": "Odkaz",
+          "required": true
+        },
+        {
+          "type": "boolean",
+          "name": "external",
+          "label": "Externí odkaz",
+          "help": "Otevírá se v novém okně."
+        }
+      ],
+      "baseItems": [
+        {
+          "id": "barberman",
+          "slug": "barberman",
+          "status": "published",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-01T00:00:00.000Z",
+          "name": {
+            "cs": "Barberman",
+            "en": "Barberman"
+          },
+          "tagline": {
+            "cs": "Web pro barbershop — rezervace, profese, ceník.",
+            "en": "Barbershop website — booking, professions, pricing."
+          },
+          "badge": {
+            "cs": "Barber",
+            "en": "Barber"
+          },
+          "poster": "",
+          "href": "https://barberman.cz",
+          "external": false
+        },
+        {
+          "id": "tvoje-vyska",
+          "slug": "tvoje-vyska",
+          "status": "published",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-01T00:00:00.000Z",
+          "name": {
+            "cs": "Tvoje výška",
+            "en": "Your Height"
+          },
+          "tagline": {
+            "cs": "Kalkulačka výšky a růstové křivky pro rodiče.",
+            "en": "Height calculator and growth charts for parents."
+          },
+          "badge": {
+            "cs": "Health",
+            "en": "Health"
+          },
+          "poster": "",
+          "href": "https://tvojevyska.cz",
+          "external": false
+        },
+        {
+          "id": "recepce-tech",
+          "slug": "recepce-tech",
+          "status": "published",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-01T00:00:00.000Z",
+          "name": {
+            "cs": "Recepce.tech",
+            "en": "Recepce.tech"
+          },
+          "tagline": {
+            "cs": "AI hlasový asistent pro firmy — recepce na telefonu.",
+            "en": "AI voice assistant for businesses — reception on the phone."
+          },
+          "badge": {
+            "cs": "AI",
+            "en": "AI"
+          },
+          "poster": "",
+          "href": "https://recepce.tech",
+          "external": false
+        }
+      ]
+    },
+    {
+      "kind": "profession",
+      "label": "Profese",
+      "description": "Služby a profese prezentované na webu.",
+      "idField": "slug",
+      "fields": [
+        {
+          "type": "text",
+          "name": "name",
+          "label": "Název",
+          "required": true
+        },
+        {
+          "type": "textarea",
+          "name": "desc",
+          "label": "Popis",
+          "required": true
+        },
+        {
+          "type": "multiselect",
+          "name": "services",
+          "label": "Služby",
+          "help": "Multi-select — více hodnot najednou.",
+          "options": [
+            {
+              "value": "strih",
+              "label": "Střih"
+            },
+            {
+              "value": "vousy",
+              "label": "Vousy"
+            },
+            {
+              "value": "osetreni",
+              "label": "Ošetření"
+            },
+            {
+              "value": "barveni",
+              "label": "Barvení"
+            }
+          ]
+        },
+        {
+          "type": "repeater",
+          "name": "tags",
+          "label": "Štítky",
+          "itemLabel": "Štítek",
+          "fields": [
+            {
+              "type": "text",
+              "name": "tag",
+              "label": "Štítek"
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "name": "colors",
+          "label": "Barvy",
+          "fields": [
+            {
+              "type": "text",
+              "name": "accent",
+              "label": "Akcent"
+            },
+            {
+              "type": "text",
+              "name": "glow1",
+              "label": "Glow 1"
+            },
+            {
+              "type": "text",
+              "name": "glow2",
+              "label": "Glow 2"
+            }
+          ]
+        }
+      ],
+      "baseItems": [
+        {
+          "id": "barbar",
+          "slug": "barbar",
+          "status": "published",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-01T00:00:00.000Z",
+          "name": "Barbar",
+          "desc": "Střihy, vousy a ošetření s řemeslným přístupem.",
+          "tags": [
+            "střih",
+            "vousy",
+            "strojky"
+          ],
+          "colors": {
+            "accent": "#1C1C1C",
+            "glow1": "#4A4A4A",
+            "glow2": "#0E0E0E"
+          }
+        },
+        {
+          "id": "kosmeticka",
+          "slug": "kosmeticka",
+          "status": "published",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-01T00:00:00.000Z",
+          "name": "Kosmetička",
+          "desc": "Pleťové rituály a profesionální péče o obličej.",
+          "tags": [
+            "plet",
+            "ritualy",
+            "pece"
+          ],
+          "colors": {
+            "accent": "#8A6B4F",
+            "glow1": "#C9A27E",
+            "glow2": "#5E4632"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "page",
+      "label": "Stránky",
+      "description": "Jednoduché statické stránky.",
+      "idField": "slug",
+      "listField": "title",
+      "listColumns": [
+        "title",
+        "slug"
+      ],
+      "fields": [
+        {
+          "type": "localized",
+          "name": "title",
+          "label": "Titul",
+          "required": true,
+          "inner": {
+            "type": "text",
+            "name": "title",
+            "label": "Titul"
+          }
+        },
+        {
+          "type": "localized",
+          "name": "body",
+          "label": "Obsah",
+          "required": true,
+          "inner": {
+            "type": "textarea",
+            "name": "body",
+            "label": "Obsah"
+          }
+        },
+        {
+          "type": "richtext",
+          "name": "bodyHtml",
+          "label": "Obsah (rich text)",
+          "help": "HTML formátování — tučné, kurzíva, seznamy."
+        }
+      ],
+      "baseItems": [
+        {
+          "id": "o-nas",
+          "slug": "o-nas",
+          "status": "published",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-01T00:00:00.000Z",
+          "title": {
+            "cs": "O nás",
+            "en": "About"
+          },
+          "body": {
+            "cs": "Malé studio, které staví weby a AI asistenty. Důraz na řemeslo a přímou komunikaci.",
+            "en": "A small studio building websites and AI assistants. Craft and direct communication first."
+          }
+        },
+        {
+          "id": "kontakt",
+          "slug": "kontakt",
+          "status": "published",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-01T00:00:00.000Z",
+          "title": {
+            "cs": "Kontakt",
+            "en": "Contact"
+          },
+          "body": {
+            "cs": "Napište nám na ahoj@demo-web.cz nebo zavolejte na +420 000 000 000.",
+            "en": "Write to ahoj@demo-web.cz or call +420 000 000 000."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "site",
+      "label": "Web",
+      "description": "Globální nastavení webu.",
+      "idField": "slug",
+      "listField": "siteName",
+      "fields": [
+        {
+          "type": "text",
+          "name": "siteName",
+          "label": "Název webu",
+          "required": true
+        },
+        {
+          "type": "url",
+          "name": "baseUrl",
+          "label": "URL webu",
+          "required": true
+        },
+        {
+          "type": "localized",
+          "name": "description",
+          "label": "Popis (SEO)",
+          "inner": {
+            "type": "textarea",
+            "name": "description",
+            "label": "Popis"
+          }
+        },
+        {
+          "type": "repeater",
+          "name": "keywords",
+          "label": "Klíčová slova",
+          "itemLabel": "Klíčové slovo",
+          "fields": [
+            {
+              "type": "text",
+              "name": "keyword",
+              "label": "Klíčové slovo"
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "name": "contact",
+          "label": "Kontakt",
+          "fields": [
+            {
+              "type": "text",
+              "name": "phone",
+              "label": "Telefon"
+            },
+            {
+              "type": "text",
+              "name": "email",
+              "label": "E-mail"
+            }
+          ]
+        }
+      ],
+      "baseItems": [
+        {
+          "id": "main",
+          "slug": "main",
+          "status": "published",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-01T00:00:00.000Z",
+          "siteName": "Demo Web",
+          "baseUrl": "https://demo-web.example",
+          "description": {
+            "cs": "Ukázková aplikace napojená na Admin Layer.",
+            "en": "Demo application connected to the Admin Layer."
+          },
+          "keywords": [
+            "demo",
+            "admin layer"
+          ],
+          "contact": {
+            "phone": "+420 000 000 000",
+            "email": "ahoj@demo-web.cz"
+          }
+        }
+      ]
+    }
+  ]
+}

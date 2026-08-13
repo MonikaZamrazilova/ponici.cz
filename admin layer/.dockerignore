@@ -1,0 +1,12 @@
+# nikdy do obrazu: tajemství, závislosti, buildy, data
+.env
+.env.*
+!.env.example
+node_modules
+.next
+*.tsbuildinfo
+content
+.git
+**/tests
+Dockerfile
+render.yaml
