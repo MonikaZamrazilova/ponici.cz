@@ -1,15 +1,15 @@
 import "server-only";
-import { promises as fs } from "fs";
-import path from "path";
 import { adminConfig } from "../config";
+import { isGithubConfigured } from "../storage/githubJson";
+import { isVercelConfigured } from "./vercelEnvService";
 import { listProjects } from "../projects/registry";
 import { loadManifest } from "./manifestService";
 import { listItems } from "./itemService";
 
 /**
  * Application service — persistentní systémové alerty (A7.1).
- * Odvozené ze skutečného stavu: konfigurace, filesystém, kontrakty,
- * nepublikované drafty. Zobrazují se, dokud podmínka trvá.
+ * Odvozené ze skutečného stavu: konfigurace, storage backend,
+ * kontrakty, nepublikované drafty. Zobrazují se, dokud podmínka trvá.
  */
 
 export interface SystemAlert {
@@ -34,14 +34,21 @@ export async function collectSystemAlerts(): Promise<SystemAlert[]> {
     });
   }
 
-  try {
-    await fs.mkdir(path.dirname(adminConfig.sessionsFile), { recursive: true });
-  } catch {
+  if (!isGithubConfigured()) {
     alerts.push({
-      id: "session-store",
+      id: "github-storage",
       type: "error",
-      title: "Session store není zapisovatelný",
-      message: "Odhlášení a revokace session nebudou fungovat spolehlivě.",
+      title: "GitHub storage není nakonfigurováno",
+      message: "Chybí GITHUB_TOKEN/GITHUB_OWNER/GITHUB_REPO — obsah nelze spravovat.",
+    });
+  }
+
+  if (!isVercelConfigured()) {
+    alerts.push({
+      id: "vercel-env",
+      type: "warning",
+      title: "Vercel env update není nakonfigurováno",
+      message: "Chybí VERCEL_TOKEN/VERCEL_PROJECT_ID — změna hesla přežije jen do cold startu.",
     });
   }
 

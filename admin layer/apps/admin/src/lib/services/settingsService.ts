@@ -34,7 +34,7 @@ export async function collectSettings(): Promise<SettingRow[]> {
     value: `${Math.round(adminConfig.sessionTtlMs / 86_400_000)} dní`,
   });
   rows.push({ group: core, key: "modules", label: "Zapnuté core moduly", value: enabledList(coreModules) });
-  rows.push({ group: core, key: "projects.root", label: "Data projektů", value: adminConfig.projectsRoot });
+  rows.push({ group: core, key: "projects.root", label: "Data projektů", value: "GitHub content storage (stateless)" });
   rows.push({
     group: core,
     key: "projects.active",

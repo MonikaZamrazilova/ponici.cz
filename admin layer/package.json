@@ -20,7 +20,9 @@
     "verify": "npm run typecheck && npm run manifest:export",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "bash scripts/e2e.sh"
+    "e2e": "bash scripts/e2e.sh",
+    "migrate:media": "node scripts/migrate-media-to-blob.ts",
+    "migrate:media:dry": "node scripts/migrate-media-to-blob.ts --dry-run"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

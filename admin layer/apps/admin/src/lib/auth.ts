@@ -16,7 +16,6 @@ import {
 } from "@admin/core";
 import { adminConfig } from "./config";
 import { appendAudit } from "./services/auditService";
-import { sessionStore } from "./storage/sessionStore";
 import { passwordOverride } from "./storage/passwordStore";
 
 /**
@@ -49,9 +48,8 @@ export async function login(password: string): Promise<boolean> {
 
   const sid = uid();
   const payload: SessionPayload = { sid, expiresAt: Date.now() + ttlMs, role };
+  // Podepsaná cookie je jediný zdroj session (stateless store — žádný fs).
   const token = await signSession(payload, match[1] as string);
-  await sessionStore.create(sid, ttlMs);
-  void sessionStore.cleanup(); // best-effort prunning vypršených záznamů
 
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
@@ -62,14 +60,15 @@ export async function login(password: string): Promise<boolean> {
     path: "/",
   });
 
-  await appendAudit({
+  // Audit je best-effort — selhání (GitHub výpadek) NESMÍ shodit login.
+  void appendAudit({
     projectId: "core",
     action: "login",
     entityKind: "session",
     entityId: sid,
     summary: `Přihlášen uživatel s rolí ${role}`,
     details: { role },
-  });
+  }).catch(() => {});
   return true;
 }
 
@@ -81,31 +80,34 @@ export async function logout(): Promise<void> {
     const payload = await resolveSession(token);
     if (payload) {
       role = payload.role;
-      await sessionStore.revoke(payload.sid); // server-side odvolání
     }
   }
+  // smazání cookie = lokální odvolání; ukradená cookie platí do expirace
+  // (stateless store nemá jak odvolat jednotlivou session)
   store.delete(SESSION_COOKIE);
 
-  await appendAudit({
+  // Audit je best-effort — selhání NESMÍ shodit logout.
+  void appendAudit({
     projectId: "core",
     action: "logout",
     entityKind: "session",
     entityId: role ?? "unknown",
     summary: role ? `Odhlášen uživatel s rolí ${role}` : "Odhlášení (neplatná session)",
     details: role ? { role } : undefined,
-  });
+  }).catch(() => {});
 }
 
-/** Plná serverová validace: podpis (kterýmkoliv heslem role) + expiry + store. */
+/**
+ * Plná serverová validace: podpis (kterýmkoliv heslem role) + expiry.
+ * Cookie je jediný zdroj — podepsaný payload { sid, expiresAt, role }
+ * je tamper-proof a edge-safe ověřitelný. Žádný server-side storage.
+ */
 export async function resolveSession(token: string): Promise<SessionPayload | null> {
   const passwords = Object.values(await effectivePasswords()).filter(Boolean) as string[];
   if (passwords.length === 0) return null;
   for (const password of passwords) {
     const payload = await verifySignedSession(token, password);
-    if (payload) {
-      const record = await sessionStore.get(payload.sid);
-      return record ? payload : null;
-    }
+    if (payload) return payload;
   }
   return null;
 }

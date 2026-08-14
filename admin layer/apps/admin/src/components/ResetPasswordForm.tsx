@@ -3,35 +3,35 @@
 import { useRouter } from "next/navigation";
 import { Button, Field, Input, useForm, tokens } from "@admin/ui";
 
-export function ResetPasswordForm({
-  email,
-  devCode,
-}: {
-  email: string;
-  devCode?: string;
-}) {
+export function ResetPasswordForm({ email }: { email: string }) {
   const router = useRouter();
 
-  const form = useForm<{ code: string; password: string; confirm: string }>({
-    initialValues: { code: devCode ?? "", password: "", confirm: "" },
+  const form = useForm<{ password: string; confirm: string }>({
+    initialValues: { password: "", confirm: "" },
     validate: (values) => {
       const errors: Record<string, string> = {};
-      if (!/^\d{6}$/.test(values.code.trim())) {
-        errors.code = "Zadejte 6místný kód";
+      if (values.password.length < 12) {
+        errors.password = "Heslo musí mít alespoň 12 znaků";
       }
-      if (values.password.length < 8) {
-        errors.password = "Heslo musí mít alespoň 8 znaků";
+      if (!/[A-Z]/.test(values.password)) {
+        errors.password = "Heslo musí obsahovat velké písmeno";
+      }
+      if (!/[a-z]/.test(values.password)) {
+        errors.password = "Heslo musí obsahovat malé písmeno";
+      }
+      if (!/\d/.test(values.password)) {
+        errors.password = "Heslo musí obsahovat číslici";
       }
       if (values.confirm !== values.password) {
         errors.confirm = "Hesla se neshodují";
       }
       return errors;
     },
-    onSubmit: async ({ code, password }) => {
-      const res = await fetch("/api/auth/reset", {
+    onSubmit: async ({ password }) => {
+      const res = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, code: code.trim(), newPassword: password }),
+        body: JSON.stringify({ newPassword: password }),
       });
       const json = (await res.json()) as { ok: boolean; error?: { message: string } };
       if (!json.ok) {
@@ -51,28 +51,13 @@ export function ResetPasswordForm({
       }}
       style={{ display: "flex", flexDirection: "column", gap: 12 }}
     >
-      <Field label="Ověřovací kód" error={form.errors["code"]} htmlFor="reset-code">
-        <Input
-          id="reset-code"
-          type="text"
-          inputMode="numeric"
-          maxLength={6}
-          value={form.values.code}
-          onChange={(e) => form.setValue("code", e.target.value.replace(/\D/g, ""))}
-          placeholder="123456"
-          autoFocus
-          autoComplete="one-time-code"
-          disabled={form.submitting}
-          style={{ letterSpacing: "0.15em", fontVariantNumeric: "tabular-nums" }}
-        />
-      </Field>
       <Field label="Nové heslo" error={form.errors["password"]} htmlFor="reset-password">
         <Input
           id="reset-password"
           type="password"
           value={form.values.password}
           onChange={(e) => form.setValue("password", e.target.value)}
-          placeholder="Minimálně 8 znaků"
+          placeholder="Minimálně 12 znaků (velké, malé písmeno, číslice)"
           autoComplete="new-password"
           disabled={form.submitting}
         />

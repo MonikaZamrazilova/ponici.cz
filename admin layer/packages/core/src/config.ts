@@ -36,44 +36,20 @@ export const coreModulesSchema = z.preprocess(
   z.array(z.enum(CORE_MODULES)).optional()
 );
 
-const emailsListSchema = z.preprocess(
-  (val) =>
-    typeof val === "string"
-      ? val
-          .split(",")
-          .map((s) => s.trim().toLowerCase())
-          .filter(Boolean)
-      : val,
-  z.array(z.string().email()).optional()
-);
-
 export const adminEnvSchema = z.object({
   /** Heslo role admin (Owner/Admin) — bez žádného hesla je admin vypnutý. */
   ADMIN_PASSWORD: z.string().optional(),
   /** Volitelná hesla dalších rolí. */
   ADMIN_EDITOR_PASSWORD: z.string().optional(),
   ADMIN_VIEWER_PASSWORD: z.string().optional(),
-  /** E-maily, které smějí žádat obnovu hesla (čárkami). Cíl reset kódu. */
-  ADMIN_RESET_EMAILS: emailsListSchema,
-  /** EmailJS (serverové odeslání kódu) — bez ID jen MOCK/dev log. */
-  EMAILJS_SERVICE_ID: z.string().optional(),
-  EMAILJS_TEMPLATE_ID: z.string().optional(),
-  EMAILJS_PUBLIC_KEY: z.string().optional(),
-  EMAILJS_PRIVATE_KEY: z.string().optional(),
   /** URL webu pro „Vstup do edit web" (single-origin = /, jinak plná URL). */
   ADMIN_WEB_URL: z.string().optional(),
-  /** TTL kódu pro obnovení hesla (ms; výchozí 15 minut). */
-  ADMIN_RESET_CODE_TTL_MS: numberSchema,
-  /** Maximální počet špatných pokusů o zadání kódu (výchozí 5). */
-  ADMIN_RESET_MAX_ATTEMPTS: numberSchema,
   /** Zapnuté core moduly (čárkami). Výchozí: všechny. */
   ADMIN_MODULES: coreModulesSchema,
   /** TTL session v ms (výchozí 7 dní). */
   ADMIN_SESSION_TTL_MS: numberSchema,
   /** Aktivní projekty (čárkami). Prázdné = všechny registrované. */
   ADMIN_PROJECTS: projectsListSchema,
-  /** Kořen adresáře s daty projektů: <root>/<projectId>/... */
-  ADMIN_PROJECTS_ROOT: z.string().optional(),
   /** Volitelné deploy webhooky per projekt: {"<id>": "https://…"} */
   ADMIN_PROJECT_HOOK_URLS: hookUrlsSchema,
 });

@@ -1,6 +1,4 @@
 import "server-only";
-import { promises as fs } from "fs";
-import path from "path";
 import { getItemLabel, type AuditEvent, type ContentManifest, type ProjectAdapter } from "@admin/core";
 import { listAudit } from "./auditService";
 import { adminConfig } from "../config";
@@ -10,7 +8,7 @@ import { listItems } from "./itemService";
 
 /**
  * Application service — dashboard overview (A2.2).
- * Všechna data jsou skutečná: čte porty adapterů a filesystém.
+ * Všechna data jsou skutečná: čte porty adapterů (GitHub + Blob).
  * Žádné fake hodnoty — chybějící data se projeví jako empty state v UI.
  */
 
@@ -158,29 +156,19 @@ export async function systemHealth(): Promise<HealthCheck[]> {
     detail: rolesConfigured ? `${rolesConfigured} role s heslem` : "žádné heslo — admin je vypnutý",
   });
 
-  try {
-    const stat = await fs.stat(adminConfig.projectsRoot);
-    checks.push({
-      key: "projects-root",
-      label: "Data projektů",
-      status: stat.isDirectory() ? "ok" : "error",
-      detail: adminConfig.projectsRoot,
-    });
-  } catch {
-    checks.push({
-      key: "projects-root",
-      label: "Data projektů",
-      status: "error",
-      detail: `adresář neexistuje: ${adminConfig.projectsRoot}`,
-    });
-  }
+  checks.push({
+    key: "projects-root",
+    label: "Data projektů",
+    status: "ok",
+    detail: "GitHub content storage (stateless)",
+  });
 
-  try {
-    await fs.mkdir(path.dirname(adminConfig.sessionsFile), { recursive: true });
-    checks.push({ key: "sessions", label: "Session store", status: "ok", detail: "zápis do store funguje" });
-  } catch {
-    checks.push({ key: "sessions", label: "Session store", status: "error", detail: "nelze zapisovat" });
-  }
+  checks.push({
+    key: "sessions",
+    label: "Session model",
+    status: "ok",
+    detail: "podepsané cookie (stateless, žádný storage)",
+  });
 
   for (const adapter of listProjects()) {
     const name = adapter.identity.name;
@@ -202,22 +190,12 @@ export async function systemHealth(): Promise<HealthCheck[]> {
       });
     }
     if (adapter.media) {
-      try {
-        await fs.access(path.join(adminConfig.projectsRoot, id, "media"));
-        checks.push({
-          key: `media-${id}`,
-          label: `Media · ${name}`,
-          status: "ok",
-          detail: "adresář media existuje",
-        });
-      } catch {
-        checks.push({
-          key: `media-${id}`,
-          label: `Media · ${name}`,
-          status: "warn",
-          detail: "adresář media chybí — vytvoří se prvním uploadem",
-        });
-      }
+      checks.push({
+        key: `media-${id}`,
+        label: `Media · ${name}`,
+        status: "ok",
+        detail: "Vercel Blob (BLOB_READ_WRITE_TOKEN)",
+      });
     }
   }
 

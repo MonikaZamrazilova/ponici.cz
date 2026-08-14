@@ -34,7 +34,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // obnova hesla — vstupní body mimo auth (kód + e-mail)
-  if (pathname === "/api/auth/forgot" || pathname === "/api/auth/reset") {
+  if (
+    pathname === "/api/auth/request-reset" ||
+    pathname === "/api/auth/verify-reset-code" ||
+    pathname === "/api/auth/reset-password"
+  ) {
     return NextResponse.next();
   }
 
@@ -57,6 +61,13 @@ export async function middleware(request: NextRequest) {
   const isApi = pathname.startsWith("/api/");
 
   if (!authed) {
+    // Edge middleware vidí jen env hesla. Platná session s runtime
+    // override heslem (reset flow) edge neověří — s cookie propustíme
+    // dál a plnou validaci nechá server komponentám (layout/API),
+    // které čtou i in-memory override. Bez cookie edge gate zůstává.
+    if (token) {
+      return NextResponse.next();
+    }
     if (isApi) {
       return NextResponse.json(
         { ok: false, error: { message: "Nepřihlášeno — session chybí, vypršela nebo je neplatná" } },
@@ -66,9 +77,7 @@ export async function middleware(request: NextRequest) {
     if (pathname === "/login" || pathname.startsWith("/login/")) {
       return NextResponse.next();
     }
-    // platná cookie, ale vypršela/neplatná → explicitní hláška
-    const target = token ? "/login?expired=1" : "/login";
-    return NextResponse.redirect(new URL(target, request.url));
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   if (pathname === "/login") {

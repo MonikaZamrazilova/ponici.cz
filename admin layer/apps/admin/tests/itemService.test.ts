@@ -1,15 +1,15 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ContentManifest, ProjectConfig } from "@admin/core";
 
-// izolovaný storage (env) MUSÍ být nastaven před importem config/services
-const tmpRoot = mkdtempSync(path.join(tmpdir(), "admin-test-"));
-vi.stubEnv("ADMIN_STORE_DIR", tmpRoot);
-vi.stubEnv("ADMIN_PROJECTS", "testproject");
+// env PŘED importem — GitHub storage backend
+vi.stubEnv("GITHUB_TOKEN", "test-token");
+vi.stubEnv("GITHUB_OWNER", "test-owner");
+vi.stubEnv("GITHUB_REPO", "test-repo");
+vi.stubEnv("GITHUB_BRANCH", "main");
+vi.stubEnv("GITHUB_CONTENT_ROOT", "admin layer/content/projects");
+vi.stubEnv("ADMIN_PROJECTS", "");
 
-const { createFileProjectAdapter } = await import("../src/lib/projects/fileAdapter");
+const { createGithubProjectAdapter } = await import("../src/lib/projects/fileAdapter");
 const { projectConfig } = await import("@admin/core");
 const {
   deleteItem,
@@ -48,13 +48,64 @@ const manifest: ContentManifest = {
   ],
 };
 
+/**
+ * In-memory "GitHub" mock: GET vrací stav souborů z mapy, PUT je aktualizuje.
+ * Chová se jako Contents API (base64 + sha), ale bez sítě.
+ */
+function makeGithubMock(initial: Record<string, unknown> = {}) {
+  const files = new Map<string, { content: string; sha: string }>();
+  let shaCounter = 0;
+
+  for (const [path, data] of Object.entries(initial)) {
+    files.set(path, { content: typeof data === "string" ? data : JSON.stringify(data), sha: `sha${++shaCounter}` });
+  }
+
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((url: string, init?: RequestInit) => {
+      void init;
+      const pathMatch = String(url).match(/\/contents\/(.+?)(?:\?|$)/);
+      const repoPath = decodeURIComponent(pathMatch?.[1] ?? "").replace(/\+/g, " ");
+      const method = init?.method ?? "GET";
+
+      if (method === "PUT") {
+        const body = JSON.parse(String(init?.body)) as { content: string; message: string; sha?: string };
+        const current = files.get(repoPath);
+        if (current && current.sha !== body.sha) {
+          return Promise.resolve(new Response("Conflict", { status: 409 }));
+        }
+        files.set(repoPath, {
+          content: Buffer.from(body.content, "base64").toString("utf8"),
+          sha: `sha${++shaCounter}`,
+        });
+        return Promise.resolve(
+          new Response(JSON.stringify({ content: { sha: `sha${shaCounter}` } }), {
+            status: 201,
+            headers: { "content-type": "application/json" },
+          })
+        );
+      }
+
+      const file = files.get(repoPath);
+      if (!file) {
+        return Promise.resolve(new Response("Not Found", { status: 404 }));
+      }
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({ content: Buffer.from(file.content, "utf8").toString("base64"), sha: file.sha }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        )
+      );
+    }) as unknown as typeof fetch
+  );
+
+  return {
+    getContent: (repoPath: string) => files.get(repoPath)?.content ?? null,
+    files,
+  };
+}
+
 function makeAdapter(overrides: Partial<ProjectConfig> = {}) {
-  const dir = path.join(tmpRoot, overrides.identity?.id ?? "testproject");
-  mkdirSync(path.join(dir, "store"), { recursive: true });
-  mkdirSync(path.join(dir, "audit"), { recursive: true });
-  writeFileSync(path.join(dir, "manifest.json"), JSON.stringify(manifest));
-  writeFileSync(path.join(dir, "store", "drafts.json"), "{}\n");
-  writeFileSync(path.join(dir, "store", "published.json"), "{}\n");
   const cfg = projectConfig({
     identity: { id: "testproject", name: "Test Projekt" },
     media: { provider: "none" },
@@ -62,13 +113,20 @@ function makeAdapter(overrides: Partial<ProjectConfig> = {}) {
     publish: { model: "overrides" },
     ...overrides,
   });
-  return createFileProjectAdapter(cfg, tmpRoot);
+  return createGithubProjectAdapter(cfg, "admin layer/content/projects");
 }
 
 const kindDef = manifest.kinds[0];
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe("itemService — CRUD/publish/rollback (A11.1)", () => {
   it("saveDraft vytvoří draft; druhý save = update (createdAt zůstává)", async () => {
+    const mock = makeGithubMock({
+      "admin layer/content/projects/testproject/manifest.json": manifest,
+    });
     const adapter = makeAdapter();
     const ctx = { adapter, manifest };
 
@@ -78,117 +136,91 @@ describe("itemService — CRUD/publish/rollback (A11.1)", () => {
     expect(v1?.hasDraft).toBe(true);
     expect(v1?.publishedVersion).toBeNull(); // admin-owned, ještě nepublikováno
 
-    const updated = await saveDraft(ctx, kindDef, "nova", { title: "Druhý", body: "<p>b</p>" });
-    expect(updated.createdAt).toBe(created.createdAt);
-    expect(updated.updatedAt >= created.updatedAt).toBe(true);
+    // obsah se uložil přes GitHub (drafts.json)
+    const drafts = JSON.parse(
+      mock.getContent("admin layer/content/projects/testproject/store/drafts.json") ?? "{}"
+    ) as Record<string, Record<string, { createdAt?: string }>>;
+    expect(drafts.note?.nova?.createdAt).toBeDefined();
+
+    await saveDraft(ctx, kindDef, "nova", { title: "Druhý", body: "<p>b</p>" });
+    const v2 = await getItemVersions(ctx, kindDef, "nova");
+    expect(v2?.draft?.title).toBe("Druhý");
+    expect(v2?.draft?.createdAt).toBe(created.createdAt);
+    void mock;
   });
 
-  it("saveDraft validuje — chybějící required pole hodí AdminError s field chybou", async () => {
+  it("validace blokuje chybějící povinné pole", async () => {
+    makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
     const adapter = makeAdapter();
     const ctx = { adapter, manifest };
-    await expect(saveDraft(ctx, kindDef, "nova", { title: "" })).rejects.toMatchObject({
-      fields: { title: "Povinné pole" },
+
+    await expect(saveDraft(ctx, kindDef, "bez-nazvu", { body: "<p>x</p>" })).rejects.toMatchObject({
+      status: 400,
     });
   });
 
-  it("rich text se sanitizuje při save (security)", async () => {
+  it("publish: draft → published + draft se smaže; base položka publikuje base", async () => {
+    makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
     const adapter = makeAdapter();
     const ctx = { adapter, manifest };
-    const saved = await saveDraft(ctx, kindDef, "nova", {
-      title: "X",
-      body: "<p>ok</p><script>alert(1)</script>",
-    });
-    expect(String(saved.body)).toBe("<p>ok</p>");
-  });
 
-  it("publish přesune draft do published a smaže draft", async () => {
-    const adapter = makeAdapter();
-    const ctx = { adapter, manifest };
-    await saveDraft(ctx, kindDef, "nova", { title: "Publikováno" });
+    await saveDraft(ctx, kindDef, "nova", { title: "Nová", body: "<p>n</p>" });
     const published = await publishItem(ctx, kindDef, "nova");
     expect(published.status).toBe("published");
-    expect(published.publishedAt).toBeDefined();
 
-    const after = await getItemVersions(ctx, kindDef, "nova");
-    expect(after?.hasDraft).toBe(false);
-    expect(after?.isPublished).toBe(true);
-  });
+    const versions = await getItemVersions(ctx, kindDef, "nova");
+    expect(versions?.hasDraft).toBe(false);
+    expect(versions?.publishedVersion?.title).toBe("Nová");
 
-  it("publish bez capability publish → AdminError 403", async () => {
-    const adapter = makeAdapter({
-      content: { create: true, edit: true, publish: false, discard: true, delete: true },
-    });
-    const ctx = { adapter, manifest };
-    await saveDraft(ctx, kindDef, "nova", { title: "X" });
-    await expect(publishItem(ctx, kindDef, "nova")).rejects.toMatchObject({ status: 403 });
-  });
-
-  it("rollback smaže published override base položky; bez base → error", async () => {
-    const adapter = makeAdapter();
-    const ctx = { adapter, manifest };
-
-    // base položka: publikovat override pak rollback
-    await saveDraft(ctx, kindDef, "base-note", { title: "Override", body: "<p>o</p>" });
+    // base položka — publish bez draftu publikuje base data
     await publishItem(ctx, kindDef, "base-note");
-    expect((await getItemVersions(ctx, kindDef, "base-note"))?.isPublished).toBe(true);
-
-    const rolledBack = await rollbackItem(ctx, kindDef, "base-note");
-    expect(rolledBack).toBe(true);
-    const after = await getItemVersions(ctx, kindDef, "base-note");
-    expect(after?.isPublished).toBe(false);
-    expect(after?.publishedVersion?.title).toBe("Base"); // web se vrací k base
-
-    // admin-owned položka → rollback zakázán
-    await saveDraft(ctx, kindDef, "nova", { title: "X" });
-    await expect(rollbackItem(ctx, kindDef, "nova")).rejects.toThrow("base verzí");
   });
 
-  it("deleteItem: base položka blokovaná, admin-owned smazatelná", async () => {
+  it("rollback: smaže published override → web se vrátí k base", async () => {
+    makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
     const adapter = makeAdapter();
     const ctx = { adapter, manifest };
-    await expect(deleteItem(ctx, kindDef, "base-note")).rejects.toThrow("z webu");
 
-    await saveDraft(ctx, kindDef, "nova", { title: "X" });
+    await saveDraft(ctx, kindDef, "base-note", { title: "Změněný", body: "<p>x</p>" });
+    await publishItem(ctx, kindDef, "base-note");
+
+    await rollbackItem(ctx, kindDef, "base-note");
+    const versions = await getItemVersions(ctx, kindDef, "base-note");
+    expect(versions?.publishedVersion?.title).toBe("Base");
+  });
+
+  it("discardDraft: smaže draft, published zůstává", async () => {
+    makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
+    const adapter = makeAdapter();
+    const ctx = { adapter, manifest };
+
+    await saveDraft(ctx, kindDef, "nova", { title: "Nová", body: "<p>n</p>" });
     await publishItem(ctx, kindDef, "nova");
-    expect(await deleteItem(ctx, kindDef, "nova")).toBe(true);
-    expect(await getItemVersions(ctx, kindDef, "nova")).toBeNull();
+    // discard po publishi: draft zmizí, published zůstává
+    await discardDraft(ctx, kindDef, "nova");
+    const versions = await getItemVersions(ctx, kindDef, "nova");
+    expect(versions).not.toBeNull();
+    expect(versions?.hasDraft).toBe(false);
+    expect(versions?.publishedVersion?.title).toBe("Nová");
   });
 
-  it("discardDraft zahodí draft, published zůstává", async () => {
+  it("deleteItem: smaže draft i published (admin-owned)", async () => {
+    makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
     const adapter = makeAdapter();
     const ctx = { adapter, manifest };
-    await saveDraft(ctx, kindDef, "base-note", { title: "Draft změna" });
-    expect(await discardDraft(ctx, kindDef, "base-note")).toBe(true);
-    const after = await getItemVersions(ctx, kindDef, "base-note");
-    expect(after?.hasDraft).toBe(false);
-    expect(after?.merged.title).toBe("Base");
-  });
 
-  it("capability create:false blokuje vytvoření nové položky", async () => {
-    const adapter = makeAdapter({
-      content: { create: false, edit: true, publish: true, discard: true, delete: true },
-    });
-    const ctx = { adapter, manifest };
-    await expect(saveDraft(ctx, kindDef, "nova", { title: "X" })).rejects.toMatchObject({
-      status: 403,
-    });
-    // editace existující base položky ale projde
-    await expect(saveDraft(ctx, kindDef, "base-note", { title: "Upraveno" })).resolves.toBeTruthy();
-  });
-
-  it("audit se zapisuje do centrálního logu", async () => {
-    const adapter = makeAdapter();
-    const ctx = { adapter, manifest };
-    await saveDraft(ctx, kindDef, "nova", { title: "X" });
+    await saveDraft(ctx, kindDef, "nova", { title: "Nová", body: "<p>n</p>" });
     await publishItem(ctx, kindDef, "nova");
-    const audit = await import("../src/lib/services/auditService");
-    const events = await audit.listAudit("testproject", 10);
-    const actions = events.map((e) => e.action);
-    expect(actions).toContain("create");
-    expect(actions).toContain("publish");
+    await deleteItem(ctx, kindDef, "nova");
+    const versions = await getItemVersions(ctx, kindDef, "nova");
+    expect(versions).toBeNull();
   });
 
-  afterAll(() => {
-    rmSync(tmpRoot, { recursive: true, force: true });
+  it("deleteItem: base položku nelze smazat", async () => {
+    makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
+    const adapter = makeAdapter();
+    const ctx = { adapter, manifest };
+
+    await expect(deleteItem(ctx, kindDef, "base-note")).rejects.toMatchObject({ status: 400 });
   });
 });

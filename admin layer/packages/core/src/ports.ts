@@ -23,6 +23,7 @@ export interface AuditStorePort {
 export interface MediaAsset {
   id: string;
   name: string;
+  url: string;
   mime: string;
   size: number;
   createdAt: string;

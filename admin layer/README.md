@@ -118,10 +118,10 @@ To je celé. Nové pole/typ = 3 místa (FieldSchema + zodFromField + FieldInput)
 | `ADMIN_EDITOR_PASSWORD` | volitelné heslo role editor | — |
 | `ADMIN_VIEWER_PASSWORD` | volitelné heslo role viewer (read-only) | — |
 | `ADMIN_PROJECTS` | aktivní projekty (id z registry, čárkami) | všechny registrované |
-| `ADMIN_PROJECTS_ROOT` | kořen dat projektů | `<workspace>/content/projects` |
 | `ADMIN_PROJECT_HOOK_URLS` | deploy webhooky per projekt (JSON) | — |
 
-Struktura dat projektu: `<root>/<projectId>/{manifest.json, store/{drafts,published}.json, audit/audit.jsonl, media/}`.
+Struktura dat projektu (GitHub): `<GITHUB_CONTENT_ROOT>/<projectId>/{manifest.json, store/{drafts,published}.json}`,
+media → Vercel Blob, audit → `<GITHUB_AUDIT_PATH>` (JSONL v repu).
 
 ## Auth & session (A1.1)
 
@@ -291,13 +291,15 @@ Každá událost: `actor` (uživatel/role), `projectId` (`core` = globální), `
 npm ci
 npm run build -w admin          # produkční build adminu
 
-# 2. env (apps/admin/.env v produkci — viz .env.example)
+# 2. env (Vercel dashboard — viz .env.example)
 #    ADMIN_PASSWORD / ADMIN_EDITOR_PASSWORD / ADMIN_VIEWER_PASSWORD
-#    ADMIN_PROJECTS, ADMIN_PROJECTS_ROOT, ADMIN_PROJECT_HOOK_URLS (JSON)
-#    ADMIN_MODULES (volitelně), ADMIN_SESSION_TTL_MS (volitelně)
+#    ADMIN_PROJECTS, ADMIN_PROJECT_HOOK_URLS (JSON)
+#    GITHUB_TOKEN/OWNER/REPO, BLOB_READ_WRITE_TOKEN
+#    ADMIN_EMAIL, WEB3FORMS_ACCESS_KEY, RESET_TOKEN_SECRET
+#    VERCEL_TOKEN, VERCEL_PROJECT_ID
 
 # 3. start
-npm run start -w admin           # next start; nebo docker + PM2/systemd
+npm run start -w admin           # next start (Vercel serverless)
 ```
 
 - **Health checks**: `GET /api/health` (veřejný, bez secrets) — `200 ok` / `503 degraded`
@@ -344,3 +346,147 @@ npm run dev               # admin na :3000, demo-web na :3100
 npm run typecheck
 npm run build
 ```
+
+## Password Recovery Architecture
+
+Vercel-native obnova hesla — žádný filesystem, žádná databáze, žádný SMTP,
+žádný externí backend server. Vše běží v Next.js API routes + env.
+
+### Flow (3 kroky)
+
+```
+1. POST /api/auth/request-reset   { email }
+   → 6místný kód (crypto.randomInt) → hash (SHA-256)
+   → HMAC reset token { email, codeHash, expiresAt } → HttpOnly cookie admin_reset_token (TTL 10 min)
+   → e-mail přes Web3Forms (sendPasswordResetCode)
+   → VŽDY stejná odpověď (anti-enumeration)
+
+2. POST /api/auth/verify-reset-code { code }
+   → načte admin_reset_token cookie → ověří podpis + expiraci
+   → porovná hash kódu → verified token → HttpOnly cookie admin_reset_verified (TTL 10 min)
+
+3. POST /api/auth/reset-password { newPassword }
+   → password policy (12+ znaků, velké, malé, číslice)
+   → ověří admin_reset_verified cookie
+   → updateAdminPasswordOnVercel() — Vercel env ADMIN_PASSWORD (přežije cold start)
+   → in-memory override (okamžitá funkčnost)
+   → smazání reset cookies → staré session cookies automaticky neplatné
+```
+
+### Proč žádná databáze / storage
+
+Každý krok je **stateless**:
+- reset kód → **hash v HMAC tokenu** (plaintext nikdy neleží nikde)
+- expirace → **v podpisu tokenu** (nelze prodloužit)
+- rate limiting → **podepsaný timestamp token v cookie** (nelze padělat)
+- session → **HMAC signed cookie** (payload { sid, expiresAt, role })
+
+Tokeny jsou `base64url(payload) + "." + HMAC-SHA256(payload)` — klíč
+z `RESET_TOKEN_SECRET` (fallback pro dev: derivace z `ADMIN_PASSWORD`).
+
+### Proč HMAC invaliduje sessions při změně hesla
+
+Session cookie je podepsaná HMAC klíčem **odvozeným z hesla role**
+(`sha256("admin-session-key:" + password)`). Po změně `ADMIN_PASSWORD`
+se klíč změní → **každá stará cookie má neplatný podpis** → globální
+odvolání bez jakéhokoli storage. To je důvod, proč session NEPOUŽÍVÁ
+samostatný secret: změna hesla = okamžitá revokace.
+
+### Proč Web3Forms místo SMTP
+
+- žádný mail server, žádné credentials mimo env, žádné queue
+- jediná závislost: `WEB3FORMS_ACCESS_KEY` (veřejný klíč formuláře)
+- POST na `https://api.web3forms.com/submit` — funguje z Vercel serverless
+- MOCK režim (bez klíče): kód jen do logu, v dev režimu i do odpovědi
+
+### Environment variables
+
+| Proměnná | Význam | Povinná |
+|---|---|---|
+| `ADMIN_PASSWORD` | heslo admin role (session klíč, Vercel update) | ano |
+| `ADMIN_EMAIL` | e-mail majitele — jediný příjemce reset kódů | ano |
+| `WEB3FORMS_ACCESS_KEY` | Web3Forms access key pro e-mail delivery | ano (bez ní MOCK) |
+| `RESET_TOKEN_SECRET` | HMAC klíč pro reset/verified tokeny | production ano, dev fallback |
+| `SESSION_SECRET_SOURCE` | zdroj session klíče — `password` (default) | ne |
+| `VERCEL_TOKEN` / `VERCEL_PROJECT_ID` / `VERCEL_TEAM_ID` | Vercel API — trvalá změna env hesla | ano pro persistence |
+
+### Bezpečnostní kompromisy
+
+| Oblast | Kompromis | Mitigace |
+|---|---|---|
+| **Rate limiting** | token v cookie (klient může cookie smazat) | IP + vícenásobné pokusy limitované; útoku na cizí účet brání anti-enumeration |
+| **Odvolání jedné session** | nelze bez storage — logout jen smaže cookie | krátký TTL (7 dní default), změna hesla = globální revokace |
+| **Web3Forms** | třetí strana vidí kód (doručení e-mailem) | kód platí 10 min, 1 použití, rate limit verify 5/10 min |
+| **MOCK režim** | bez WEB3FORMS_ACCESS_KEY se kód loguje | jen server log; v produkci devCode nikdy není v odpovědi |
+| **Reset token v cookie** | HttpOnly cookie (CSRF chráněno SameSite=Lax) | verify i reset vyžadují kód z e-mailu |
+
+### Security checklist (ověřeno)
+
+- [x] žádný `node:fs` v auth/reset systému
+- [x] žádný SMTP
+- [x] žádné plaintext secrets v repozitáři (jen env)
+- [x] žádné plaintext reset kódy (vždy SHA-256 hash v tokenu)
+- [x] všechny cookies HttpOnly + Secure + SameSite=Lax
+- [x] Vercel serverless kompatibilní (stateless, WebCrypto edge-safe)
+- [x] anti-enumeration (request-reset vždy stejná odpověď)
+- [x] password policy server-side (12+, velké, malé, číslice)
+
+## Vercel Native Architecture
+
+100% cloud storage — žádný filesystem v runtime aplikace (0 × `node:fs`
+v `src/`). Vše běží v Vercel Serverless Functions + cloud službách.
+
+### Proč není použit filesystem
+
+Vercel serverless má read-only filesystem (writable jen `/tmp`, který se
+nesdílí mezi instancemi a ztrácí se při cold startu). Jakýkoli lokální
+soubor by byl: (a) nedostupný napříč instancemi, (b) ztracený při studeném
+startu, (c) nekonzistentní. Proto je každá vrstva storage v cloudu:
+
+| Vrstva | Cloud backend | Env |
+|---|---|---|
+| Obsah (manifest, drafts, published) | GitHub Contents API | `GITHUB_TOKEN/OWNER/REPO/BRANCH`, `GITHUB_CONTENT_ROOT` |
+| Audit log (JSONL) | GitHub Contents API (append) | `GITHUB_AUDIT_PATH` |
+| Media (soubory) | **Vercel Blob** | `BLOB_READ_WRITE_TOKEN` |
+| Session | podepsaná cookie (stateless) | — |
+| Heslo | env (`ADMIN_PASSWORD`) + Vercel API update | `VERCEL_TOKEN/PROJECT_ID` |
+| Reset kódy | HMAC token v cookie (stateless) | `RESET_TOKEN_SECRET` |
+| E-mail | Web3Forms | `WEB3FORMS_ACCESS_KEY`, `ADMIN_EMAIL` |
+
+### Jak funguje Blob storage (media)
+
+```
+Admin UI → POST /api/projects/[id]/media (permission media:write)
+         → mediaService (validace MIME + size limit z capability)
+         → blobMediaStore (Vercel Blob, @vercel/blob)
+         → veřejná URL (náhodný UUID — nedohledatelné)
+```
+
+- `save` → `put()` s `addRandomSuffix: false`, id = UUID, přípona z MIME
+- `get` → `list()` najde asset podle id, data se stáhnou z URL
+- `remove` → `del()` podle URL
+- metadata (id, url, size, type, uploadedAt) jsou v Blob objektu — žádná DB
+- validace MIME + velikosti zůstává v `mediaService` (capability projektu)
+
+### Jak funguje audit append
+
+Každá událost = jeden JSONL řádek commitnutý do repozitáře (GitHub
+Contents API: GET → append → PUT se `sha`). Konflikt 409 se řeší retry.
+Trade-off: 2 API volání / událost (rate limit 5000 req/h s tokenem).
+Audit NIKDY neobsahuje hesla, tokeny ani reset kódy; selhání auditu
+nesmí shodit hlavní akci (volající používají `.catch(() => {})`).
+
+### Jak funguje stateless auth
+
+- session = HMAC podepsaná cookie `{ sid, expiresAt, role }`
+- reset kód = SHA-256 hash v HMAC tokenu (cookie)
+- změna hesla = nový HMAC klíč (derivovaný z hesla) → okamžitá revokace
+  všech starých session bez jakéhokoli storage
+
+### Deployment requirements (Vercel)
+
+Admin je samostatná Next.js aplikace v `admin layer/`:
+- Root Directory: `admin layer`
+- Build: `npm run build -w admin`, Start: `npm run start -w admin`
+- Env: viz .env.example — server-only, nikdy do client bundle
+- Vercel Blob Store: vytvořit v dashboardu → `BLOB_READ_WRITE_TOKEN`

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Badge, Card, tokens } from "@admin/ui";
-import { adminConfig } from "@/lib/config";
+import { isResetEnabled } from "@/lib/services/passwordResetService";
 import { ForgotPasswordForm } from "@/components/ForgotPasswordForm";
 
 export const dynamic = "force-dynamic";
 
 export default function ForgotPasswordPage() {
-  const enabled = adminConfig.resetEmails.length > 0;
+  const enabled = isResetEnabled();
 
   return (
     <div
@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
               color: tokens.colors.warning,
             }}
           >
-            Obnova hesla není nastavená — chybí ADMIN_RESET_EMAILS v konfiguraci.
+            Obnova hesla není nastavená — chybí ADMIN_EMAIL v konfiguraci.
           </div>
         )}
         <ForgotPasswordForm />

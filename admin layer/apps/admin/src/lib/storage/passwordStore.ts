@@ -1,43 +1,35 @@
-import { promises as fs } from "fs";
 import type { Role } from "@admin/core";
 import { adminConfig } from "../config";
-import { readJson, writeJson } from "./fsJson";
 
 /**
- * Runtime override hesel (gitignored) — umožňuje změnit heslo admin role
- * bez editace env proměnných (flow "zapomenuté heslo").
+ * Hesla rolí — serverless-safe (žádný filesystem, žádný secrets soubor).
  *
- * Hesla jsou uložena jako plaintext ve stejné podobě jako v .env
- * (session HMAC klíč se z nich derivuje). Soubor je chmod 600.
+ * Výchozí zdroj = env proměnné (ADMIN_PASSWORD / ADMIN_EDITOR_PASSWORD /
+ * ADMIN_VIEWER_PASSWORD). Runtime změna hesla (reset flow) ukládá override
+ * do paměti instance — funguje až do studeného startu; v produkci (Vercel)
+ * je env jediný trvalý zdroj (změna hesla = nový deploy s novou env).
+ *
+ * Všechny metody jsou async kvůli stejnému port rozhraní jako předtím.
  */
 
-interface PasswordFile {
-  [role: string]: string | undefined;
-}
+/** Runtime override (reset flow) — ztrácí se při studeném startu. */
+const memoryOverride = new Map<Role, string>();
 
 export function passwordStore() {
-  const file = adminConfig.passwordsFile;
-
-  async function load(): Promise<PasswordFile> {
-    return readJson<PasswordFile>(file, {});
-  }
-
   return {
-    /** Heslo role z override store (null, pokud není nastaveno). */
+    /** Heslo role: runtime override má přednost, jinak env. */
     async get(role: Role): Promise<string | null> {
-      return (await load())[role] ?? null;
+      const value = memoryOverride.get(role) ?? adminConfig.passwords[role];
+      return value ? value : null;
     },
 
-    /** Nastaví/smaže override heslo role. */
+    /** Nastaví/smaže runtime override (v paměti, žádný fs). */
     async set(role: Role, plaintext: string): Promise<void> {
-      const data = await load();
       if (plaintext) {
-        data[role] = plaintext;
+        memoryOverride.set(role, plaintext);
       } else {
-        delete data[role];
+        memoryOverride.delete(role);
       }
-      await writeJson(file, data);
-      await fs.chmod(file, 0o600).catch(() => {});
     },
   };
 }

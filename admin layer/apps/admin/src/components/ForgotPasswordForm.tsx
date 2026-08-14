@@ -19,36 +19,37 @@ export function ForgotPasswordForm() {
       return {};
     },
     onSubmit: async ({ email }) => {
-      const res = await fetch("/api/auth/forgot", {
+      const res = await fetch("/api/auth/request-reset", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email }),
       });
       const json = (await res.json()) as {
         ok: boolean;
-        data?: { devCode?: string };
+        message?: string;
         error?: { message: string };
       };
       if (!json.ok) {
         return { ok: false, message: json.error?.message ?? "Odeslání se nezdařilo" };
       }
-      if (json.data?.devCode) {
-        setDevCode(json.data.devCode);
+      const devCodeHeader = res.headers.get("x-dev-code");
+      if (devCodeHeader) {
+        setDevCode(devCodeHeader);
         return {
           ok: true,
           message: "MOCK režim — kód se neodeslal e-mailem, je zobrazen níže.",
         };
       }
-      router.push(`/login/reset?email=${encodeURIComponent(email.trim())}`);
+      router.push(`/login/verify?email=${encodeURIComponent(email.trim())}`);
       router.refresh();
-      return { ok: true, message: "Kód byl odeslán na zadaný e-mail." };
+      return { ok: true, message: json.message ?? "Kód byl odeslán na zadaný e-mail." };
     },
   });
 
-  const goToReset = () => {
+  const goToVerify = () => {
     const email = encodeURIComponent(form.values.email.trim());
-    const code = devCode ? `&devCode=${devCode}` : "";
-    router.push(`/login/reset?email=${email}${code}`);
+    const code = devCode ? `?code=${devCode}` : "";
+    router.push(`/login/verify?email=${email}${code}`);
   };
 
   return (
@@ -102,7 +103,7 @@ export function ForgotPasswordForm() {
         )}
       </div>
       {devCode ? (
-        <Button type="button" onClick={goToReset}>
+        <Button type="button" onClick={goToVerify}>
           Pokračovat k zadání kódu
         </Button>
       ) : (

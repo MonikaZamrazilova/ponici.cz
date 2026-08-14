@@ -1,7 +1,7 @@
 import "server-only";
 import { AdminError, projectConfig, type ProjectAdapter, type ProjectConfig } from "@admin/core";
 import { adminConfig } from "../config";
-import { createFileProjectAdapter } from "./fileAdapter";
+import { createProjectAdapter } from "./fileAdapter";
 
 /**
  * Registry projektů — project-specific konfigurace (A6.1).
@@ -92,7 +92,8 @@ function build(cfg: ProjectConfig): ProjectAdapter {
   const finalCfg: ProjectConfig = hookUrl
     ? { ...cfg, publish: { ...cfg.publish, hookUrl } }
     : cfg;
-  return createFileProjectAdapter(finalCfg, adminConfig.projectsRoot);
+  // 100% cloud: GitHub content storage + Vercel Blob media
+  return createProjectAdapter(finalCfg);
 }
 
 export function listProjects(): ProjectAdapter[] {

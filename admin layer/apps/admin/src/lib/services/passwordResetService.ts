@@ -3,72 +3,88 @@ import {
   AdminError,
   generateResetCode,
   hashResetCode,
-  verifyPassword,
 } from "@admin/core";
-import { adminConfig } from "../config";
-import { sendResetCodeEmail } from "../email";
+import { sendPasswordResetCode } from "./emailService";
 import { appendAudit } from "./auditService";
 import { passwordOverride } from "../storage/passwordStore";
-import { resetCodes } from "../storage/resetCodeStore";
 import { sessionStore } from "../storage/sessionStore";
-import { isRateLimited } from "../security";
+import { updateAdminPasswordOnVercel, isVercelConfigured } from "./vercelEnvService";
+import {
+  createResetToken,
+  createVerifiedToken,
+  verifyResetTokenAny,
+  verifyVerifiedToken,
+} from "../auth/resetToken";
+import { validatePassword } from "../auth/passwordPolicy";
 
 /**
- * Obnova hesla admin role e-mailem (kód).
+ * Password recovery flow (Vercel-native, 3 kroky, žádný storage):
  *
- * 1. requestReset(email, ip) — vygeneruje kód, uloží hash, pošle e-mail.
- * 2. completeReset(email, code, newPassword) — ověří kód (TTL, pokusy),
- *    uloží nové heslo jako override (gitignored) a odvolá všechny sessiony.
+ * 1. requestReset(email)      → 6místný kód → HMAC reset token (v cookie)
+ *                              → e-mail přes Web3Forms
+ * 2. verifyResetCode(code)    → ověří kód proti tokenu → verified token
+ *                              → reset_verified cookie
+ * 3. resetPassword(pw)        → validace hesla → Vercel env update
+ *                              → smazání reset cookies → session invalidace
  *
- * Návrat vždy { ok: true } i při neznámém e-mailu — neumožňuje zjistit,
- * jestli e-mail je majitelův. Rate limiting per IP (forgot i reset).
- * Dokud nejsou vyplněné EMAILJS_* proměnné (EMAILJS_SERVICE_ID,
- * EMAILJS_TEMPLATE_ID, EMAILJS_PUBLIC_KEY, EMAILJS_PRIVATE_KEY),
- * odesílání je MOCK (dev log).
+ * Žádný stav se neukládá do fs / json / memory / db — vše je v podepsaných
+ * cookies (HttpOnly, Secure, SameSite=Lax) a HMAC klíčích z env.
+ *
+ * Anti-enumeration: requestReset vrací vždy stejnou odpověď, ať e-mail
+ * existuje nebo ne.
  */
 
-const FORGOT_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
-const RESET_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };
+export const RESET_CODE_TTL_MS = 10 * 60 * 1000; // 10 minut
+export const VERIFIED_TTL_MS = 10 * 60 * 1000; // 10 minut
+
+/** E-mail majitele (jediný příjemce reset kódu). */
+export function ownerEmail(): string {
+  return process.env.ADMIN_EMAIL ?? "";
+}
 
 export function isResetEnabled(): boolean {
-  return adminConfig.resetEmails.length > 0;
+  return Boolean(ownerEmail());
 }
 
 /** Má zadaný e-mail právo žádat obnovu hesla? */
 function isOwnerEmail(email: string): boolean {
-  const normalized = email.trim().toLowerCase();
-  return adminConfig.resetEmails.includes(normalized);
+  return email.trim().toLowerCase() === ownerEmail().trim().toLowerCase();
 }
 
+/**
+ * Krok 1 — vyžádání reset kódu.
+ * Vždy vrací stejnou odpověď (anti-enumeration).
+ */
 export async function requestReset(
   email: string,
-  ip: string
-): Promise<{ ok: boolean; devCode?: string }> {
+  rateLimit: { allowed: boolean }
+): Promise<{
+  ok: boolean;
+  message: string;
+  resetToken?: string;
+  devCode?: string;
+}> {
   const normalized = email.trim().toLowerCase();
   const owner = isOwnerEmail(normalized);
 
-  if (!isResetEnabled() || !owner) {
-    // anonymní odpověď; audit jen při shodě e-mailu (majitel ví, co dělal)
-    return { ok: true };
-  }
-
-  if (isRateLimited(`forgot:${ip}`, FORGOT_LIMIT.limit, FORGOT_LIMIT.windowMs)) {
-    await appendAudit({
-      projectId: "core",
-      action: "permission",
-      entityKind: "auth",
-      entityId: "forgot",
-      summary: "Rate limit překročen — žádost o obnovu hesla",
-      details: { actor: "anonymous", email: normalized },
-    }).catch(() => {});
+  if (!rateLimit.allowed) {
     throw new AdminError("Příliš mnoho žádostí — zkuste to později", undefined, 429);
   }
 
-  const code = generateResetCode();
-  const hash = await hashResetCode(code);
-  await resetCodes.create(normalized, hash, adminConfig.resetCodeTtlMs);
+  if (!owner) {
+    // anonymní odpověď — nepotvrzujeme existenci účtu
+    return { ok: true, message: "If the account exists, a verification code has been sent." };
+  }
 
-  const sent = await sendResetCodeEmail(normalized, code);
+  const code = generateResetCode();
+  const codeHash = await hashResetCode(code);
+  const resetToken = await createResetToken(normalized, codeHash, RESET_CODE_TTL_MS);
+
+  const sent = await sendPasswordResetCode({
+    email: normalized,
+    code,
+    expiresAt: Date.now() + RESET_CODE_TTL_MS,
+  });
   if (!sent.ok) {
     throw new AdminError("Odeslání e-mailu se nezdařilo — zkuste to později", undefined, 502);
   }
@@ -77,62 +93,85 @@ export async function requestReset(
     projectId: "core",
     action: "settings",
     entityKind: "auth",
-    entityId: "forgot",
-    summary: "Vyžádáno obnovení hesla (kód odeslán e-mailem)",
-    details: { actor: "anonymous", email: normalized },
+    entityId: "reset-request",
+    summary: "Vyžádáno obnovení hesla",
+    details: { actor: "anonymous" },
   }).catch(() => {});
 
-  return { ok: true, devCode: sent.devCode };
+  return { ok: true, message: "If the account exists, a verification code has been sent.", resetToken, devCode: sent.devCode };
 }
 
-export async function completeReset(
-  email: string,
+/**
+ * Krok 2 — ověření kódu proti reset tokenu (z cookie).
+ * Při úspěchu vrací verified token (reset_verified cookie).
+ */
+export async function verifyResetCode(
   code: string,
-  newPassword: string,
-  ip: string
-): Promise<void> {
-  const normalized = email.trim().toLowerCase();
-  if (!isResetEnabled() || !isOwnerEmail(normalized)) {
-    throw new AdminError("Neplatný požadavek na obnovení hesla", undefined, 400);
-  }
-
-  if (isRateLimited(`reset:${ip}`, RESET_LIMIT.limit, RESET_LIMIT.windowMs)) {
+  resetToken: string | undefined,
+  rateLimit: { allowed: boolean }
+): Promise<{ ok: boolean; message: string; verifiedToken?: string }> {
+  if (!rateLimit.allowed) {
     throw new AdminError("Příliš mnoho pokusů — zkuste to později", undefined, 429);
   }
-
-  if (typeof newPassword !== "string" || newPassword.length < 8) {
-    throw new AdminError("Nové heslo musí mít alespoň 8 znaků", undefined, 400);
+  if (!resetToken) {
+    throw new AdminError("Chybí reset token — vyžádejte si nový kód", undefined, 400);
   }
 
-  const record = await resetCodes.get(normalized);
-  if (!record || record.expiresAt <= Date.now()) {
-    throw new AdminError("Kód vypršel — vyžádejte si nový", undefined, 400);
-  }
-  if (record.attempts >= adminConfig.resetMaxAttempts) {
-    await resetCodes.remove(normalized);
-    throw new AdminError("Příliš mnoho špatných pokusů — vyžádejte si nový kód", undefined, 400);
+  // reset token obsahuje e-mail — ověříme kód bez toho, abychom e-mail
+  // posílali znovu; e-mail z tokenu je jediný zdroj identity
+  const payload = await verifyResetTokenWithCode(resetToken, code);
+  if (!payload) {
+    throw new AdminError("Neplatný nebo vypršený kód", undefined, 400);
   }
 
+  const verifiedToken = await createVerifiedToken(payload.email, VERIFIED_TTL_MS);
+  return { ok: true, message: "Kód ověřen", verifiedToken };
+}
+
+/** Ověří podpis tokenu + porovná hash kódu. */
+async function verifyResetTokenWithCode(
+  token: string,
+  code: string
+): Promise<{ email: string } | null> {
+  const payload = await verifyResetTokenAny(token);
+  if (!payload) return null;
   const codeHash = await hashResetCode(code.trim());
-  if (codeHash !== record.hash) {
-    await resetCodes.incrementAttempts(normalized);
-    await appendAudit({
-      projectId: "core",
-      action: "permission",
-      entityKind: "auth",
-      entityId: "reset",
-      summary: "Špatný kód pro obnovení hesla",
-      details: { actor: "anonymous", email: normalized },
-    }).catch(() => {});
-    throw new AdminError("Neplatný kód", undefined, 400);
+  if (codeHash !== payload.codeHash) return null;
+  return { email: payload.email };
+}
+
+/**
+ * Krok 3 — změna hesla.
+ * Vyžaduje verified token (z reset_verified cookie).
+ */
+export async function resetPassword(
+  newPassword: string,
+  verifiedToken: string | undefined
+): Promise<{ ok: boolean; message: string }> {
+  const validation = validatePassword(newPassword);
+  if (!validation.ok) {
+    throw new AdminError(validation.errors.join("; "), undefined, 400);
   }
 
-  if (verifyPassword(newPassword, adminConfig.passwords.admin ?? "")) {
-    throw new AdminError("Nové heslo nesmí být stejné jako staré", undefined, 400);
+  if (!verifiedToken) {
+    throw new AdminError("Chybí ověření — vyžádejte si nový kód", undefined, 400);
   }
 
+  const payload = await verifyVerifiedToken(verifiedToken);
+  if (!payload) {
+    throw new AdminError("Ověření vypršelo — vyžádejte si nový kód", undefined, 400);
+  }
+
+  // a) trvalá změna přes Vercel API (pokud je nakonfigurované)
+  if (isVercelConfigured()) {
+    await updateAdminPasswordOnVercel(newPassword);
+  }
+
+  // b) in-memory override — okamžitá funkčnost + fallback bez Vercel
   await passwordOverride.set("admin", newPassword);
-  await resetCodes.remove(normalized);
+
+  // Session invalidace: HMAC klíč cookie je odvozený z hesla →
+  // změna hesla automaticky zneplatní všechny staré session cookies
   await sessionStore.revokeAll();
 
   await appendAudit({
@@ -141,6 +180,8 @@ export async function completeReset(
     entityKind: "auth",
     entityId: "reset",
     summary: "Heslo admin role změněno (obnova e-mailem)",
-    details: { email: normalized },
+    details: { email: payload.email },
   }).catch(() => {});
+
+  return { ok: true, message: "Heslo bylo změněno" };
 }

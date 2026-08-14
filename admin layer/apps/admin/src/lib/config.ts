@@ -1,10 +1,12 @@
 import "server-only";
-import path from "path";
 import { CORE_MODULES, loadAdminEnv, SESSION_TTL_MS, type CoreModule } from "@admin/core";
 
 /**
  * Core konfigurace Admin Layeru (A6.1) — env-driven, admin-owned.
  * Projekt-specific konfigurace žije v registry.ts (ProjectConfig).
+ *
+ * Žádné filesystem cesty — storage je 100% cloud:
+ * GitHub (obsah, audit) + Vercel Blob (media) + env (auth).
  */
 
 const env = loadAdminEnv();
@@ -22,49 +24,8 @@ export const adminConfig = {
     viewer: env.ADMIN_VIEWER_PASSWORD,
   },
   sessionTtlMs: env.ADMIN_SESSION_TTL_MS ?? SESSION_TTL_MS,
-  /** kořen: <root>/<projectId>/manifest.json, store/, audit/, media/ */
-  projectsRoot: path.resolve(env.ADMIN_PROJECTS_ROOT ?? "../../content/projects"),
   activeProjectIds: env.ADMIN_PROJECTS ?? [],
   hookUrls: env.ADMIN_PROJECT_HOOK_URLS ?? {},
-  /** server-side session store (nikdy do gitu) */
-  sessionsFile: path.join(
-    path.dirname(path.resolve(env.ADMIN_PROJECTS_ROOT ?? "../../content/projects")),
-    ".sessions",
-    "sessions.jsonl"
-  ),
-  /** centrální audit log (git-trackovaný, append-only) */
-  centralAuditFile: path.join(
-    path.dirname(path.resolve(env.ADMIN_PROJECTS_ROOT ?? "../../content/projects")),
-    "audit",
-    "central.jsonl"
-  ),
-  /** e-maily, které smějí žádat obnovu hesla — cíl reset kódu (volitelné; bez nich je funkce vypnutá) */
-  resetEmails: env.ADMIN_RESET_EMAILS ?? [],
-  /** EmailJS (serverové odeslání kódu) — volitelné; bez ID jen MOCK/dev log */
-  emailjs: {
-    serviceId: env.EMAILJS_SERVICE_ID,
-    templateId: env.EMAILJS_TEMPLATE_ID,
-    publicKey: env.EMAILJS_PUBLIC_KEY,
-    privateKey: env.EMAILJS_PRIVATE_KEY,
-  },
   /** URL webu pro „Vstup do edit web" (single-origin = /, jinak plná URL) */
   webUrl: env.ADMIN_WEB_URL ?? "/",
-  /** TTL a pokusy pro kód obnovy hesla */
-  resetCodeTtlMs: env.ADMIN_RESET_CODE_TTL_MS ?? 15 * 60 * 1000,
-  resetMaxAttempts: env.ADMIN_RESET_MAX_ATTEMPTS ?? 5,
-  /** runtime secrets (gitignored): override hesla + kódy obnovy */
-  secretsDir: path.join(
-    path.dirname(path.resolve(env.ADMIN_PROJECTS_ROOT ?? "../../content/projects")),
-    ".secrets"
-  ),
-  passwordsFile: path.join(
-    path.dirname(path.resolve(env.ADMIN_PROJECTS_ROOT ?? "../../content/projects")),
-    ".secrets",
-    "passwords.json"
-  ),
-  resetCodesFile: path.join(
-    path.dirname(path.resolve(env.ADMIN_PROJECTS_ROOT ?? "../../content/projects")),
-    ".secrets",
-    "reset-codes.json"
-  ),
 } as const;

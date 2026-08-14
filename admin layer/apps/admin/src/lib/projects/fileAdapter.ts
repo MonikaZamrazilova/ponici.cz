@@ -1,4 +1,3 @@
-import path from "path";
 import {
   projectConfig,
   type MediaStorePort,
@@ -8,20 +7,21 @@ import {
   type ProjectMediaCapability,
   type ProjectModules,
 } from "@admin/core";
-import { fileManifestSource } from "../adapters/manifestSource";
+import { githubManifestSource } from "../adapters/githubManifestSource";
 import { deployHook } from "../adapters/deployHook";
-import { jsonOverrideStore } from "../storage/jsonOverrideStore";
-import { mediaFsStore } from "../storage/mediaFsStore";
+import { githubOverrideStore } from "../storage/githubOverrideStore";
+import { blobMediaStore } from "../storage/mediaStore";
+import { githubContentRoot } from "../storage/githubJson";
 
 /**
- * Data adapter pro file-based projekt (A6.1).
+ * Data adapter projektu (A6.1) — 100% Vercel-native, žádný filesystem.
  *
- * Projekt = adresář <root>/<id>/ s kontraktem a runtime daty:
- *   manifest.json, store/{drafts,published}.json, audit/audit.jsonl, media/
+ * Projekt = cesta v repozitáři <contentRoot>/<id>/ s kontraktem a daty:
+ *   manifest.json, store/{drafts,published}.json (GitHub Contents API)
+ *   media → Vercel Blob (BLOB_READ_WRITE_TOKEN)
  *
  * Konfigurace je kompletně v ProjectConfig (moduly, feature flagy,
  * media provider, capability) — adapter je čistá funkce nad ní.
- * Pro jiné úložiště (HTTP, DB) implementujte stejný tvar ProjectAdapter.
  */
 
 const DEFAULT_MEDIA_CAPS: Omit<ProjectMediaCapability, "enabled"> = {
@@ -36,10 +36,10 @@ const DEFAULT_MEDIA_CAPS: Omit<ProjectMediaCapability, "enabled"> = {
   ],
 };
 
-export function createFileProjectAdapter(cfg: ProjectConfig, root: string): ProjectAdapter {
-  const dir = path.join(root, cfg.identity.id);
-
-  const mediaCapability: ProjectMediaCapability =
+function buildMediaStore(
+  cfg: ProjectConfig
+): { capability: ProjectMediaCapability; store: MediaStorePort | undefined } {
+  const capability: ProjectMediaCapability =
     cfg.media.provider === "filesystem"
       ? {
           enabled: true,
@@ -48,33 +48,53 @@ export function createFileProjectAdapter(cfg: ProjectConfig, root: string): Proj
         }
       : { enabled: false, maxSizeMb: 0, allowedMimeTypes: [] };
 
-  const mediaStore: MediaStorePort | undefined =
-    mediaCapability.enabled ? mediaFsStore(path.join(dir, "media")) : undefined;
+  const store: MediaStorePort | undefined = capability.enabled ? blobMediaStore() : undefined;
+  return { capability, store };
+}
 
-  const features: Required<ProjectFeatures> = {
+function buildFeatures(cfg: ProjectConfig): Required<ProjectFeatures> {
+  return {
     preview: true,
     publishedVersion: true,
     richText: true,
     multiselect: true,
     ...cfg.features,
   };
+}
+
+/**
+ * GitHub backend (Vercel/serverless). Soubory v repozitáři:
+ * <contentRoot>/<id>/{manifest.json, store/{drafts,published}.json},
+ * media → Vercel Blob.
+ */
+export function createGithubProjectAdapter(cfg: ProjectConfig, contentRoot: string): ProjectAdapter {
+  const repoPath = `${contentRoot}/${cfg.identity.id}`;
+  const { capability, store } = buildMediaStore(cfg);
 
   return {
     identity: cfg.identity,
     auth: { type: "none" },
     capabilities: {
       content: cfg.content,
-      media: mediaCapability,
+      media: capability,
       publish: cfg.publish,
     },
     modules: cfg.modules,
-    features,
-    manifest: fileManifestSource(path.join(dir, "manifest.json")),
-    drafts: jsonOverrideStore(path.join(dir, "store", "drafts.json")),
-    published: jsonOverrideStore(path.join(dir, "store", "published.json")),
-    media: mediaStore,
+    features: buildFeatures(cfg),
+    manifest: githubManifestSource(`${repoPath}/manifest.json`),
+    drafts: githubOverrideStore(`${repoPath}/store/drafts.json`),
+    published: githubOverrideStore(`${repoPath}/store/published.json`),
+    media: store,
     deploy: cfg.publish.hookUrl ? deployHook(cfg.publish.hookUrl) : undefined,
   };
+}
+
+/**
+ * Vytvoří adapter — 100% cloud: GitHub content + Vercel Blob media.
+ * Žádný filesystem fallback.
+ */
+export function createProjectAdapter(cfg: ProjectConfig): ProjectAdapter {
+  return createGithubProjectAdapter(cfg, githubContentRoot());
 }
 
 export type { ProjectConfig, ProjectModules };

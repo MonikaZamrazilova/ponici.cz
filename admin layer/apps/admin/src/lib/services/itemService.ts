@@ -177,14 +177,14 @@ export async function saveDraft(
   };
 
   await ctx.adapter.drafts.save(item, kindDef.kind);
-  await appendAudit({
+  void appendAudit({
     projectId: ctx.adapter.identity.id,
     action: existing?.hasDraft ? "update" : "create",
     entityKind: kindDef.kind,
     entityId: item.id,
     summary: `Draft uložen: ${getItemLabel(kindDef, item)}`,
     details: { state: "draft" },
-  });
+  }).catch(() => {});
   return item;
 }
 
@@ -225,14 +225,14 @@ export async function publishItem(
 
   await ctx.adapter.published.save(item, kindDef.kind);
   await ctx.adapter.drafts.remove(kindDef.kind, id);
-  await appendAudit({
+  void appendAudit({
     projectId: ctx.adapter.identity.id,
     action: "publish",
     entityKind: kindDef.kind,
     entityId: id,
     summary: `Publikováno: ${getItemLabel(kindDef, item)}`,
     details: { state: "published" },
-  });
+  }).catch(() => {});
   await ctx.adapter.deploy?.notify({
     event: "publish",
     projectId: ctx.adapter.identity.id,
@@ -251,13 +251,13 @@ export async function discardDraft(
   requireContentCapability(ctx, "discard");
   const removed = await ctx.adapter.drafts.remove(kindDef.kind, id);
   if (removed) {
-    await appendAudit({ projectId: ctx.adapter.identity.id,
+    void appendAudit({ projectId: ctx.adapter.identity.id,
       action: "delete",
       entityKind: kindDef.kind,
       entityId: id,
       summary: `Draft zahozen: ${id}`,
       details: { state: "draft-discarded" },
-    });
+    }).catch(() => {});
   }
   return removed;
 }
@@ -283,14 +283,14 @@ export async function rollbackItem(
   }
   await ctx.adapter.drafts.remove(kindDef.kind, id);
 
-  await appendAudit({
+  void appendAudit({
     projectId: ctx.adapter.identity.id,
     action: "rollback",
     entityKind: kindDef.kind,
     entityId: id,
     summary: `Rollback na base verzi: ${getItemLabel(kindDef, base)}`,
     details: { state: "rollback-to-base" },
-  });
+  }).catch(() => {});
   return true;
 }
 
@@ -321,13 +321,13 @@ export async function deleteItem(
     throw new AdminError(`Položka ${id} neexistuje`, undefined, 404);
   }
 
-  await appendAudit({
+  void appendAudit({
     projectId: ctx.adapter.identity.id,
     action: "delete",
     entityKind: kindDef.kind,
     entityId: id,
     summary: `Položka smazána: ${id}`,
     details: { state: "deleted" },
-  });
+  }).catch(() => {});
   return true;
 }

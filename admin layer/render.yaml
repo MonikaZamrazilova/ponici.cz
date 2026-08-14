@@ -1,34 +1,32 @@
-# Render.com blueprint — admin vrstva (jedno kliknutí po nahrání na GitHub)
-# 1. Repo admin vrstvy nahraj na GitHub (kořen repa = tento adresář).
-# 2. Render → New → Blueprint → vyber repo → Deploy.
-# 3. Nastav env proměnné (níže). Perzistentní disk /app/content = data.
-#
-# Obsah: při prvním startu (prázdný disk) se verzovaný content/ z obrazu
-# zkopíruje na disk skriptem scripts/seed-content.sh (viz Dockerfile CMD).
-# Existující data na disku se nikdy nepřepisují.
+# ⚠️ LEGACY — Render deployment se nepoužívá.
+# Admin běží jako samostatná Vercel aplikace (rootDir: admin layer).
+# Tento soubor je zachován jen pro případ, že by se někdo vrátil k Renderu;
+# architektura je 100% Vercel-native (GitHub storage + Vercel Blob + Web3Forms).
 
 services:
   - type: web
     name: ponici-admin
     runtime: docker
-    plan: starter # nebo free (usíná po nečinnosti; starter = vždy vzhůru)
+    plan: starter
     dockerfilePath: ./Dockerfile
     envVars:
       - key: ADMIN_PASSWORD
-        sync: false # nastav v dashboardu (silné heslo)
-      - key: ADMIN_SESSION_TTL_MS
-        value: "86400000"
-      - key: ADMIN_RESET_EMAILS
-        value: monika.zamrazilova@seznam.cz
-      # Odeslání reset kódu e-mailem (EmailJS, server-side) —
-      # nastav v dashboardu Renderu (sync: false), nikdy do gitu.
-      - key: EMAILJS_SERVICE_ID
         sync: false
-      - key: EMAILJS_TEMPLATE_ID
+      - key: ADMIN_EMAIL
         sync: false
-      - key: EMAILJS_PUBLIC_KEY
+      - key: WEB3FORMS_ACCESS_KEY
         sync: false
-      - key: EMAILJS_PRIVATE_KEY
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_OWNER
+        sync: false
+      - key: GITHUB_REPO
+        sync: false
+      - key: BLOB_READ_WRITE_TOKEN
+        sync: false
+      - key: VERCEL_TOKEN
+        sync: false
+      - key: VERCEL_PROJECT_ID
         sync: false
       - key: ADMIN_WEB_URL
         value: https://www.ponici.cz
