@@ -10,7 +10,7 @@ import { manifest } from "./index.ts";
 
 const outDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  "../../../admin layer/content/projects/ponici",
+  "../../admin layer/content/projects/ponici",
 );
 const outFile = path.join(outDir, "manifest.json");
 

@@ -3,9 +3,9 @@ import type { ContentItem } from "@admin/core";
 /**
  * Business data webu ponici.cz — výchozí obsah (base).
  *
- * GENEROVÁNO: npm run sync:content (propsání schválených změn z adminu do kódu).
- * Ruční úpravy se přepíšou — obsah upravujte přes admin mód (publish) a pak
- * spusťte npm run sync:content.
+ * Zdroj pravdy: admin layer/content/projects/ponici/ (GitHub-backed).
+ * Overrides se aplikují z published.json při buildu; tento soubor je
+ * výchozí base vrstva. Obsah se upravuje přes admin panel → GitHub commit.
  */
 
 export const baseSite: ContentItem[] = [

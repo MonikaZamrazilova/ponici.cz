@@ -35,7 +35,7 @@ import {
 
 const ADMIN_TARGET = (process.env.ADMIN_TARGET ?? "http://localhost:3101").replace(/\/$/, "");
 const ADMIN_APP_DIR =
-  process.env.ADMIN_APP_DIR ?? path.resolve(process.cwd(), "../admin layer/apps/admin");
+  process.env.ADMIN_APP_DIR ?? path.resolve(process.cwd(), "admin layer/apps/admin");
 const ADMIN_PORT = new URL(ADMIN_TARGET).port || "3101";
 const NEXT_BIN = path.resolve(ADMIN_APP_DIR, "../../node_modules/next/dist/bin/next");
 /** Produkce (Vercel aj.): admin build lokálně neexistuje → jen proxy na ADMIN_TARGET */
