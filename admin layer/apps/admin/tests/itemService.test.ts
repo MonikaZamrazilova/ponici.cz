@@ -223,4 +223,38 @@ describe("itemService — CRUD/publish/rollback (A11.1)", () => {
 
     await expect(deleteItem(ctx, kindDef, "base-note")).rejects.toMatchObject({ status: 400 });
   });
+
+  it("saveDraft: bez capability create → 403 (permission denied)", async () => {
+    makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
+    const adapter = makeAdapter({ content: { create: false, edit: true, publish: true, discard: true, delete: true } });
+    const ctx = { adapter, manifest };
+
+    await expect(saveDraft(ctx, kindDef, "nova", { title: "Nová" })).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("publishItem: bez capability publish → 403", async () => {
+    makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
+    const adapter = makeAdapter({ content: { create: true, edit: true, publish: false, discard: true, delete: true } });
+    const ctx = { adapter, manifest };
+
+    await saveDraft(ctx, kindDef, "nova", { title: "Nová", body: "<p>n</p>" });
+    await expect(publishItem(ctx, kindDef, "nova")).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("discardDraft: bez capability discard → 403", async () => {
+    makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
+    const adapter = makeAdapter({ content: { create: true, edit: true, publish: true, discard: false, delete: true } });
+    const ctx = { adapter, manifest };
+
+    await saveDraft(ctx, kindDef, "nova", { title: "Nová", body: "<p>n</p>" });
+    await expect(discardDraft(ctx, kindDef, "nova")).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("deleteItem: bez capability delete → 403", async () => {
+    makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
+    const adapter = makeAdapter({ content: { create: true, edit: true, publish: true, discard: true, delete: false } });
+    const ctx = { adapter, manifest };
+
+    await expect(deleteItem(ctx, kindDef, "nova")).rejects.toMatchObject({ status: 403 });
+  });
 });

@@ -22,7 +22,11 @@ import { githubAppendJsonl, githubRead } from "./githubJson";
 export function githubAuditStore(repoPath: string): AuditStorePort {
   return {
     async append(event: AuditEvent): Promise<void> {
-      await githubAppendJsonl(repoPath, event, `admin: audit ${event.action} ${event.entityKind}/${event.entityId}`);
+      await githubAppendJsonl(
+        repoPath,
+        event,
+        `admin(${event.projectId}): audit ${event.action} ${event.entityKind}/${event.entityId}`
+      );
     },
 
     async list(limit = 200): Promise<AuditEvent[]> {

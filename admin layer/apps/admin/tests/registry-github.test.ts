@@ -63,7 +63,7 @@ describe("registry — GitHub backend (100% cloud)", () => {
       vi.fn((_url: string, init?: RequestInit) => {
         if (init?.method === "PUT") {
           const body = JSON.parse(String(init.body)) as { content: string; message: string };
-          expect(body.message).toContain("admin: save");
+          expect(body.message).toMatch(/admin\(ponici\): save/);
           puts.push(Buffer.from(body.content, "base64").toString("utf8"));
           return Promise.resolve(jsonResponse({ content: { sha: "s" } }, 200));
         }

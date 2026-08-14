@@ -55,6 +55,7 @@ describe("githubOverrideStore", () => {
 
     const decoded = Buffer.from(String(putBody?.content), "base64").toString("utf8");
     expect(JSON.parse(decoded)).toEqual({ note: { n1: item } });
+    expect(putBody?.message).toBe("admin(ponici): save note/n1");
   });
 
   it("save: update existujícího souboru zachová ostatní položky (sha v PUT)", async () => {
@@ -133,6 +134,24 @@ describe("githubOverrideStore", () => {
     expect(Object.keys(JSON.parse(puts[0]).note)).toEqual(["n2"]);
     // druhý remove nenašel položku → stav beze změny
     expect(Object.keys(JSON.parse(puts[1]).note)).toEqual(["n2"]);
+  });
+
+  it("remove: commit message obsahuje projekt, akci a entitu", async () => {
+    let message: string | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_url: string, init?: RequestInit) => {
+        if (init?.method === "PUT") {
+          message = (JSON.parse(String(init.body)) as { message?: string }).message;
+          return Promise.resolve(jsonResponse({ content: { sha: "s" } }, 200));
+        }
+        return Promise.resolve(jsonResponse({ content: base64(JSON.stringify({ note: { n1: item } })), sha: "s" }));
+      }) as unknown as typeof fetch
+    );
+
+    const store = githubOverrideStore(PATH);
+    await store.remove("note", "n1");
+    expect(message).toBe("admin(ponici): remove note/n1");
   });
 
   it("konflikt 409: retry s čerstvým stavem, transformace se aplikuje znovu", async () => {

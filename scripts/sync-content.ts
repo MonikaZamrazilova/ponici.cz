@@ -1,12 +1,17 @@
 /**
- * Propsání schválených změn z adminu do kódu webu.
+ * [LEGACY] Propsání schválených změn z adminu do kódu webu.
  *
- * Po publishi v admin módu leží změny v published.json (override vrstva).
- * Tento skript je sloučí do base obsahu (src/manifest/base.ts — součást
- * kódu, git-trackované) a override vyčistí. Pak je změna trvale v kódu:
- * commit → build → deploy.
+ * ⚠️ TENTO SKRIPT JE LEGACY — NEPOUŽÍVAT V BĚŽNÉM FLOW.
  *
- * Spuštění: npm run sync:content
+ * Nová architektura (Vercel-native): web čte published overrides PŘÍMO
+ * z repo souboru `admin layer/content/projects/ponici/store/published.json`
+ * (do něj admin commitne přes GitHub Contents API) → build → deploy.
+ * Žádná lokální synchronizace, žádné zrcadlo.
+ *
+ * Skript zůstává jen pro historické účely (kdyby bylo potřeba trvale
+ * "propsat" override do base.ts — ale to není součást běžného workflow).
+ *
+ * Spuštění (jen vědomě): npm run sync:content
  */
 import {
   copyFileSync,

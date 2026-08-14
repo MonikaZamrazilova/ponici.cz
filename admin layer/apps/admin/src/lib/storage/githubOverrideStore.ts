@@ -1,3 +1,4 @@
+import "server-only";
 import type { ContentItem, OverrideStorePort } from "@admin/core";
 import { githubReadJson, githubUpdateJson } from "./githubJson";
 
@@ -8,12 +9,22 @@ import { githubReadJson, githubUpdateJson } from "./githubJson";
  * Každá mutace = čti-změň-zapiš přes git commit; konflikt 409 se řeší
  * retry s čerstvě načteným stavem (githubUpdateJson).
  *
- * @param repoPath cesta v repu k souboru (např. .../store/drafts.json)
+ * Commit message standard: `admin(<projectId>): <akce> <kind>/<id>` —
+ * jasné, co se změnilo a odkud změna přišla (admin panel).
+ *
+ * @param repoPath cesta v repu k souboru (např. .../projects/ponici/store/drafts.json)
  */
+
+/** Projekt id z repoPath (`.../projects/<id>/store/<file>.json`). */
+function projectIdFromPath(repoPath: string): string {
+  const match = repoPath.match(/\/projects\/([^/]+)\/store\//);
+  return match?.[1] ?? "project";
+}
 
 export function githubOverrideStore(repoPath: string): OverrideStorePort {
   type OverrideFile = Record<string, Record<string, ContentItem>>;
   const EMPTY: OverrideFile = {};
+  const projectId = projectIdFromPath(repoPath);
 
   async function load(): Promise<OverrideFile> {
     return githubReadJson<OverrideFile>(repoPath, EMPTY);
@@ -36,7 +47,7 @@ export function githubOverrideStore(repoPath: string): OverrideStorePort {
           all[kind] = { ...(all[kind] ?? {}), [item.id]: item };
           return all;
         },
-        `admin: save ${kind}/${item.id}`
+        `admin(${projectId}): save ${kind}/${item.id}`
       );
     },
     async remove(kind, id) {
@@ -51,7 +62,7 @@ export function githubOverrideStore(repoPath: string): OverrideStorePort {
           removed = true;
           return all;
         },
-        `admin: remove ${kind}/${id}`
+        `admin(${projectId}): remove ${kind}/${id}`
       );
       return removed;
     },
