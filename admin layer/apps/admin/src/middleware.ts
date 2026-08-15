@@ -25,6 +25,30 @@ async function isAuthed(request: NextRequest): Promise<boolean> {
   return false;
 }
 
+/**
+ * Veřejný origin — bezpečná konstrukce redirect URL.
+ *
+ * Na Vercelu běží admin jako standalone Node server (HOSTNAME=0.0.0.0,
+ * náhodný PORT), takže `request.url` obsahuje INTERNÍ host. Redirect
+ * by pak mířil na 0.0.0.0:PORT — nesprávně.
+ *
+ * Používáme forwarded hlavičky (Vercel je vždy nastavuje); fallback je
+ * nextUrl (dev režim). Pokud host chybí úplně, vrátí se relativní cesta
+ * (HTTP Location smí být relativní — prohlížeč doplní aktuální origin).
+ */
+function redirectTo(request: NextRequest, path: string): NextResponse {
+  const proto = request.headers.get("x-forwarded-proto");
+  const host = request.headers.get("x-forwarded-host");
+  if (proto && host) {
+    return NextResponse.redirect(new URL(path, `${proto}://${host}`));
+  }
+  const nextUrl = request.nextUrl;
+  if (nextUrl.host && !nextUrl.host.startsWith("0.0.0.0")) {
+    return NextResponse.redirect(new URL(path, nextUrl.origin));
+  }
+  return NextResponse.redirect(path);
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -77,11 +101,11 @@ export async function middleware(request: NextRequest) {
     if (pathname === "/login" || pathname.startsWith("/login/")) {
       return NextResponse.next();
     }
-    return NextResponse.redirect(new URL("/login", request.url));
+    return redirectTo(request, "/login");
   }
 
   if (pathname === "/login") {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    return redirectTo(request, "/admin");
   }
 
   const response = NextResponse.next();
