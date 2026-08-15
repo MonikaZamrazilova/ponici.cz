@@ -14,7 +14,16 @@
  * Spuštění: NODE_ENV=production node scripts/build-vercel.mjs
  */
 import { execSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -90,6 +99,34 @@ const vcConfig = {
 };
 writeFileSync(path.join(adminFunc, ".vc-config.json"), JSON.stringify(vcConfig, null, 2) + "\n");
 
+// Vercel Build Output API v3: `.func` přípona NENÍ součástí URL funkce.
+// functions/__server.func → dest "/__server"; functions/admin.func → dest "/admin".
+// Routy pro /login, /api, /_next potřebují vlastní funkci (nebo symlink) —
+// Vercel podporuje symlinky .func → .func (jeden server, víc URL mount bodů).
+for (const alias of ["login", "api", "_next"]) {
+  const link = path.join(functionsDir, `${alias}.func`);
+  rmSync(link, { recursive: true, force: true });
+  try {
+    symlinkSync(path.basename(adminFunc), link, "dir");
+  } catch {
+    // fallback: fyzická kopie (Windows / bez symlink práv)
+    cpSync(adminFunc, link, { recursive: true });
+  }
+}
+// ověření symlinku — kopie by zdvojnásobila velikost outputu
+for (const alias of ["login", "api", "_next"]) {
+  const link = path.join(functionsDir, `${alias}.func`);
+  try {
+    // lstat: NEdereferencuje — kontrolujeme samotný link
+    const st = lstatSync(link);
+    if (!st.isSymbolicLink()) {
+      console.warn(`[warn] ${alias}.func není symlink — použit fyzický fallback`);
+    }
+  } catch {
+    /* fallback použit */
+  }
+}
+
 // static assety adminu (Next.js /_next/static)
 const nextStatic = path.join(adminDir, ".next", "static");
 if (existsSync(nextStatic)) {
@@ -104,11 +141,12 @@ if (existsSync(nextStatic)) {
 const configPath = path.join(outDir, "config.json");
 const config = JSON.parse(readFileSync(configPath, "utf8"));
 
+// Vercel Build Output API v3: dest = URL mount pointu funkce, BEZ `.func`.
 const adminRoutes = [
-  { src: "/admin(?:/(.*))?", dest: "/admin.func" },
-  { src: "/login(?:/(.*))?", dest: "/admin.func" },
-  { src: "/api(?:/(.*))?", dest: "/admin.func" },
-  { src: "/_next(?:/(.*))?", dest: "/admin.func" },
+  { src: "/admin(?:/(.*))?", dest: "/admin" },
+  { src: "/login(?:/(.*))?", dest: "/login" },
+  { src: "/api(?:/(.*))?", dest: "/api" },
+  { src: "/_next(?:/(.*))?", dest: "/_next" },
 ];
 
 // odstranit nitro unlockery pro /admin /login /api /_next (dev-only)
