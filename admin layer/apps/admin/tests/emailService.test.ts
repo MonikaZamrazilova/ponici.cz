@@ -61,6 +61,62 @@ describe("emailService — Resend", () => {
     expect(String(payload.text)).toContain("123456");
   });
 
+  it("RESET_TEST_EMAIL override: email jde na test adresu (ne admin)", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("FROM_EMAIL", "admin@ponici.cz");
+    vi.stubEnv("RESET_TEST_EMAIL", "testovaci@example.com");
+    sendMock.mockResolvedValue({ data: { id: "email_456" }, error: null });
+
+    const result = await sendPasswordResetCode({
+      email: "monika.zamrazilova@seznam.cz",
+      code: "123456",
+      expiresAt: Date.now() + 600_000,
+    });
+
+    expect(result.ok).toBe(true);
+    const payload = sendMock.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.to).toBe("testovaci@example.com");
+  });
+
+  it("bez RESET_TEST_EMAIL: email jde na ADMIN_EMAIL (default)", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("FROM_EMAIL", "admin@ponici.cz");
+    vi.stubEnv("RESET_TEST_EMAIL", "");
+    sendMock.mockResolvedValue({ data: { id: "email_789" }, error: null });
+
+    await sendPasswordResetCode({
+      email: "monika.zamrazilova@seznam.cz",
+      code: "123456",
+      expiresAt: Date.now() + 600_000,
+    });
+
+    const payload = sendMock.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.to).toBe("monika.zamrazilova@seznam.cz");
+  });
+
+  it("recipient mode log je bezpečný (žádný email/kód)", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("FROM_EMAIL", "admin@ponici.cz");
+    vi.stubEnv("RESET_TEST_EMAIL", "testovaci@example.com");
+    sendMock.mockResolvedValue({ data: { id: "email_abc" }, error: null });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    try {
+      await sendPasswordResetCode({
+        email: "monika.zamrazilova@seznam.cz",
+        code: "999999",
+        expiresAt: Date.now() + 600_000,
+      });
+      const output = logSpy.mock.calls.flat().map(String).join(" ");
+      expect(output).toContain("recipient mode: test override");
+      expect(output).not.toContain("999999");
+      expect(output).not.toContain("monika.zamrazilova@seznam.cz");
+      expect(output).not.toContain("testovaci@example.com");
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
   it("chyba Resend (error objekt) → ok:false, žádný devCode v produkci", async () => {
     vi.stubEnv("RESEND_API_KEY", "re_test");
     vi.stubEnv("FROM_EMAIL", "admin@ponici.cz");
