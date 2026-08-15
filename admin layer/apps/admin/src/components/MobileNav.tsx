@@ -31,9 +31,9 @@ export function MobileNav({ items }: { items: NavItem[] }) {
         aria-label="Otevřít menu"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="md:hidden"
+        // display v className (inline-flex) — aby md:hidden mohl přebít
+        className="inline-flex md:hidden"
         style={{
-          display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
           width: 34,

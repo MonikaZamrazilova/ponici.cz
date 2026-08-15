@@ -29,8 +29,10 @@ export function ShellLayout({
 }) {
   return (
     <div style={{ minHeight: "100vh", background: tokens.colors.bg, display: "flex" }}>
+      {/* display je v className (flex), aby Tailwind breakpointy (max-md:hidden)
+          mohly přebít — inline display:flex by je vždy porazil */}
       <div
-        className={sidebarClassName}
+        className={`flex ${sidebarClassName ?? ""}`}
         style={{
           width: sidebarWidth,
           flexShrink: 0,
@@ -39,7 +41,6 @@ export function ShellLayout({
           insetInlineStart: 0,
           background: tokens.colors.surface,
           borderInlineEnd: `1px solid ${tokens.colors.border}`,
-          display: "flex",
           flexDirection: "column",
           zIndex: 30,
         }}
