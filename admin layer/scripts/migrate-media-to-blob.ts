@@ -32,7 +32,7 @@ const DRY_RUN = process.argv.includes("--dry-run");
 
 async function main(): Promise<void> {
   console.log(
-    `[migrate-media] Nalezeno: (DRY-RUN: ${DRY_RUN ? "ano" : "ne"}) — zdroj: ${MEDIA_ROOT}`
+    `[migrate-media] Nalezeno: (DRY-RUN: ${DRY_RUN ? "ano" : "ne"}) — zdroj: ${MEDIA_ROOT}`,
   );
   console.log("");
 

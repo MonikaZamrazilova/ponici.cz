@@ -16,7 +16,10 @@ function base64(text: string): string {
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 /** In-memory GitHub mock pro audit (GET/PUT na jednom souboru). */
@@ -36,24 +39,27 @@ function makeAuditMock(initial?: string) {
         if (file && file.sha !== body.sha) {
           return Promise.resolve(new Response("Conflict", { status: 409 }));
         }
-        file = { content: Buffer.from(body.content, "base64").toString("utf8"), sha: `sha${shaCounter++}` };
+        file = {
+          content: Buffer.from(body.content, "base64").toString("utf8"),
+          sha: `sha${shaCounter++}`,
+        };
         return Promise.resolve(
           new Response(JSON.stringify({ content: { sha: file.sha } }), {
             status: 200,
             headers: { "content-type": "application/json" },
-          })
+          }),
         );
       }
       if (!file) {
         return Promise.resolve(new Response("Not Found", { status: 404 }));
       }
       return Promise.resolve(
-        new Response(
-          JSON.stringify({ content: base64(file.content), sha: file.sha }),
-          { status: 200, headers: { "content-type": "application/json" } }
-        )
+        new Response(JSON.stringify({ content: base64(file.content), sha: file.sha }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
       );
-    }) as unknown as typeof fetch
+    }) as unknown as typeof fetch,
   );
 
   return { getContent: () => file?.content ?? "" };
@@ -88,9 +94,27 @@ describe("githubAuditStore — append JSONL", () => {
   it("list: přečte a seřadí události (nejnovější první)", async () => {
     makeAuditMock(
       [
-        JSON.stringify({ id: "a", timestamp: "2026-08-14T09:00:00.000Z", action: "create", projectId: "ponici", entityKind: "x", entityId: "1", summary: "a", actor: "admin" }),
-        JSON.stringify({ id: "b", timestamp: "2026-08-14T10:00:00.000Z", action: "publish", projectId: "ponici", entityKind: "x", entityId: "2", summary: "b", actor: "admin" }),
-      ].join("\n")
+        JSON.stringify({
+          id: "a",
+          timestamp: "2026-08-14T09:00:00.000Z",
+          action: "create",
+          projectId: "ponici",
+          entityKind: "x",
+          entityId: "1",
+          summary: "a",
+          actor: "admin",
+        }),
+        JSON.stringify({
+          id: "b",
+          timestamp: "2026-08-14T10:00:00.000Z",
+          action: "publish",
+          projectId: "ponici",
+          entityKind: "x",
+          entityId: "2",
+          summary: "b",
+          actor: "admin",
+        }),
+      ].join("\n"),
     );
     const store = githubAuditStore(AUDIT_PATH);
     const events = await store.list();
@@ -100,7 +124,19 @@ describe("githubAuditStore — append JSONL", () => {
   });
 
   it("malformed řádek se ignoruje (audit nesmí shodit aplikaci)", async () => {
-    makeAuditMock("not-json\n" + JSON.stringify({ id: "ok", timestamp: "2026-08-14T09:00:00.000Z", action: "create", projectId: "p", entityKind: "x", entityId: "1", summary: "s", actor: "admin" }));
+    makeAuditMock(
+      "not-json\n" +
+        JSON.stringify({
+          id: "ok",
+          timestamp: "2026-08-14T09:00:00.000Z",
+          action: "create",
+          projectId: "p",
+          entityKind: "x",
+          entityId: "1",
+          summary: "s",
+          actor: "admin",
+        }),
+    );
     const store = githubAuditStore(AUDIT_PATH);
     const events = await store.list();
     expect(events).toHaveLength(1);
@@ -110,11 +146,22 @@ describe("githubAuditStore — append JSONL", () => {
   it("GitHub chyba (500) → append vyhodí; volající používá catch", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.resolve(new Response("Server Error", { status: 500 }))) as unknown as typeof fetch
+      vi.fn(() =>
+        Promise.resolve(new Response("Server Error", { status: 500 })),
+      ) as unknown as typeof fetch,
     );
     const store = githubAuditStore(AUDIT_PATH);
     await expect(
-      store.append({ id: "x", timestamp: "2026-01-01", actor: "admin", projectId: "core", action: "login", entityKind: "s", entityId: "i", summary: "s" })
+      store.append({
+        id: "x",
+        timestamp: "2026-01-01",
+        actor: "admin",
+        projectId: "core",
+        action: "login",
+        entityKind: "s",
+        entityId: "i",
+        summary: "s",
+      }),
     ).rejects.toBeDefined();
   });
 });
@@ -141,9 +188,27 @@ describe("auditService — appendAudit/listAudit", () => {
   it("listAudit filtruje podle projectId", async () => {
     makeAuditMock(
       [
-        JSON.stringify({ id: "1", timestamp: "2026-08-14T09:00:00.000Z", actor: "admin", projectId: "ponici", action: "create", entityKind: "x", entityId: "1", summary: "a" }),
-        JSON.stringify({ id: "2", timestamp: "2026-08-14T10:00:00.000Z", actor: "admin", projectId: "core", action: "login", entityKind: "s", entityId: "i", summary: "b" }),
-      ].join("\n")
+        JSON.stringify({
+          id: "1",
+          timestamp: "2026-08-14T09:00:00.000Z",
+          actor: "admin",
+          projectId: "ponici",
+          action: "create",
+          entityKind: "x",
+          entityId: "1",
+          summary: "a",
+        }),
+        JSON.stringify({
+          id: "2",
+          timestamp: "2026-08-14T10:00:00.000Z",
+          actor: "admin",
+          projectId: "core",
+          action: "login",
+          entityKind: "s",
+          entityId: "i",
+          summary: "b",
+        }),
+      ].join("\n"),
     );
     const ponici = await listAudit("ponici");
     expect(ponici).toHaveLength(1);

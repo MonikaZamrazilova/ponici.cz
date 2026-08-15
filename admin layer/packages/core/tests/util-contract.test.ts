@@ -7,7 +7,7 @@ describe("util (A3.1, A5.1)", () => {
     const changed = diffItemFields(
       ["name", "desc"],
       { name: "A", desc: "x" },
-      { name: "B", desc: "x" }
+      { name: "B", desc: "x" },
     );
     expect(changed.has("name")).toBe(true);
     expect(changed.has("desc")).toBe(false);
@@ -48,9 +48,11 @@ describe("kontrakt (A0.2)", () => {
   });
 
   it("nevalidní manifest selže (prázdné kinds, chybný field)", () => {
-    expect(contentManifestSchema.safeParse({ app: { name: "x" }, locales: [], kinds: [] }).success).toBe(false);
     expect(
-      entityKindSchema.safeParse({ kind: "", label: "x", idField: "slug", fields: [] }).success
+      contentManifestSchema.safeParse({ app: { name: "x" }, locales: [], kinds: [] }).success,
+    ).toBe(false);
+    expect(
+      entityKindSchema.safeParse({ kind: "", label: "x", idField: "slug", fields: [] }).success,
     ).toBe(false);
     expect(
       entityKindSchema.safeParse({
@@ -58,7 +60,7 @@ describe("kontrakt (A0.2)", () => {
         label: "x",
         idField: "slug",
         fields: [{ type: "neexistuje", name: "a", label: "A" }],
-      }).success
+      }).success,
     ).toBe(false);
   });
 

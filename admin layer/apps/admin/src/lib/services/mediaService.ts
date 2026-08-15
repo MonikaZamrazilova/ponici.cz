@@ -1,9 +1,13 @@
 import "server-only";
 import { AdminError, type MediaAsset, type ProjectAdapter } from "@admin/core";
+import { appendAudit } from "./auditService";
 
 /**
  * Application service — media knihovna (per projekt).
  * Capabilities projektu řídí povolené typy a velikost souborů.
+ *
+ * Každá mutace (upload/delete) zapisuje audit event (best-effort,
+ * nikdy neblokuje hlavní akci) — konzistentně s itemService.
  */
 
 function mediaPort(adapter: ProjectAdapter) {
@@ -19,7 +23,7 @@ export async function listMedia(adapter: ProjectAdapter): Promise<MediaAsset[]> 
 
 export async function getMediaFile(
   adapter: ProjectAdapter,
-  id: string
+  id: string,
 ): Promise<{ asset: MediaAsset; data: Uint8Array }> {
   const result = await mediaPort(adapter).get(id);
   if (!result) throw new AdminError("Soubor neexistuje", undefined, 404);
@@ -28,7 +32,7 @@ export async function getMediaFile(
 
 export async function saveMedia(
   adapter: ProjectAdapter,
-  file: { name: string; mime: string; data: Uint8Array }
+  file: { name: string; mime: string; data: Uint8Array },
 ): Promise<MediaAsset> {
   const port = mediaPort(adapter);
   const caps = adapter.capabilities.media;
@@ -40,9 +44,31 @@ export async function saveMedia(
   if (!caps.allowedMimeTypes.includes(file.mime)) {
     throw new AdminError(`Typ souboru není povolen (${file.mime})`);
   }
-  return port.save(file);
+  const asset = await port.save(file);
+  void appendAudit({
+    projectId: adapter.identity.id,
+    action: "create",
+    entityKind: "media",
+    entityId: asset.id,
+    summary: `Media nahráno: ${asset.name}`,
+    details: { filename: file.name, mime: file.mime, size: file.data.byteLength },
+  }).catch(() => {});
+  return asset;
 }
 
 export async function removeMedia(adapter: ProjectAdapter, id: string): Promise<boolean> {
-  return mediaPort(adapter).remove(id);
+  const port = mediaPort(adapter);
+  const existing = await port.get(id);
+  const removed = await port.remove(id);
+  if (removed && existing) {
+    void appendAudit({
+      projectId: adapter.identity.id,
+      action: "delete",
+      entityKind: "media",
+      entityId: id,
+      summary: `Media smazáno: ${existing.asset.name}`,
+      details: { filename: existing.asset.name, mime: existing.asset.mime },
+    }).catch(() => {});
+  }
+  return removed;
 }

@@ -1,5 +1,10 @@
 import "server-only";
-import { AdminError, type ContentManifest, type EntityKindDef, type ProjectAdapter } from "@admin/core";
+import {
+  AdminError,
+  type ContentManifest,
+  type EntityKindDef,
+  type ProjectAdapter,
+} from "@admin/core";
 
 /**
  * Application service — načtení kontraktu projektu.

@@ -73,7 +73,8 @@ const PROJECT_CONFIGS: Record<string, ProjectConfig> = {
     identity: {
       id: "ponici",
       name: "Ponici.cz",
-      description: "Jezdecká škola pro děti i dospělé — plná integrace přes kontrakt (content, media, publish).",
+      description:
+        "Jezdecká škola pro děti i dospělé — plná integrace přes kontrakt (content, media, publish).",
       repo: "ponici-a-cherished-journey",
       homepage: "https://www.ponici.cz",
     },
@@ -89,9 +90,7 @@ const cache = new Map<string, ProjectAdapter>();
 
 function build(cfg: ProjectConfig): ProjectAdapter {
   const hookUrl = adminConfig.hookUrls[cfg.identity.id];
-  const finalCfg: ProjectConfig = hookUrl
-    ? { ...cfg, publish: { ...cfg.publish, hookUrl } }
-    : cfg;
+  const finalCfg: ProjectConfig = hookUrl ? { ...cfg, publish: { ...cfg.publish, hookUrl } } : cfg;
   // 100% cloud: GitHub content storage + Vercel Blob media
   return createProjectAdapter(finalCfg);
 }

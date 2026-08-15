@@ -25,8 +25,7 @@ export function assertSameOrigin(request: NextRequest): void {
   // Za reverzním proxy (single-origin: web + admin na jednom portu)
   // vidí admin skutečný host přes x-forwarded-host.
   const host =
-    request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() ??
-    request.nextUrl.host;
+    request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() ?? request.nextUrl.host;
   if (originHost !== host) {
     throw new AdminError("Cross-origin request odmítnut (CSRF)", undefined, 403);
   }
@@ -57,6 +56,10 @@ export function clientIp(request: NextRequest): string {
 export function assertBodySize(request: NextRequest, maxBytes: number): void {
   const length = Number(request.headers.get("content-length") ?? 0);
   if (length > maxBytes) {
-    throw new AdminError(`Payload je příliš velký (max ${Math.round(maxBytes / 1024)} KB)`, undefined, 413);
+    throw new AdminError(
+      `Payload je příliš velký (max ${Math.round(maxBytes / 1024)} KB)`,
+      undefined,
+      413,
+    );
   }
 }

@@ -4,12 +4,14 @@ vi.stubEnv("VERCEL_TOKEN", "test-vercel-token");
 vi.stubEnv("VERCEL_PROJECT_ID", "prj_test123");
 vi.stubEnv("ADMIN_PROJECTS", "");
 
-const { getVercelConfig, isVercelConfigured, updateAdminPasswordOnVercel } = await import(
-  "../src/lib/services/vercelEnvService"
-);
+const { getVercelConfig, isVercelConfigured, updateAdminPasswordOnVercel } =
+  await import("../src/lib/services/vercelEnvService");
 
 function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 afterEach(() => {
@@ -48,19 +50,19 @@ describe("updateAdminPasswordOnVercel", () => {
         calls.push({ url, init });
         if (String(url).includes("/env")) {
           return Promise.resolve(
-            jsonResponse({ envs: [{ id: "env_abc", key: "ADMIN_PASSWORD", target: ["production"] }] })
+            jsonResponse({
+              envs: [{ id: "env_abc", key: "ADMIN_PASSWORD", target: ["production"] }],
+            }),
           );
         }
         if (String(url).includes("/deployments")) {
-          return Promise.resolve(
-            jsonResponse({ deployments: [{ uid: "dpl_xyz" }] })
-          );
+          return Promise.resolve(jsonResponse({ deployments: [{ uid: "dpl_xyz" }] }));
         }
         if (String(url).includes("/redeploy")) {
           return Promise.resolve(jsonResponse({}, 200));
         }
         return Promise.resolve(jsonResponse({}, 200));
-      }) as unknown as typeof fetch
+      }) as unknown as typeof fetch,
     );
 
     const ok = await updateAdminPasswordOnVercel("nove-silne-heslo");
@@ -70,7 +72,10 @@ describe("updateAdminPasswordOnVercel", () => {
     expect(listCall).toBeDefined();
     const patchCall = calls.find((c) => c.url.includes("/env/env_abc"));
     expect(patchCall?.init?.method).toBe("PATCH");
-    const patchBody = JSON.parse(String(patchCall?.init?.body)) as { value: string; target: string[] };
+    const patchBody = JSON.parse(String(patchCall?.init?.body)) as {
+      value: string;
+      target: string[];
+    };
     expect(patchBody.value).toBe("nove-silne-heslo");
     expect(patchBody.target).toContain("production");
 
@@ -91,12 +96,14 @@ describe("updateAdminPasswordOnVercel", () => {
           return Promise.resolve(jsonResponse({ envs: [] }));
         }
         return Promise.resolve(jsonResponse({}, 200));
-      }) as unknown as typeof fetch
+      }) as unknown as typeof fetch,
     );
 
     const ok = await updateAdminPasswordOnVercel("jine-heslo");
     expect(ok).toBe(true);
-    const createCall = calls.find((c) => c.url.includes("/v10/projects") && c.init?.method === "POST");
+    const createCall = calls.find(
+      (c) => c.url.includes("/v10/projects") && c.init?.method === "POST",
+    );
     const body = JSON.parse(String(createCall?.init?.body)) as {
       key: string;
       value: string;
@@ -110,7 +117,9 @@ describe("updateAdminPasswordOnVercel", () => {
   it("chyba Vercel API (500) → AdminError 502", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.resolve(new Response("Server Error", { status: 500 }))) as unknown as typeof fetch
+      vi.fn(() =>
+        Promise.resolve(new Response("Server Error", { status: 500 })),
+      ) as unknown as typeof fetch,
     );
 
     const { AdminError } = await import("@admin/core");
@@ -138,11 +147,15 @@ describe("bezpečnost — žádné tajemství v logech", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.resolve(new Response("Server Error", { status: 500 }))) as unknown as typeof fetch
+      vi.fn(() =>
+        Promise.resolve(new Response("Server Error", { status: 500 })),
+      ) as unknown as typeof fetch,
     );
 
     const { AdminError } = await import("@admin/core");
-    await expect(updateAdminPasswordOnVercel("tajne-heslo-123")).rejects.toMatchObject({ status: 502 });
+    await expect(updateAdminPasswordOnVercel("tajne-heslo-123")).rejects.toMatchObject({
+      status: 502,
+    });
 
     for (const spy of [logSpy, errorSpy]) {
       const output = spy.mock.calls.flat().map(String).join(" ");

@@ -54,7 +54,8 @@ function b64urlEncode(bytes: Uint8Array): string {
 }
 
 function b64urlDecode(value: string): Uint8Array<ArrayBuffer> {
-  const b64 = value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (value.length % 4)) % 4);
+  const b64 =
+    value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (value.length % 4)) % 4);
   const bin = atob(b64);
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
@@ -72,13 +73,10 @@ async function hmacKey(): Promise<CryptoKey> {
     throw new Error("Chybí RESET_TOKEN_SECRET — nelze podepsat reset token");
   }
   const keyBytes = new Uint8Array(await sha256(TOKEN_CONTEXT + secret));
-  return crypto.subtle.importKey(
-    "raw",
-    keyBytes,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"]
-  );
+  return crypto.subtle.importKey("raw", keyBytes, { name: "HMAC", hash: "SHA-256" }, false, [
+    "sign",
+    "verify",
+  ]);
 }
 
 async function sign<T extends object>(payload: T): Promise<string> {
@@ -113,7 +111,7 @@ async function verify<T extends { expiresAt: number }>(token: string): Promise<T
 export async function createResetToken(
   email: string,
   codeHash: string,
-  ttlMs: number
+  ttlMs: number,
 ): Promise<string> {
   return sign<ResetTokenPayload>({
     email: email.trim().toLowerCase(),
@@ -126,7 +124,7 @@ export async function createResetToken(
 /** Ověří reset token a vrátí payload (podpis + expirace + e-mail shoda). */
 export async function verifyResetToken(
   token: string,
-  email: string
+  email: string,
 ): Promise<ResetTokenPayload | null> {
   const payload = await verify<ResetTokenPayload>(token);
   if (!payload) return null;
@@ -153,7 +151,7 @@ export async function createVerifiedToken(email: string, ttlMs: number): Promise
 /** Ověří verified token. */
 export async function verifyVerifiedToken(
   token: string,
-  email?: string
+  email?: string,
 ): Promise<VerifiedTokenPayload | null> {
   const payload = await verify<VerifiedTokenPayload>(token);
   if (!payload) return null;
@@ -176,7 +174,7 @@ export async function checkRateLimit(
   token: string | undefined,
   action: string,
   maxAttempts: number,
-  windowMs: number
+  windowMs: number,
 ): Promise<{ allowed: boolean; nextToken?: string }> {
   const now = Date.now();
   const cutoff = now - windowMs;

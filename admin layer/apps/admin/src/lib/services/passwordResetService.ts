@@ -1,9 +1,5 @@
 import "server-only";
-import {
-  AdminError,
-  generateResetCode,
-  hashResetCode,
-} from "@admin/core";
+import { AdminError, generateResetCode, hashResetCode } from "@admin/core";
 import { sendPasswordResetCode } from "./emailService";
 import { appendAudit } from "./auditService";
 import { passwordOverride } from "../storage/passwordStore";
@@ -57,7 +53,7 @@ function isOwnerEmail(email: string): boolean {
  */
 export async function requestReset(
   email: string,
-  rateLimit: { allowed: boolean }
+  rateLimit: { allowed: boolean },
 ): Promise<{
   ok: boolean;
   message: string;
@@ -98,7 +94,12 @@ export async function requestReset(
     details: { actor: "anonymous" },
   }).catch(() => {});
 
-  return { ok: true, message: "If the account exists, a verification code has been sent.", resetToken, devCode: sent.devCode };
+  return {
+    ok: true,
+    message: "If the account exists, a verification code has been sent.",
+    resetToken,
+    devCode: sent.devCode,
+  };
 }
 
 /**
@@ -108,7 +109,7 @@ export async function requestReset(
 export async function verifyResetCode(
   code: string,
   resetToken: string | undefined,
-  rateLimit: { allowed: boolean }
+  rateLimit: { allowed: boolean },
 ): Promise<{ ok: boolean; message: string; verifiedToken?: string }> {
   if (!rateLimit.allowed) {
     throw new AdminError("Příliš mnoho pokusů — zkuste to později", undefined, 429);
@@ -131,7 +132,7 @@ export async function verifyResetCode(
 /** Ověří podpis tokenu + porovná hash kódu. */
 async function verifyResetTokenWithCode(
   token: string,
-  code: string
+  code: string,
 ): Promise<{ email: string } | null> {
   const payload = await verifyResetTokenAny(token);
   if (!payload) return null;
@@ -146,7 +147,7 @@ async function verifyResetTokenWithCode(
  */
 export async function resetPassword(
   newPassword: string,
-  verifiedToken: string | undefined
+  verifiedToken: string | undefined,
 ): Promise<{ ok: boolean; message: string }> {
   const validation = validatePassword(newPassword);
   if (!validation.ok) {

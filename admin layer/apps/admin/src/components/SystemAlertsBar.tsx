@@ -40,7 +40,9 @@ export function SystemAlertsBar({ alerts }: { alerts: SystemAlert[] }) {
             }}
           >
             <span style={{ fontWeight: 700, color: tone.fg }}>{alert.title}</span>
-            {alert.message && <span style={{ color: tokens.colors.secondary }}>{alert.message}</span>}
+            {alert.message && (
+              <span style={{ color: tokens.colors.secondary }}>{alert.message}</span>
+            )}
             {alert.link && (
               <Link
                 href={alert.link.href}

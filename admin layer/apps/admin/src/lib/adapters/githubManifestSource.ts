@@ -1,5 +1,10 @@
 import "server-only";
-import { AdminError, contentManifestSchema, type ContentManifest, type ManifestSourcePort } from "@admin/core";
+import {
+  AdminError,
+  contentManifestSchema,
+  type ContentManifest,
+  type ManifestSourcePort,
+} from "@admin/core";
 import { githubRead, githubRepo } from "../storage/githubJson";
 
 /**
@@ -20,7 +25,7 @@ export function githubManifestSource(repoPath: string): ManifestSourcePort {
         throw new AdminError(
           `Manifest nenalezen v repozitáři: ${repoPath}. Spusťte "npm run manifest:export" v externí aplikaci.`,
           undefined,
-          404
+          404,
         );
       }
       let parsed: unknown;
@@ -34,7 +39,7 @@ export function githubManifestSource(repoPath: string): ManifestSourcePort {
         throw new AdminError(
           `Neplatný manifest (${repoPath}): ${result.error.message}. Spusťte "npm run manifest:export" v externí aplikaci.`,
           undefined,
-          502
+          502,
         );
       }
       return result.data as ContentManifest;

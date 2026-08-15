@@ -1,7 +1,15 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge, Breadcrumbs, NotificationProvider, ShellLayout, Topbar, tokens, type Crumb } from "@admin/ui";
+import {
+  Badge,
+  Breadcrumbs,
+  NotificationProvider,
+  ShellLayout,
+  Topbar,
+  tokens,
+  type Crumb,
+} from "@admin/ui";
 import { getSession } from "@/lib/auth";
 import { adminConfig, coreModules } from "@/lib/config";
 import { listProjects } from "@/lib/projects/registry";
@@ -67,63 +75,72 @@ export default async function AdminShellLayout({ children }: { children: React.R
       </a>
       <ShellLayout
         sidebarClassName="max-md:hidden"
-      contentClassName="max-md:!ml-0"
-      sidebar={
-        <>
-          <div style={{ padding: "18px 20px 14px" }}>
-            <Link
-              href="/admin"
-              style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}
+        contentClassName="max-md:!ml-0"
+        sidebar={
+          <>
+            <div style={{ padding: "18px 20px 14px" }}>
+              <Link
+                href="/admin"
+                style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}
+              >
+                <span style={{ fontWeight: 700, fontSize: 15, color: tokens.colors.primary }}>
+                  Admin Layer
+                </span>
+                <Badge
+                  tone={
+                    session.role === "viewer"
+                      ? "neutral"
+                      : session.role === "editor"
+                        ? "info"
+                        : "success"
+                  }
+                >
+                  {ROLE_LABEL[session.role].split(" ")[0]}
+                </Badge>
+              </Link>
+            </div>
+            <div style={{ flex: 1, padding: "0 10px", overflowY: "auto" }}>
+              <Nav items={navItems} />
+            </div>
+            <div
+              style={{
+                padding: "12px 20px",
+                borderTop: `1px solid ${tokens.colors.border}`,
+              }}
             >
-              <span style={{ fontWeight: 700, fontSize: 15, color: tokens.colors.primary }}>
-                Admin Layer
-              </span>
-              <Badge tone={session.role === "viewer" ? "neutral" : session.role === "editor" ? "info" : "success"}>
-                {ROLE_LABEL[session.role].split(" ")[0]}
-              </Badge>
-            </Link>
-          </div>
-          <div style={{ flex: 1, padding: "0 10px", overflowY: "auto" }}>
-            <Nav items={navItems} />
-          </div>
-          <div
-            style={{
-              padding: "12px 20px",
-              borderTop: `1px solid ${tokens.colors.border}`,
-            }}
-          >
-            <LogoutButton />
-          </div>
-        </>
-      }
-    >
-      <Topbar
-        left={
-          <>
-            <MobileNav items={navItems} />
-            <Breadcrumbs items={crumbs} />
+              <LogoutButton />
+            </div>
           </>
         }
-        right={
-          <>
-            <ProjectIndicator
-              name={current ? current.identity.name : "Všechny projekty"}
-              active={Boolean(current)}
-            />
-            <AdminUserMenu role={session.role} roleLabel={ROLE_LABEL[session.role]} />
-          </>
-        }
-      />
-      <SystemAlertsBar alerts={alerts} />
-      <main id="admin-main" style={{ flex: 1, padding: "24px clamp(16px, 3vw, 40px)", minWidth: 0 }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <NotificationProvider>
-            <PermissionsProvider>
-              {children}
-            </PermissionsProvider>
-          </NotificationProvider>
-        </div>
-      </main>
+      >
+        <Topbar
+          left={
+            <>
+              <MobileNav items={navItems} />
+              <Breadcrumbs items={crumbs} />
+            </>
+          }
+          right={
+            <>
+              <ProjectIndicator
+                name={current ? current.identity.name : "Všechny projekty"}
+                active={Boolean(current)}
+              />
+              <AdminUserMenu role={session.role} roleLabel={ROLE_LABEL[session.role]} />
+            </>
+          }
+        />
+        <SystemAlertsBar alerts={alerts} />
+        <main
+          id="admin-main"
+          style={{ flex: 1, padding: "24px clamp(16px, 3vw, 40px)", minWidth: 0 }}
+        >
+          <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+            <NotificationProvider>
+              <PermissionsProvider>{children}</PermissionsProvider>
+            </NotificationProvider>
+          </div>
+        </main>
       </ShellLayout>
     </>
   );
@@ -135,9 +152,12 @@ export default async function AdminShellLayout({ children }: { children: React.R
  */
 function buildBreadcrumbs(
   pathname: string,
-  projects: { identity: { id: string; name: string } }[]
+  projects: { identity: { id: string; name: string } }[],
 ): Crumb[] {
-  const segments = pathname.replace(/^\/admin\/?/, "").split("/").filter(Boolean);
+  const segments = pathname
+    .replace(/^\/admin\/?/, "")
+    .split("/")
+    .filter(Boolean);
   const crumbs: Crumb[] = [{ label: "Nastavení", href: "/admin/settings" }];
 
   if (segments.length === 0) return [{ label: "Nastavení" }];

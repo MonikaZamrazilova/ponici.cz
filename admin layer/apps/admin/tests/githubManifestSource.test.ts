@@ -14,7 +14,10 @@ function base64(text: string): string {
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 const validManifest = {
@@ -36,8 +39,8 @@ describe("githubManifestSource", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
-        Promise.resolve(jsonResponse({ content: base64(JSON.stringify(validManifest)), sha: "s" }))
-      ) as unknown as typeof fetch
+        Promise.resolve(jsonResponse({ content: base64(JSON.stringify(validManifest)), sha: "s" })),
+      ) as unknown as typeof fetch,
     );
 
     const source = githubManifestSource(PATH);
@@ -50,7 +53,9 @@ describe("githubManifestSource", () => {
   it("404 → AdminError 404 s jasnou hláškou", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.resolve(new Response("Not Found", { status: 404 }))) as unknown as typeof fetch
+      vi.fn(() =>
+        Promise.resolve(new Response("Not Found", { status: 404 })),
+      ) as unknown as typeof fetch,
     );
 
     const source = githubManifestSource(PATH);
@@ -61,8 +66,10 @@ describe("githubManifestSource", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
-        Promise.resolve(jsonResponse({ content: base64(JSON.stringify({ app: { name: "x" } })), sha: "s" }))
-      ) as unknown as typeof fetch
+        Promise.resolve(
+          jsonResponse({ content: base64(JSON.stringify({ app: { name: "x" } })), sha: "s" }),
+        ),
+      ) as unknown as typeof fetch,
     );
 
     const source = githubManifestSource(PATH);

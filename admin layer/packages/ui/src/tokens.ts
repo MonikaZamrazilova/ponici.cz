@@ -54,7 +54,7 @@ export const cardStyle: CSSProperties = {
 
 export function buttonStyle(
   variant: "primary" | "secondary" | "ghost" | "danger" = "primary",
-  size: "sm" | "md" = "md"
+  size: "sm" | "md" = "md",
 ): CSSProperties {
   const base: CSSProperties = {
     display: "inline-flex",
@@ -74,16 +74,31 @@ export function buttonStyle(
     case "primary":
       return { ...base, background: tokens.colors.primary, color: "#FFFFFF" };
     case "secondary":
-      return { ...base, background: tokens.colors.surface, color: tokens.colors.primary, borderColor: tokens.colors.borderHi };
+      return {
+        ...base,
+        background: tokens.colors.surface,
+        color: tokens.colors.primary,
+        borderColor: tokens.colors.borderHi,
+      };
     case "danger":
-      return { ...base, background: tokens.colors.surface, color: tokens.colors.danger, borderColor: tokens.colors.borderHi };
+      return {
+        ...base,
+        background: tokens.colors.surface,
+        color: tokens.colors.danger,
+        borderColor: tokens.colors.borderHi,
+      };
     case "ghost":
-      return { ...base, background: "transparent", color: tokens.colors.secondary, padding: size === "sm" ? "4px 8px" : "6px 12px" };
+      return {
+        ...base,
+        background: "transparent",
+        color: tokens.colors.secondary,
+        padding: size === "sm" ? "4px 8px" : "6px 12px",
+      };
   }
 }
 
 export function badgeStyle(
-  tone: "neutral" | "success" | "warning" | "danger" | "info"
+  tone: "neutral" | "success" | "warning" | "danger" | "info",
 ): CSSProperties {
   const bg = {
     neutral: tokens.colors.accentSoft,

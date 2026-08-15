@@ -17,11 +17,11 @@ export function Nav({ items }: { items: NavItem[] }) {
   let lastSection: string | undefined;
 
   return (
-      <nav aria-label="Hlavní navigace" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+    <nav aria-label="Hlavní navigace" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {items.map((item) => {
         const sectionHeader =
           item.section && item.section !== lastSection
-            ? (lastSection = item.section,
+            ? ((lastSection = item.section),
               (
                 <span
                   key={`section-${item.section}`}
@@ -62,11 +62,7 @@ export function Nav({ items }: { items: NavItem[] }) {
                 {item.label}
               </a>
             ) : (
-              <Link
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                style={linkStyle}
-              >
+              <Link href={item.href} aria-current={active ? "page" : undefined} style={linkStyle}>
                 {item.label}
               </Link>
             )}

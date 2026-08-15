@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     for (const name of ["admin_reset_token", "admin_reset_verified"]) {
       response.headers.append(
         "set-cookie",
-        `${name}=; Path=/; HttpOnly; Secure; SameSite=Lax; Expires=${expires}`
+        `${name}=; Path=/; HttpOnly; Secure; SameSite=Lax; Expires=${expires}`,
       );
     }
     return response;

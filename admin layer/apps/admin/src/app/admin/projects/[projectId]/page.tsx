@@ -11,13 +11,11 @@ export const dynamic = "force-dynamic";
 
 const REQUIRED_PERMISSION = "content:read";
 
-
 export default async function ProjectHomePage({
   params,
 }: {
   params: Promise<{ projectId: string }>;
 }) {
-
   if (!(await canPermission(REQUIRED_PERMISSION))) {
     return <Forbidden />;
   }
@@ -29,7 +27,7 @@ export default async function ProjectHomePage({
     manifest.kinds.map(async (kind) => ({
       kind,
       rows: await listItems({ adapter, manifest }, kind),
-    }))
+    })),
   );
   const recentAudit = await listAudit(projectId, 8);
   const caps = adapter.capabilities;
@@ -38,7 +36,9 @@ export default async function ProjectHomePage({
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       <PageHeader
         title={adapter.identity.name}
-        description={adapter.identity.description ?? `${adapter.identity.id} — kontrakt z manifest.json`}
+        description={
+          adapter.identity.description ?? `${adapter.identity.id} — kontrakt z manifest.json`
+        }
       />
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -46,8 +46,12 @@ export default async function ProjectHomePage({
           Media: {caps.media.enabled ? `ano (max ${caps.media.maxSizeMb} MB)` : "ne"}
         </Badge>
         <Badge tone="info">Publish: {caps.publish.model}</Badge>
-        <Badge tone={caps.content.create ? "success" : "danger"}>Create: {caps.content.create ? "ano" : "ne"}</Badge>
-        <Badge tone={caps.content.publish ? "success" : "danger"}>Publish: {caps.content.publish ? "ano" : "ne"}</Badge>
+        <Badge tone={caps.content.create ? "success" : "danger"}>
+          Create: {caps.content.create ? "ano" : "ne"}
+        </Badge>
+        <Badge tone={caps.content.publish ? "success" : "danger"}>
+          Publish: {caps.content.publish ? "ano" : "ne"}
+        </Badge>
         {adapter.identity.repo && (
           <span style={{ fontSize: 12, color: tokens.colors.muted, fontFamily: tokens.font.mono }}>
             repo: {adapter.identity.repo}
@@ -73,11 +77,19 @@ export default async function ProjectHomePage({
                 >
                   {kind.label}
                 </a>
-                <div style={{ fontSize: 12, color: tokens.colors.muted, marginTop: 2 }}>{kind.kind}</div>
+                <div style={{ fontSize: 12, color: tokens.colors.muted, marginTop: 2 }}>
+                  {kind.kind}
+                </div>
               </Td>
               <Td>{rows.length}</Td>
               <Td>
-                <span style={{ color: rows.filter((r) => r.hasDraft).length ? tokens.colors.warning : tokens.colors.muted }}>
+                <span
+                  style={{
+                    color: rows.filter((r) => r.hasDraft).length
+                      ? tokens.colors.warning
+                      : tokens.colors.muted,
+                  }}
+                >
                   {rows.filter((r) => r.hasDraft).length}
                 </span>
               </Td>
@@ -108,16 +120,42 @@ export default async function ProjectHomePage({
                     fontSize: 13,
                   }}
                 >
-                  <span style={{ color: tokens.colors.mutedSoft, fontFamily: tokens.font.mono, fontSize: 12, width: 130, flexShrink: 0 }}>
+                  <span
+                    style={{
+                      color: tokens.colors.mutedSoft,
+                      fontFamily: tokens.font.mono,
+                      fontSize: 12,
+                      width: 130,
+                      flexShrink: 0,
+                    }}
+                  >
                     {new Date(event.timestamp).toLocaleString("cs-CZ")}
                   </span>
-                  <Badge tone={event.action === "publish" ? "success" : event.action === "delete" ? "danger" : "neutral"}>
+                  <Badge
+                    tone={
+                      event.action === "publish"
+                        ? "success"
+                        : event.action === "delete"
+                          ? "danger"
+                          : "neutral"
+                    }
+                  >
                     {event.action}
                   </Badge>
-                  <span style={{ fontFamily: tokens.font.mono, fontSize: 12, color: tokens.colors.muted, width: 90, flexShrink: 0 }}>
+                  <span
+                    style={{
+                      fontFamily: tokens.font.mono,
+                      fontSize: 12,
+                      color: tokens.colors.muted,
+                      width: 90,
+                      flexShrink: 0,
+                    }}
+                  >
                     {event.entityKind}
                   </span>
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span
+                    style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                  >
                     {event.summary}
                   </span>
                 </div>

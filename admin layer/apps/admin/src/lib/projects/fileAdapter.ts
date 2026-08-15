@@ -36,9 +36,10 @@ const DEFAULT_MEDIA_CAPS: Omit<ProjectMediaCapability, "enabled"> = {
   ],
 };
 
-function buildMediaStore(
-  cfg: ProjectConfig
-): { capability: ProjectMediaCapability; store: MediaStorePort | undefined } {
+function buildMediaStore(cfg: ProjectConfig): {
+  capability: ProjectMediaCapability;
+  store: MediaStorePort | undefined;
+} {
   const capability: ProjectMediaCapability =
     cfg.media.provider === "filesystem"
       ? {
@@ -67,7 +68,10 @@ function buildFeatures(cfg: ProjectConfig): Required<ProjectFeatures> {
  * <contentRoot>/<id>/{manifest.json, store/{drafts,published}.json},
  * media → Vercel Blob.
  */
-export function createGithubProjectAdapter(cfg: ProjectConfig, contentRoot: string): ProjectAdapter {
+export function createGithubProjectAdapter(
+  cfg: ProjectConfig,
+  contentRoot: string,
+): ProjectAdapter {
   const repoPath = `${contentRoot}/${cfg.identity.id}`;
   const { capability, store } = buildMediaStore(cfg);
 

@@ -40,7 +40,7 @@ describe("resetToken — signed token utility", () => {
     const [raw, sig] = token.split(".");
     // dekóduj payload, změň e-mail, zakóduj zpět
     const json = JSON.parse(
-      Buffer.from(raw.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8")
+      Buffer.from(raw.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8"),
     ) as { email: string };
     json.email = "attacker@example.com";
     const newRaw = Buffer.from(JSON.stringify(json))
@@ -93,14 +93,21 @@ describe("checkRateLimit — podepsaný timestamp token", () => {
   it("staré pokusy mimo okno se vyčistí → povoleno znovu", async () => {
     // token s pokusy před 20 minutami
     const past = Date.now() - 20 * 60 * 1000;
-    const { createResetToken: _unused, checkRateLimit: _unused2 } = { createResetToken: undefined, checkRateLimit: undefined };
+    const { createResetToken: _unused, checkRateLimit: _unused2 } = {
+      createResetToken: undefined,
+      checkRateLimit: undefined,
+    };
     void _unused;
     void _unused2;
     const { checkRateLimit: limit } = await import("../src/lib/auth/resetToken");
     // simulace: 5 starých pokusů, ale ručně vytvoříme token s past timestamps
     const token = await (async () => {
       const raw = Buffer.from(
-        JSON.stringify({ action: "verify", attempts: [past, past, past, past, past], expiresAt: Date.now() + 60_000 })
+        JSON.stringify({
+          action: "verify",
+          attempts: [past, past, past, past, past],
+          expiresAt: Date.now() + 60_000,
+        }),
       )
         .toString("base64")
         .replace(/\+/g, "-")

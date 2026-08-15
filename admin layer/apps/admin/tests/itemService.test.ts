@@ -11,14 +11,8 @@ vi.stubEnv("ADMIN_PROJECTS", "");
 
 const { createGithubProjectAdapter } = await import("../src/lib/projects/fileAdapter");
 const { projectConfig } = await import("@admin/core");
-const {
-  deleteItem,
-  discardDraft,
-  getItemVersions,
-  publishItem,
-  rollbackItem,
-  saveDraft,
-} = await import("../src/lib/services/itemService");
+const { deleteItem, discardDraft, getItemVersions, publishItem, rollbackItem, saveDraft } =
+  await import("../src/lib/services/itemService");
 
 const manifest: ContentManifest = {
   app: { name: "Test" },
@@ -57,7 +51,10 @@ function makeGithubMock(initial: Record<string, unknown> = {}) {
   let shaCounter = 0;
 
   for (const [path, data] of Object.entries(initial)) {
-    files.set(path, { content: typeof data === "string" ? data : JSON.stringify(data), sha: `sha${++shaCounter}` });
+    files.set(path, {
+      content: typeof data === "string" ? data : JSON.stringify(data),
+      sha: `sha${++shaCounter}`,
+    });
   }
 
   vi.stubGlobal(
@@ -69,7 +66,11 @@ function makeGithubMock(initial: Record<string, unknown> = {}) {
       const method = init?.method ?? "GET";
 
       if (method === "PUT") {
-        const body = JSON.parse(String(init?.body)) as { content: string; message: string; sha?: string };
+        const body = JSON.parse(String(init?.body)) as {
+          content: string;
+          message: string;
+          sha?: string;
+        };
         const current = files.get(repoPath);
         if (current && current.sha !== body.sha) {
           return Promise.resolve(new Response("Conflict", { status: 409 }));
@@ -82,7 +83,7 @@ function makeGithubMock(initial: Record<string, unknown> = {}) {
           new Response(JSON.stringify({ content: { sha: `sha${shaCounter}` } }), {
             status: 201,
             headers: { "content-type": "application/json" },
-          })
+          }),
         );
       }
 
@@ -92,11 +93,14 @@ function makeGithubMock(initial: Record<string, unknown> = {}) {
       }
       return Promise.resolve(
         new Response(
-          JSON.stringify({ content: Buffer.from(file.content, "utf8").toString("base64"), sha: file.sha }),
-          { status: 200, headers: { "content-type": "application/json" } }
-        )
+          JSON.stringify({
+            content: Buffer.from(file.content, "utf8").toString("base64"),
+            sha: file.sha,
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
       );
-    }) as unknown as typeof fetch
+    }) as unknown as typeof fetch,
   );
 
   return {
@@ -138,7 +142,7 @@ describe("itemService — CRUD/publish/rollback (A11.1)", () => {
 
     // obsah se uložil přes GitHub (drafts.json)
     const drafts = JSON.parse(
-      mock.getContent("admin layer/content/projects/testproject/store/drafts.json") ?? "{}"
+      mock.getContent("admin layer/content/projects/testproject/store/drafts.json") ?? "{}",
     ) as Record<string, Record<string, { createdAt?: string }>>;
     expect(drafts.note?.nova?.createdAt).toBeDefined();
 
@@ -226,15 +230,21 @@ describe("itemService — CRUD/publish/rollback (A11.1)", () => {
 
   it("saveDraft: bez capability create → 403 (permission denied)", async () => {
     makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
-    const adapter = makeAdapter({ content: { create: false, edit: true, publish: true, discard: true, delete: true } });
+    const adapter = makeAdapter({
+      content: { create: false, edit: true, publish: true, discard: true, delete: true },
+    });
     const ctx = { adapter, manifest };
 
-    await expect(saveDraft(ctx, kindDef, "nova", { title: "Nová" })).rejects.toMatchObject({ status: 403 });
+    await expect(saveDraft(ctx, kindDef, "nova", { title: "Nová" })).rejects.toMatchObject({
+      status: 403,
+    });
   });
 
   it("publishItem: bez capability publish → 403", async () => {
     makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
-    const adapter = makeAdapter({ content: { create: true, edit: true, publish: false, discard: true, delete: true } });
+    const adapter = makeAdapter({
+      content: { create: true, edit: true, publish: false, discard: true, delete: true },
+    });
     const ctx = { adapter, manifest };
 
     await saveDraft(ctx, kindDef, "nova", { title: "Nová", body: "<p>n</p>" });
@@ -243,7 +253,9 @@ describe("itemService — CRUD/publish/rollback (A11.1)", () => {
 
   it("discardDraft: bez capability discard → 403", async () => {
     makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
-    const adapter = makeAdapter({ content: { create: true, edit: true, publish: true, discard: false, delete: true } });
+    const adapter = makeAdapter({
+      content: { create: true, edit: true, publish: true, discard: false, delete: true },
+    });
     const ctx = { adapter, manifest };
 
     await saveDraft(ctx, kindDef, "nova", { title: "Nová", body: "<p>n</p>" });
@@ -252,7 +264,9 @@ describe("itemService — CRUD/publish/rollback (A11.1)", () => {
 
   it("deleteItem: bez capability delete → 403", async () => {
     makeGithubMock({ "admin layer/content/projects/testproject/manifest.json": manifest });
-    const adapter = makeAdapter({ content: { create: true, edit: true, publish: true, discard: true, delete: false } });
+    const adapter = makeAdapter({
+      content: { create: true, edit: true, publish: true, discard: true, delete: false },
+    });
     const ctx = { adapter, manifest };
 
     await expect(deleteItem(ctx, kindDef, "nova")).rejects.toMatchObject({ status: 403 });

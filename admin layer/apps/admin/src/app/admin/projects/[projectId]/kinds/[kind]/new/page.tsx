@@ -12,13 +12,11 @@ export const dynamic = "force-dynamic";
 
 const REQUIRED_PERMISSION = "content:create";
 
-
 export default async function NewItemPage({
   params,
 }: {
   params: Promise<{ projectId: string; kind: string }>;
 }) {
-
   if (!(await canPermission(REQUIRED_PERMISSION))) {
     return <Forbidden />;
   }

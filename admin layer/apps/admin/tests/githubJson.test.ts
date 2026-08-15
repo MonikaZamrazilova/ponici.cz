@@ -6,11 +6,11 @@ vi.stubEnv("GITHUB_OWNER", "test-owner");
 vi.stubEnv("GITHUB_REPO", "test-repo");
 vi.stubEnv("GITHUB_BRANCH", "main");
 
-const { githubRead, githubReadJson, githubUpdateJson, githubRepo } = await import(
-  "../src/lib/storage/githubJson"
-);
+const { githubRead, githubReadJson, githubUpdateJson, githubRepo } =
+  await import("../src/lib/storage/githubJson");
 
-const URL_GET = "https://api.github.com/repos/test-owner/test-repo/contents/test/path.json?ref=main";
+const URL_GET =
+  "https://api.github.com/repos/test-owner/test-repo/contents/test/path.json?ref=main";
 const URL_PUT = "https://api.github.com/repos/test-owner/test-repo/contents/test/path.json";
 
 function base64(text: string): string {
@@ -24,7 +24,10 @@ function mockFetch(handler: (url: string, init?: RequestInit) => Promise<Respons
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 describe("githubRepo (env)", () => {
@@ -96,7 +99,12 @@ describe("githubUpdateJson", () => {
       return Promise.resolve(new Response("Not Found", { status: 404 }));
     });
 
-    const existed = await githubUpdateJson("test/path.json", {}, (c) => ({ ...c, n: 1 }), "test msg");
+    const existed = await githubUpdateJson(
+      "test/path.json",
+      {},
+      (c) => ({ ...c, n: 1 }),
+      "test msg",
+    );
     expect(existed).toBe(false);
     expect(puts).toHaveLength(1);
     const body = JSON.parse(String(puts[0].init.body)) as Record<string, unknown>;
@@ -137,7 +145,8 @@ describe("githubUpdateJson", () => {
       }
       // GET: první čtení stará verze, druhé (po konfliktu) novější verze
       reads++;
-      if (reads === 1) return Promise.resolve(jsonResponse({ content: base64('{"a":1}'), sha: "sha1" }));
+      if (reads === 1)
+        return Promise.resolve(jsonResponse({ content: base64('{"a":1}'), sha: "sha1" }));
       return Promise.resolve(jsonResponse({ content: base64('{"a":1,"c":3}'), sha: "sha2" }));
     });
 

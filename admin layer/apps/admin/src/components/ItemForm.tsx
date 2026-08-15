@@ -2,7 +2,17 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Badge, Button, Card, EmptyState, FieldInput, useForm, useNotifications, useUnsavedGuard, tokens } from "@admin/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  FieldInput,
+  useForm,
+  useNotifications,
+  useUnsavedGuard,
+  tokens,
+} from "@admin/ui";
 import {
   diffItemFields,
   formatFieldValue,
@@ -81,11 +91,14 @@ export function ItemForm({
       return result.ok ? {} : issuesToFieldErrors(result.issues);
     },
     onSubmit: async (values) => {
-      const res = await apiFetch<ContentItem>(`/api/projects/${projectId}/items/${kind}/${idInput}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action: "save", data: { id: idInput, ...values } }),
-      });
+      const res = await apiFetch<ContentItem>(
+        `/api/projects/${projectId}/items/${kind}/${idInput}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "save", data: { id: idInput, ...values } }),
+        },
+      );
       if (!res.ok) {
         notify({ type: "error", title: "Uložení se nepovedlo", message: res.error.message });
         return { ok: false, message: res.error.message, fields: res.error.fields };
@@ -107,7 +120,7 @@ export function ItemForm({
     return diffItemFields(
       kindDef.fields.map((f) => f.name),
       draft,
-      publishedVersion
+      publishedVersion,
     );
   }, [hasDraft, draft, publishedVersion, kindDef]);
 
@@ -119,7 +132,8 @@ export function ItemForm({
   }, [savedId, isNew, router, projectId, kind]);
 
   async function runRollback() {
-    if (!window.confirm("Vrátit obsah na base verzi (z webu)? Publikovaný override bude smazán.")) return;
+    if (!window.confirm("Vrátit obsah na base verzi (z webu)? Publikovaný override bude smazán."))
+      return;
     setActionBusy("delete");
     try {
       const res = await apiFetch<{ rolledBack?: boolean }>(
@@ -128,7 +142,7 @@ export function ItemForm({
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ action: "rollback" }),
-        }
+        },
       );
       if (!res.ok) {
         notify({ type: "error", title: "Rollback selhal", message: res.error.message });
@@ -154,25 +168,34 @@ export function ItemForm({
 
     setActionBusy(action);
     try {
-      const res = await apiFetch<{ published?: boolean } | { discarded?: boolean } | { deleted?: boolean }>(
-        `/api/projects/${projectId}/items/${kind}/${idInput}`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ action }),
-        }
-      );
+      const res = await apiFetch<
+        { published?: boolean } | { discarded?: boolean } | { deleted?: boolean }
+      >(`/api/projects/${projectId}/items/${kind}/${idInput}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
       if (!res.ok) {
         notify({
           type: "error",
-          title: action === "publish" ? "Publikování selhalo" : action === "delete" ? "Smazání selhalo" : "Zahození selhalo",
+          title:
+            action === "publish"
+              ? "Publikování selhalo"
+              : action === "delete"
+                ? "Smazání selhalo"
+                : "Zahození selhalo",
           message: res.error.message,
         });
         return;
       }
       notify({
         type: action === "delete" ? "warning" : "success",
-        title: action === "publish" ? "Publikováno" : action === "delete" ? "Položka smazána" : "Draft zahozen",
+        title:
+          action === "publish"
+            ? "Publikováno"
+            : action === "delete"
+              ? "Položka smazána"
+              : "Draft zahozen",
       });
       if (action === "delete") {
         router.push(`/admin/projects/${projectId}/kinds/${kind}`);
@@ -196,7 +219,9 @@ export function ItemForm({
 
   const tabs: { key: EditorView; label: string }[] = [
     { key: "edit", label: "Upravit" },
-    ...(features.publishedVersion ? [{ key: "published" as const, label: "Publikovaná verze" }] : []),
+    ...(features.publishedVersion
+      ? [{ key: "published" as const, label: "Publikovaná verze" }]
+      : []),
     ...(features.preview ? [{ key: "preview" as const, label: "Náhled (po publishi)" }] : []),
   ];
 
@@ -220,7 +245,12 @@ export function ItemForm({
       <div
         role="tablist"
         aria-label="Verze položky"
-        style={{ display: "flex", gap: 4, borderBottom: `1px solid ${tokens.colors.border}`, flexWrap: "wrap" }}
+        style={{
+          display: "flex",
+          gap: 4,
+          borderBottom: `1px solid ${tokens.colors.border}`,
+          flexWrap: "wrap",
+        }}
       >
         {tabs.map((tab) => {
           const active = view === tab.key;
@@ -234,7 +264,9 @@ export function ItemForm({
               style={{
                 background: "transparent",
                 border: "none",
-                borderBottom: active ? `2px solid ${tokens.colors.primary}` : "2px solid transparent",
+                borderBottom: active
+                  ? `2px solid ${tokens.colors.primary}`
+                  : "2px solid transparent",
                 padding: "8px 12px",
                 fontSize: 13,
                 fontWeight: active ? 700 : 500,
@@ -250,22 +282,98 @@ export function ItemForm({
       </div>
 
       <div role="tabpanel" aria-label={`Verze: ${tabs.find((t) => t.key === view)?.label ?? ""}`}>
-      {view === "published" && (
-        <>
+        {view === "published" && (
+          <>
+            <ReadOnlyItem
+              kindDef={kindDef}
+              item={publishedVersion}
+              locales={locales}
+              mediaBaseUrl={`/api/projects/${projectId}`}
+              emptyTitle="Ještě nic nebylo publikováno"
+              emptyHint="Po prvním publishi se tu objeví poslední publikovaná verze."
+              note="Poslední publikovaná verze — rozpracovaný draft se sem nepromítá."
+            />
+            {hasBase && isPublished && canPublish && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  padding: 12,
+                  background: tokens.colors.bg,
+                  borderRadius: 12,
+                  border: `1px solid ${tokens.colors.border}`,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Can permission="content:publish">
+                  <Button variant="secondary" disabled={busy} onClick={runRollback}>
+                    Vrátit na base verzi (z webu)
+                  </Button>
+                </Can>
+                <span style={{ fontSize: 12, color: tokens.colors.muted, alignSelf: "center" }}>
+                  Smaže publikovaný override — web se vrátí k obsahu, který dodává sám.
+                </span>
+              </div>
+            )}
+          </>
+        )}
+
+        {view === "preview" && (
           <ReadOnlyItem
             kindDef={kindDef}
-            item={publishedVersion}
+            item={draft ?? publishedVersion}
             locales={locales}
             mediaBaseUrl={`/api/projects/${projectId}`}
-            emptyTitle="Ještě nic nebylo publikováno"
-            emptyHint="Po prvním publishi se tu objeví poslední publikovaná verze."
-            note="Poslední publikovaná verze — rozpracovaný draft se sem nepromítá."
+            emptyTitle="Zatím není co náhlednout"
+            emptyHint="Nejdřív uložte draft."
+            note={
+              hasDraft
+                ? "Takto bude obsah vypadat na webu po publishi (base + draft)."
+                : "Web zobrazuje poslední publikovanou verzi — draft není uložen."
+            }
           />
-          {hasBase && isPublished && canPublish && (
+        )}
+
+        {view === "edit" && (
+          <>
+            <Card padded={false}>
+              <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+                {isNew && (
+                  <FieldInput
+                    field={{
+                      type: "text",
+                      name: "id",
+                      label: "ID (slug)",
+                      required: true,
+                      help: "Stabilní identita — malá písmena, číslice, pomlčky. Později ji nelze měnit.",
+                    }}
+                    value={idInput}
+                    onChange={(v) => setIdInput(String(v))}
+                    error={form.errors["id"]}
+                  />
+                )}
+                {kindDef.fields.map((field) => (
+                  <FormFieldRow
+                    key={field.name}
+                    field={field}
+                    value={form.values[field.name]}
+                    error={form.errors[field.name]}
+                    changed={changedFields.has(field.name)}
+                    setField={setField}
+                    locales={locales}
+                    mediaBaseUrl={`/api/projects/${projectId}`}
+                    features={features}
+                  />
+                ))}
+              </div>
+            </Card>
+
             <div
               style={{
                 display: "flex",
                 gap: 8,
+                position: "sticky",
+                bottom: 16,
                 padding: 12,
                 background: tokens.colors.bg,
                 borderRadius: 12,
@@ -273,116 +381,40 @@ export function ItemForm({
                 flexWrap: "wrap",
               }}
             >
-              <Can permission="content:publish">
-                <Button variant="secondary" disabled={busy} onClick={runRollback}>
-                  Vrátit na base verzi (z webu)
+              <Can permission={isNew ? "content:create" : "content:update"}>
+                <Button disabled={busy} onClick={() => form.submit()}>
+                  {form.submitting ? "Ukládám…" : "Uložit draft"}
                 </Button>
               </Can>
-              <span style={{ fontSize: 12, color: tokens.colors.muted, alignSelf: "center" }}>
-                Smaže publikovaný override — web se vrátí k obsahu, který dodává sám.
-              </span>
-            </div>
-          )}
-        </>
-      )}
-
-      {view === "preview" && (
-        <ReadOnlyItem
-          kindDef={kindDef}
-          item={draft ?? publishedVersion}
-          locales={locales}
-          mediaBaseUrl={`/api/projects/${projectId}`}
-          emptyTitle="Zatím není co náhlednout"
-          emptyHint="Nejdřív uložte draft."
-          note={
-            hasDraft
-              ? "Takto bude obsah vypadat na webu po publishi (base + draft)."
-              : "Web zobrazuje poslední publikovanou verzi — draft není uložen."
-          }
-        />
-      )}
-
-      {view === "edit" && (
-        <>
-          <Card padded={false}>
-            <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-              {isNew && (
-                <FieldInput
-                  field={{
-                    type: "text",
-                    name: "id",
-                    label: "ID (slug)",
-                    required: true,
-                    help: "Stabilní identita — malá písmena, číslice, pomlčky. Později ji nelze měnit.",
-                  }}
-                  value={idInput}
-                  onChange={(v) => setIdInput(String(v))}
-                  error={form.errors["id"]}
-                />
+              {canPublish && (
+                <Can permission="content:publish">
+                  <Button
+                    variant="secondary"
+                    disabled={publishDisabled}
+                    title={isNew && !hasDraft ? "Nejdřív uložte draft" : undefined}
+                    onClick={() => runAction("publish")}
+                  >
+                    {actionBusy === "publish" ? "Publikuji…" : "Publikovat"}
+                  </Button>
+                </Can>
               )}
-              {kindDef.fields.map((field) => (
-                <FormFieldRow
-                  key={field.name}
-                  field={field}
-                  value={form.values[field.name]}
-                  error={form.errors[field.name]}
-                  changed={changedFields.has(field.name)}
-                  setField={setField}
-                  locales={locales}
-                  mediaBaseUrl={`/api/projects/${projectId}`}
-                  features={features}
-                />
-              ))}
+              {hasDraft && canDiscard && (
+                <Can permission="content:delete">
+                  <Button variant="ghost" disabled={busy} onClick={() => runAction("discard")}>
+                    {actionBusy === "discard" ? "Zahazuji…" : "Vrátit bez publikování"}
+                  </Button>
+                </Can>
+              )}
+              {!isNew && canDelete && isDeletable && (
+                <Can permission="content:delete">
+                  <Button variant="danger" disabled={busy} onClick={() => runAction("delete")}>
+                    {actionBusy === "delete" ? "Mažu…" : "Smazat položku"}
+                  </Button>
+                </Can>
+              )}
             </div>
-          </Card>
-
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              position: "sticky",
-              bottom: 16,
-              padding: 12,
-              background: tokens.colors.bg,
-              borderRadius: 12,
-              border: `1px solid ${tokens.colors.border}`,
-              flexWrap: "wrap",
-            }}
-          >
-            <Can permission={isNew ? "content:create" : "content:update"}>
-              <Button disabled={busy} onClick={() => form.submit()}>
-                {form.submitting ? "Ukládám…" : "Uložit draft"}
-              </Button>
-            </Can>
-            {canPublish && (
-              <Can permission="content:publish">
-                <Button
-                  variant="secondary"
-                  disabled={publishDisabled}
-                  title={isNew && !hasDraft ? "Nejdřív uložte draft" : undefined}
-                  onClick={() => runAction("publish")}
-                >
-                  {actionBusy === "publish" ? "Publikuji…" : "Publikovat"}
-                </Button>
-              </Can>
-            )}
-            {hasDraft && canDiscard && (
-              <Can permission="content:delete">
-                <Button variant="ghost" disabled={busy} onClick={() => runAction("discard")}>
-                  {actionBusy === "discard" ? "Zahazuji…" : "Vrátit bez publikování"}
-                </Button>
-              </Can>
-            )}
-            {!isNew && canDelete && isDeletable && (
-              <Can permission="content:delete">
-                <Button variant="danger" disabled={busy} onClick={() => runAction("delete")}>
-                  {actionBusy === "delete" ? "Mažu…" : "Smazat položku"}
-                </Button>
-              </Can>
-            )}
-          </div>
-        </>
-      )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -408,14 +440,19 @@ function ReadOnlyItem({
   emptyHint: string;
 }) {
   if (!item) {
-    return (
-      <EmptyState title={emptyTitle} hint={emptyHint} />
-    );
+    return <EmptyState title={emptyTitle} hint={emptyHint} />;
   }
 
   return (
     <Card padded={false}>
-      <div style={{ padding: "10px 16px", borderBottom: `1px solid ${tokens.colors.border}`, fontSize: 12, color: tokens.colors.muted }}>
+      <div
+        style={{
+          padding: "10px 16px",
+          borderBottom: `1px solid ${tokens.colors.border}`,
+          fontSize: 12,
+          color: tokens.colors.muted,
+        }}
+      >
         {note}
       </div>
       <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
@@ -476,11 +513,16 @@ function FieldValueRow({
         {field.required && <span style={{ color: tokens.colors.danger }}> *</span>}
       </div>
       {isImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={value.startsWith("http") ? value : `${mediaBaseUrl}/media/${value}`}
           alt={String(value)}
-          style={{ width: 200, maxHeight: 120, objectFit: "cover", borderRadius: 8, border: `1px solid ${tokens.colors.borderHi}` }}
+          style={{
+            width: 200,
+            maxHeight: 120,
+            objectFit: "cover",
+            borderRadius: 8,
+            border: `1px solid ${tokens.colors.borderHi}`,
+          }}
         />
       ) : isComplex ? (
         <pre
@@ -499,7 +541,13 @@ function FieldValueRow({
           {JSON.stringify(value ?? null, null, 2)}
         </pre>
       ) : (
-        <div style={{ fontSize: 14, color: formatted ? tokens.colors.primary : tokens.colors.mutedSoft, lineHeight: 1.5 }}>
+        <div
+          style={{
+            fontSize: 14,
+            color: formatted ? tokens.colors.primary : tokens.colors.mutedSoft,
+            lineHeight: 1.5,
+          }}
+        >
           {formatted || "—"}
         </div>
       )}
@@ -542,12 +590,18 @@ const FormFieldRow = memo(function FormFieldRow({
   const onChange = useCallback(
     (v: unknown) => {
       if (field.type === "multiselect" && !features.multiselect) {
-        setField(field.name, String(v).split(",").map((s) => s.trim()).filter(Boolean));
+        setField(
+          field.name,
+          String(v)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+        );
       } else {
         setField(field.name, v);
       }
     },
-    [field, setField, features]
+    [field, setField, features],
   );
 
   return (

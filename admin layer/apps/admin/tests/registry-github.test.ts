@@ -15,7 +15,10 @@ function base64(text: string): string {
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 const manifest = {
@@ -46,8 +49,10 @@ describe("registry — GitHub backend (100% cloud)", () => {
       "fetch",
       vi.fn((url: string) => {
         expect(url).toContain("/contents/admin%20layer/content/projects/ponici/manifest.json");
-        return Promise.resolve(jsonResponse({ content: base64(JSON.stringify(manifest)), sha: "s" }));
-      }) as unknown as typeof fetch
+        return Promise.resolve(
+          jsonResponse({ content: base64(JSON.stringify(manifest)), sha: "s" }),
+        );
+      }) as unknown as typeof fetch,
     );
 
     const adapter = requireProject("ponici");
@@ -69,16 +74,18 @@ describe("registry — GitHub backend (100% cloud)", () => {
         }
         // GET drafts.json — prázdný fallback
         return Promise.resolve(new Response("Not Found", { status: 404 }));
-      }) as unknown as typeof fetch
+      }) as unknown as typeof fetch,
     );
 
     const adapter = requireProject("ponici");
     await adapter.drafts.save(
       { id: "x1", status: "draft", createdAt: "2026-01-01", updatedAt: "2026-01-01" },
-      "site"
+      "site",
     );
     expect(puts).toHaveLength(1);
-    expect(JSON.parse(puts[0])).toEqual({ site: { x1: { id: "x1", status: "draft", createdAt: "2026-01-01", updatedAt: "2026-01-01" } } });
+    expect(JSON.parse(puts[0])).toEqual({
+      site: { x1: { id: "x1", status: "draft", createdAt: "2026-01-01", updatedAt: "2026-01-01" } },
+    });
   });
 
   it("githubContentRoot() má default admin layer/content/projects", () => {

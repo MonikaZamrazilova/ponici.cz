@@ -20,7 +20,11 @@ interface PermissionsState {
 const Ctx = createContext<PermissionsState>({ role: null, permissions: [], loaded: false });
 
 export function PermissionsProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<PermissionsState>({ role: null, permissions: [], loaded: false });
+  const [state, setState] = useState<PermissionsState>({
+    role: null,
+    permissions: [],
+    loaded: false,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -55,13 +59,7 @@ export function usePermissions() {
 }
 
 /** Podmíněné vykreslení — stejná pravidla jako server, ale jen pro UI. */
-export function Can({
-  permission,
-  children,
-}: {
-  permission: Permission;
-  children: ReactNode;
-}) {
+export function Can({ permission, children }: { permission: Permission; children: ReactNode }) {
   const { can } = usePermissions();
   return can(permission) ? <>{children}</> : null;
 }

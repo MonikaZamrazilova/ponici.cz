@@ -4,7 +4,13 @@ import { requireAnyPermission, requirePermission } from "@/lib/auth";
 import { requireProject } from "@/lib/projects/registry";
 import { assertBodySize, assertSameOrigin } from "@/lib/security";
 import { getKind, loadManifest } from "@/lib/services/manifestService";
-import { deleteItem, discardDraft, publishItem, rollbackItem, saveDraft } from "@/lib/services/itemService";
+import {
+  deleteItem,
+  discardDraft,
+  publishItem,
+  rollbackItem,
+  saveDraft,
+} from "@/lib/services/itemService";
 
 /**
  * API kontrakt — mutace obsahu (scoped per projekt).
@@ -14,7 +20,7 @@ import { deleteItem, discardDraft, publishItem, rollbackItem, saveDraft } from "
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ projectId: string; kind: string; id: string }> }
+  { params }: { params: Promise<{ projectId: string; kind: string; id: string }> },
 ) {
   try {
     assertBodySize(request, 1024 * 1024); // max 1 MB
@@ -39,18 +45,34 @@ export async function POST(
         });
         return NextResponse.json(ok(await saveDraft(ctx, kindDef, id, body.data)));
       case "publish":
-        await requirePermission("content:publish", { mutating: true, projectId, entity: `items/${kind}/${id}` });
+        await requirePermission("content:publish", {
+          mutating: true,
+          projectId,
+          entity: `items/${kind}/${id}`,
+        });
         return NextResponse.json(
-          ok({ published: true, item: await publishItem(ctx, kindDef, id) })
+          ok({ published: true, item: await publishItem(ctx, kindDef, id) }),
         );
       case "discard":
-        await requirePermission("content:delete", { mutating: true, projectId, entity: `items/${kind}/${id}` });
+        await requirePermission("content:delete", {
+          mutating: true,
+          projectId,
+          entity: `items/${kind}/${id}`,
+        });
         return NextResponse.json(ok({ discarded: await discardDraft(ctx, kindDef, id) }));
       case "delete":
-        await requirePermission("content:delete", { mutating: true, projectId, entity: `items/${kind}/${id}` });
+        await requirePermission("content:delete", {
+          mutating: true,
+          projectId,
+          entity: `items/${kind}/${id}`,
+        });
         return NextResponse.json(ok({ deleted: await deleteItem(ctx, kindDef, id) }));
       case "rollback":
-        await requirePermission("content:publish", { mutating: true, projectId, entity: `items/${kind}/${id}` });
+        await requirePermission("content:publish", {
+          mutating: true,
+          projectId,
+          entity: `items/${kind}/${id}`,
+        });
         return NextResponse.json(ok({ rolledBack: await rollbackItem(ctx, kindDef, id) }));
       default:
         return NextResponse.json(fail("Neznámá akce"), { status: 400 });

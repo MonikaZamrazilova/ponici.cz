@@ -162,7 +162,7 @@ export const fieldSchema: z.ZodType<FieldSchema> = z.lazy(() =>
       type: z.literal("localized"),
       inner: localizedInnerFieldSchema,
     }),
-  ])
+  ]),
 );
 
 export const entityKindSchema = z.object({

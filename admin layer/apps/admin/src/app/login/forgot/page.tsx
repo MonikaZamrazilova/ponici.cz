@@ -19,7 +19,16 @@ export default function ForgotPasswordPage() {
       }}
     >
       <Card style={{ width: "100%", maxWidth: 380, padding: 32 }}>
-        <h1 style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 6px", fontSize: 17, letterSpacing: "-0.02em" }}>
+        <h1
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            margin: "0 0 6px",
+            fontSize: 17,
+            letterSpacing: "-0.02em",
+          }}
+        >
           Admin Layer
           <Badge>Obnova hesla</Badge>
         </h1>

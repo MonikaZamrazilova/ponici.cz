@@ -36,15 +36,36 @@ export function FieldInput({
   switch (field.type) {
     case "object":
       return (
-        <ObjectFieldInput field={field} value={value} onChange={onChange} locales={locales} mediaBaseUrl={mediaBaseUrl} changed={changed} />
+        <ObjectFieldInput
+          field={field}
+          value={value}
+          onChange={onChange}
+          locales={locales}
+          mediaBaseUrl={mediaBaseUrl}
+          changed={changed}
+        />
       );
     case "repeater":
       return (
-        <RepeaterFieldInput field={field} value={value} onChange={onChange} locales={locales} mediaBaseUrl={mediaBaseUrl} changed={changed} />
+        <RepeaterFieldInput
+          field={field}
+          value={value}
+          onChange={onChange}
+          locales={locales}
+          mediaBaseUrl={mediaBaseUrl}
+          changed={changed}
+        />
       );
     case "localized":
       return (
-        <LocalizedFieldInput field={field} value={value} onChange={onChange} locales={locales} error={error} changed={changed} />
+        <LocalizedFieldInput
+          field={field}
+          value={value}
+          onChange={onChange}
+          locales={locales}
+          error={error}
+          changed={changed}
+        />
       );
     default:
       return (
@@ -60,7 +81,21 @@ export function FieldInput({
   }
 }
 
-type ScalarLike = Extract<FieldSchema, { type: "text" | "textarea" | "number" | "boolean" | "url" | "image" | "select" | "multiselect" | "richtext" }>;
+type ScalarLike = Extract<
+  FieldSchema,
+  {
+    type:
+      | "text"
+      | "textarea"
+      | "number"
+      | "boolean"
+      | "url"
+      | "image"
+      | "select"
+      | "multiselect"
+      | "richtext";
+  }
+>;
 
 function FieldShell({
   label,
@@ -83,11 +118,22 @@ function FieldShell({
   const header = (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       {group ? (
-        <legend style={{ fontSize: 13, fontWeight: 600, color: tokens.colors.primary, padding: 0, margin: 0 }}>
+        <legend
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: tokens.colors.primary,
+            padding: 0,
+            margin: 0,
+          }}
+        >
           {label}
         </legend>
       ) : (
-        <label htmlFor={htmlFor} style={{ fontSize: 13, fontWeight: 600, color: tokens.colors.primary }}>
+        <label
+          htmlFor={htmlFor}
+          style={{ fontSize: 13, fontWeight: 600, color: tokens.colors.primary }}
+        >
           {label}
         </label>
       )}
@@ -113,7 +159,11 @@ function FieldShell({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      {group ? <fieldset style={{ border: "none", margin: 0, padding: 0, minWidth: 0 }}>{header}</fieldset> : header}
+      {group ? (
+        <fieldset style={{ border: "none", margin: 0, padding: 0, minWidth: 0 }}>{header}</fieldset>
+      ) : (
+        header
+      )}
       {children}
       {error && <span style={{ fontSize: 12, color: tokens.colors.danger }}>{error}</span>}
       {!error && help && <span style={{ fontSize: 12, color: tokens.colors.muted }}>{help}</span>}
@@ -167,7 +217,7 @@ function MultiSelectControl({
     onChange(
       selected.includes(option.value)
         ? selected.filter((v) => v !== option.value)
-        : [...selected, option.value]
+        : [...selected, option.value],
     );
   }
   return (
@@ -282,7 +332,14 @@ function RichTextControl({
           ["underline", "U", "Podtržení"],
           ["insertUnorderedList", "•", "Seznam"],
         ].map(([command, glyph, label]) => (
-          <button key={command} type="button" title={label} aria-label={label} style={toolbarButton} onClick={() => exec(command)}>
+          <button
+            key={command}
+            type="button"
+            title={label}
+            aria-label={label}
+            style={toolbarButton}
+            onClick={() => exec(command)}
+          >
             {glyph}
           </button>
         ))}
@@ -345,7 +402,14 @@ function ScalarControl({
     case "multiselect":
       return <MultiSelectControl field={field} value={value} onChange={onChange} />;
     case "richtext":
-      return <RichTextControl value={value} onChange={onChange} placeholder={placeholder} controlId={controlId} />;
+      return (
+        <RichTextControl
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          controlId={controlId}
+        />
+      );
     case "textarea":
       return (
         <textarea
@@ -376,14 +440,22 @@ function ScalarControl({
             checked={Boolean(value)}
             onChange={(e) => onChange(e.target.checked)}
           />
-          <label htmlFor={controlId} style={{ fontSize: 14, color: tokens.colors.secondary, cursor: "pointer" }}>
+          <label
+            htmlFor={controlId}
+            style={{ fontSize: 14, color: tokens.colors.secondary, cursor: "pointer" }}
+          >
             {placeholder ?? "Ano / Ne"}
           </label>
         </div>
       );
     case "select":
       return (
-        <select id={controlId} style={inputStyle} value={String(value ?? "")} onChange={(e) => onChange(e.target.value)}>
+        <select
+          id={controlId}
+          style={inputStyle}
+          value={String(value ?? "")}
+          onChange={(e) => onChange(e.target.value)}
+        >
           <option value="">— vyberte —</option>
           {field.options.map((o) => (
             <option key={o.value} value={o.value}>
@@ -480,11 +552,16 @@ function ImageControl({
         )}
       </div>
       {isMediaId && (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={`${mediaBaseUrl}/media/${v}`}
           alt={v}
-          style={{ width: 120, height: 72, objectFit: "cover", borderRadius: 8, border: `1px solid ${tokens.colors.borderHi}` }}
+          style={{
+            width: 120,
+            height: 72,
+            objectFit: "cover",
+            borderRadius: 8,
+            border: `1px solid ${tokens.colors.borderHi}`,
+          }}
         />
       )}
     </div>
@@ -508,9 +585,20 @@ function ScalarFieldInput({
 }) {
   const controlId = useId();
   return (
-    <FieldShell label={field.label} help={field.help} error={error} changed={changed} htmlFor={controlId}>
+    <FieldShell
+      label={field.label}
+      help={field.help}
+      error={error}
+      changed={changed}
+      htmlFor={controlId}
+    >
       {field.type === "image" ? (
-        <ImageControl value={value} onChange={onChange} mediaBaseUrl={mediaBaseUrl} controlId={controlId} />
+        <ImageControl
+          value={value}
+          onChange={onChange}
+          mediaBaseUrl={mediaBaseUrl}
+          controlId={controlId}
+        />
       ) : (
         <ScalarControl
           field={field}
@@ -594,17 +682,35 @@ function RepeaterFieldInput({
         {items.map((item, index) => (
           <div
             key={index}
-            style={{ border: `1px solid ${tokens.colors.border}`, borderRadius: 10, background: tokens.colors.card, padding: 12 }}
+            style={{
+              border: `1px solid ${tokens.colors.border}`,
+              borderRadius: 10,
+              background: tokens.colors.card,
+              padding: 12,
+            }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 12,
+              }}
+            >
               <span style={{ fontSize: 12, fontWeight: 600, color: tokens.colors.muted }}>
                 {itemName} {index + 1}
               </span>
-              <Button variant="ghost" size="sm" onClick={() => onChange(items.filter((_, j) => j !== index))}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onChange(items.filter((_, j) => j !== index))}
+              >
                 Odebrat
               </Button>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 14 }}>
+            <div
+              style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 14 }}
+            >
               {field.fields.map((sub) => (
                 <FieldInput
                   key={sub.name}

@@ -35,6 +35,6 @@ export async function GET() {
       projects: Object.keys(contracts).length,
       contracts,
     },
-    { status: status === "ok" ? 200 : 503 }
+    { status: status === "ok" ? 200 : 503 },
   );
 }

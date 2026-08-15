@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   if (!rate.allowed) {
     return NextResponse.json(
       { ok: false, error: { message: "Příliš mnoho pokusů — zkuste to později" } },
-      { status: 429 }
+      { status: 429 },
     );
   }
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     if (result.verifiedToken) {
       response.headers.append(
         "set-cookie",
-        resetCookie("admin_reset_verified", result.verifiedToken, 10 * 60)
+        resetCookie("admin_reset_verified", result.verifiedToken, 10 * 60),
       );
     }
     return response;

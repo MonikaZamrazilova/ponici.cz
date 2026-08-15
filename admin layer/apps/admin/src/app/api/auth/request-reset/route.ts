@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   if (!isResetEnabled()) {
     return NextResponse.json(
       { ok: false, error: { message: "Obnova hesla není nastavená (chybí ADMIN_EMAIL)" } },
-      { status: 503 }
+      { status: 503 },
     );
   }
 
@@ -35,12 +35,12 @@ export async function POST(request: NextRequest) {
     existing,
     "request-reset",
     REQUEST_RESET_LIMIT,
-    REQUEST_RESET_WINDOW_MS
+    REQUEST_RESET_WINDOW_MS,
   );
   if (!rate.allowed) {
     return NextResponse.json(
       { ok: false, error: { message: "Příliš mnoho žádostí — zkuste to později" } },
-      { status: 429 }
+      { status: 429 },
     );
   }
 
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     if (result.resetToken) {
       response.headers.append(
         "set-cookie",
-        resetCookie("admin_reset_token", result.resetToken, 10 * 60)
+        resetCookie("admin_reset_token", result.resetToken, 10 * 60),
       );
     }
     if (result.devCode) {
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { ok: false, error: { message: "Interní chyba — zkuste to později" } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

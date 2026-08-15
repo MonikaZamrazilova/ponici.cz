@@ -23,7 +23,14 @@ describe("permission model (A1.2)", () => {
   it("viewer je read-only", () => {
     expect(hasPermission("viewer", "content:read")).toBe(true);
     expect(hasPermission("viewer", "audit:read")).toBe(true);
-    for (const write of ["content:create", "content:update", "content:delete", "content:publish", "media:write", "settings:read"] as const) {
+    for (const write of [
+      "content:create",
+      "content:update",
+      "content:delete",
+      "content:publish",
+      "media:write",
+      "settings:read",
+    ] as const) {
       expect(hasPermission("viewer", write)).toBe(false);
     }
   });

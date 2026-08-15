@@ -10,10 +10,13 @@ export function uid(): string {
  * Lidsky čitelný label položky pro seznamy.
  * Použije listField (nebo idField); podporuje Localized hodnotu ("cs").
  */
-export function getItemLabel(kindDef: {
-  idField: string;
-  listField?: string;
-}, item: { id: string; [field: string]: unknown }): string {
+export function getItemLabel(
+  kindDef: {
+    idField: string;
+    listField?: string;
+  },
+  item: { id: string; [field: string]: unknown },
+): string {
   const name = kindDef.listField ?? kindDef.idField;
   const value = item[name];
   if (typeof value === "string" && value.trim()) return value;
@@ -31,7 +34,7 @@ export function getItemLabel(kindDef: {
 export function formatFieldValue(
   field: { type: string; options?: { value: string; label: string }[] },
   value: unknown,
-  locale = "cs"
+  locale = "cs",
 ): string {
   if (value === undefined || value === null) return "";
   if (typeof value === "string") {
@@ -49,7 +52,9 @@ export function formatFieldValue(
         .map((entry) => {
           if (typeof entry === "string") return entry;
           if (entry && typeof entry === "object") {
-            return String((entry as Record<string, unknown>)["name"] ?? entry["tag"] ?? entry["keyword"] ?? "");
+            return String(
+              (entry as Record<string, unknown>)["name"] ?? entry["tag"] ?? entry["keyword"] ?? "",
+            );
           }
           return "";
         })
@@ -67,7 +72,7 @@ export function formatFieldValue(
 export function diffItemFields(
   fieldNames: string[],
   draft: Record<string, unknown>,
-  published: Record<string, unknown>
+  published: Record<string, unknown>,
 ): Set<string> {
   const changed = new Set<string>();
   for (const name of fieldNames) {

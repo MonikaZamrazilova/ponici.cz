@@ -21,7 +21,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ projectId:
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> }
+  { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
     assertSameOrigin(request);

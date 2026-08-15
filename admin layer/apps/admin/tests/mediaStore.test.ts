@@ -60,7 +60,7 @@ function stubBlobFetch(): void {
         }
       }
       return new Response("Not Found", { status: 404 });
-    }) as unknown as typeof fetch
+    }) as unknown as typeof fetch,
   );
 }
 
@@ -97,8 +97,16 @@ describe("blobMediaStore — Vercel Blob media", () => {
   });
 
   it("list: vrátí všechna media", async () => {
-    await mediaStore.save({ name: "a.png", mime: "image/png", data: new TextEncoder().encode("a") });
-    await mediaStore.save({ name: "b.gif", mime: "image/gif", data: new TextEncoder().encode("b") });
+    await mediaStore.save({
+      name: "a.png",
+      mime: "image/png",
+      data: new TextEncoder().encode("a"),
+    });
+    await mediaStore.save({
+      name: "b.gif",
+      mime: "image/gif",
+      data: new TextEncoder().encode("b"),
+    });
     const all = await mediaStore.list();
     expect(all).toHaveLength(2);
   });

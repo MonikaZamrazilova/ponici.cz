@@ -10,7 +10,7 @@ import type { ContentItem, ItemStatus } from "./item";
 export function zodFromField(
   field: FieldSchema,
   locales: string[],
-  forceRequired?: boolean
+  forceRequired?: boolean,
 ): z.ZodType<unknown> {
   const required = forceRequired ?? field.required;
   const base = zodFromFieldRaw(field, locales, required);
@@ -20,7 +20,7 @@ export function zodFromField(
 function zodFromFieldRaw(
   field: FieldSchema,
   locales: string[],
-  required = field.required
+  required = field.required,
 ): z.ZodType<unknown> {
   switch (field.type) {
     case "text":
@@ -57,7 +57,9 @@ function zodFromFieldRaw(
       const record: Record<string, z.ZodTypeAny> = {};
       for (const sub of field.fields) {
         const schema = zodFromField(sub, locales);
-        record[sub.name] = sub.required ? (schema as z.ZodTypeAny) : (schema as z.ZodTypeAny).optional();
+        record[sub.name] = sub.required
+          ? (schema as z.ZodTypeAny)
+          : (schema as z.ZodTypeAny).optional();
       }
       return z.array(z.object(record).passthrough());
     }
@@ -72,7 +74,10 @@ function zodFromFieldRaw(
   }
 }
 
-export function zodFromKind(kindDef: EntityKindDef, locales: string[]): z.ZodObject<Record<string, z.ZodTypeAny>> {
+export function zodFromKind(
+  kindDef: EntityKindDef,
+  locales: string[],
+): z.ZodObject<Record<string, z.ZodTypeAny>> {
   const record: Record<string, z.ZodTypeAny> = {
     id: z
       .string()
@@ -90,13 +95,12 @@ export function zodFromKind(kindDef: EntityKindDef, locales: string[]): z.ZodObj
 }
 
 export type EntityValidationResult =
-  | { ok: true; value: ContentItem }
-  | { ok: false; issues: z.ZodIssue[] };
+  { ok: true; value: ContentItem } | { ok: false; issues: z.ZodIssue[] };
 
 export function validateEntity(
   kindDef: EntityKindDef,
   locales: string[],
-  data: unknown
+  data: unknown,
 ): EntityValidationResult {
   const result = zodFromKind(kindDef, locales).safeParse(data);
   if (result.success) {

@@ -112,7 +112,7 @@ export function useForm<T extends Record<string, unknown>>({
  */
 export function useUnsavedGuard(
   active: boolean,
-  message = "Máte neuložené změny. Opravdu chcete opustit stránku?"
+  message = "Máte neuložené změny. Opravdu chcete opustit stránku?",
 ) {
   useEffect(() => {
     if (!active) return;

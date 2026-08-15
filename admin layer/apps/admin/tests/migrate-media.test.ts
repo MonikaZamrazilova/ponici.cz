@@ -14,9 +14,8 @@ vi.mock("@vercel/blob", () => ({
   head: (...args: unknown[]) => headMock(...args),
 }));
 
-const { findMediaFiles, blobPath, migrateMedia } = await import(
-  "../../../scripts/lib/mediaMigration.ts"
-);
+const { findMediaFiles, blobPath, migrateMedia } =
+  await import("../../../scripts/lib/mediaMigration.ts");
 
 let tmpRoot = "";
 
@@ -25,8 +24,14 @@ beforeEach(() => {
   // projekt ponici s 2 media soubory + .gitkeep
   const poniciMedia = path.join(tmpRoot, "ponici", "media");
   mkdirSync(poniciMedia, { recursive: true });
-  writeFileSync(path.join(poniciMedia, "91f0b2be-15c6-4a1d-8544-8a48d7170e8f.jpg"), Buffer.from("JPEGDATA1"));
-  writeFileSync(path.join(poniciMedia, "97ec0593-5dc1-4a4b-b4f7-935afd8c1310.jpg"), Buffer.from("JPEGDATA2"));
+  writeFileSync(
+    path.join(poniciMedia, "91f0b2be-15c6-4a1d-8544-8a48d7170e8f.jpg"),
+    Buffer.from("JPEGDATA1"),
+  );
+  writeFileSync(
+    path.join(poniciMedia, "97ec0593-5dc1-4a4b-b4f7-935afd8c1310.jpg"),
+    Buffer.from("JPEGDATA2"),
+  );
   writeFileSync(path.join(poniciMedia, ".gitkeep"), "");
 
   // projekt demo-web s 1 png

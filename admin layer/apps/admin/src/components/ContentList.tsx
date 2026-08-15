@@ -65,7 +65,11 @@ export function ContentList({
                 <Td>
                   <Link
                     href={`/admin/projects/${projectId}/kinds/${kind}/${row.item.id}`}
-                    style={{ fontWeight: 600, color: tokens.colors.primary, textDecoration: "none" }}
+                    style={{
+                      fontWeight: 600,
+                      color: tokens.colors.primary,
+                      textDecoration: "none",
+                    }}
                   >
                     {getItemLabel(kindDef, row.item)}
                   </Link>
@@ -93,7 +97,12 @@ export function ContentList({
                   <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                     <Link
                       href={`/admin/projects/${projectId}/kinds/${kind}/${row.item.id}`}
-                      style={{ fontSize: 13, fontWeight: 600, color: tokens.colors.primary, textDecoration: "none" }}
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: tokens.colors.primary,
+                        textDecoration: "none",
+                      }}
                     >
                       Upravit
                     </Link>
@@ -128,7 +137,10 @@ export function NewItemButton({
 }) {
   if (!canCreate) return <Badge tone="neutral">Vytváření vypnuto (capability)</Badge>;
   return (
-    <Link href={`/admin/projects/${projectId}/kinds/${kind}/new`} style={{ textDecoration: "none" }}>
+    <Link
+      href={`/admin/projects/${projectId}/kinds/${kind}/new`}
+      style={{ textDecoration: "none" }}
+    >
       <Button>+ Nová položka</Button>
     </Link>
   );

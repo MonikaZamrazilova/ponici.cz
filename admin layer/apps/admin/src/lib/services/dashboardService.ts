@@ -1,5 +1,10 @@
 import "server-only";
-import { getItemLabel, type AuditEvent, type ContentManifest, type ProjectAdapter } from "@admin/core";
+import {
+  getItemLabel,
+  type AuditEvent,
+  type ContentManifest,
+  type ProjectAdapter,
+} from "@admin/core";
 import { listAudit } from "./auditService";
 import { adminConfig } from "../config";
 import { listProjects } from "../projects/registry";

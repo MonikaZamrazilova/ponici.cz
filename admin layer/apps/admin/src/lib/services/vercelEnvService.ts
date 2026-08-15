@@ -57,7 +57,7 @@ interface VercelEnvVar {
 async function apiFetch(
   cfg: VercelConfig,
   path: string,
-  init: RequestInit = {}
+  init: RequestInit = {},
 ): Promise<Response> {
   const headers = new Headers(init.headers);
   headers.set("authorization", `Bearer ${cfg.token}`);
@@ -114,7 +114,7 @@ async function triggerProductionRedeploy(cfg: VercelConfig): Promise<void> {
   try {
     const list = await apiFetch(
       cfg,
-      `/v13/deployments?projectId=${cfg.projectId}${cfg.teamId ? `&teamId=${encodeURIComponent(cfg.teamId)}` : ""}&target=production&limit=1&state=READY`
+      `/v13/deployments?projectId=${cfg.projectId}${cfg.teamId ? `&teamId=${encodeURIComponent(cfg.teamId)}` : ""}&target=production&limit=1&state=READY`,
     );
     if (!list.ok) return;
     const json = (await list.json()) as { deployments?: { uid?: string }[] };

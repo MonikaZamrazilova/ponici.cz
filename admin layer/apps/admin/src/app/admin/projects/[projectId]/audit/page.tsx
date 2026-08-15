@@ -11,11 +11,7 @@ export const dynamic = "force-dynamic";
 
 const REQUIRED_PERMISSION = "audit:read";
 
-export default async function AuditPage({
-  params,
-}: {
-  params: Promise<{ projectId: string }>;
-}) {
+export default async function AuditPage({ params }: { params: Promise<{ projectId: string }> }) {
   if (!(await canPermission(REQUIRED_PERMISSION))) {
     return <Forbidden />;
   }

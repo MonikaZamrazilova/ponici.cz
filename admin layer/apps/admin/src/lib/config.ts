@@ -13,7 +13,7 @@ const env = loadAdminEnv();
 
 const enabledModules = new Set<CoreModule>(env.ADMIN_MODULES ?? CORE_MODULES);
 export const coreModules: Record<CoreModule, boolean> = Object.fromEntries(
-  CORE_MODULES.map((module) => [module, enabledModules.has(module)])
+  CORE_MODULES.map((module) => [module, enabledModules.has(module)]),
 ) as Record<CoreModule, boolean>;
 
 export const adminConfig = {

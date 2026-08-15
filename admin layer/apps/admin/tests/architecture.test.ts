@@ -39,7 +39,7 @@ describe("single source of truth (architecture)", () => {
   it("admin override store píše commit se standardem admin(<projectId>): akce", async () => {
     const source = readFileSync(
       path.join(repoRoot, "admin layer/apps/admin/src/lib/storage/githubOverrideStore.ts"),
-      "utf8"
+      "utf8",
     );
     expect(source).toMatch(/admin\(\$\{projectId\}\): save/);
     expect(source).toMatch(/admin\(\$\{projectId\}\): remove/);

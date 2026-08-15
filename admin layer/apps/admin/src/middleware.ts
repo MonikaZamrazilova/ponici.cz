@@ -49,10 +49,7 @@ export async function middleware(request: NextRequest) {
 
   // veřejné čtení media souborů — obrázky v obsahu webu se zobrazují
   // i návštěvníkům (náhodné UUID názvy brání hádání); DELETE zůstává chráněný
-  if (
-    request.method === "GET" &&
-    /^\/api\/projects\/[^/]+\/media\/[^/]+$/.test(pathname)
-  ) {
+  if (request.method === "GET" && /^\/api\/projects\/[^/]+\/media\/[^/]+$/.test(pathname)) {
     return NextResponse.next();
   }
 
@@ -70,8 +67,11 @@ export async function middleware(request: NextRequest) {
     }
     if (isApi) {
       return NextResponse.json(
-        { ok: false, error: { message: "Nepřihlášeno — session chybí, vypršela nebo je neplatná" } },
-        { status: 401 }
+        {
+          ok: false,
+          error: { message: "Nepřihlášeno — session chybí, vypršela nebo je neplatná" },
+        },
+        { status: 401 },
       );
     }
     if (pathname === "/login" || pathname.startsWith("/login/")) {

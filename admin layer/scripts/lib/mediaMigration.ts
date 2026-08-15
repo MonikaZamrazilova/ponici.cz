@@ -71,7 +71,7 @@ export interface MigrateResult {
  */
 export async function migrateMedia(
   mediaRoot: string,
-  opts: { dryRun?: boolean; onLog?: (msg: string) => void } = {}
+  opts: { dryRun?: boolean; onLog?: (msg: string) => void } = {},
 ): Promise<MigrateResult> {
   const log = opts.onLog ?? ((m: string) => console.log(m));
   const files = findMediaFiles(mediaRoot);

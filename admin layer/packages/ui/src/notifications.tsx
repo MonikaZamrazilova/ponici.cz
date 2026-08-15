@@ -66,10 +66,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       setItems((current) => [...current.slice(-3), { ...input, id }]);
       const ttl = input.ttlMs ?? DEFAULT_TTL[input.type];
-      timers.current.set(id, window.setTimeout(() => dismiss(id), ttl));
+      timers.current.set(
+        id,
+        window.setTimeout(() => dismiss(id), ttl),
+      );
       return id;
     },
-    [dismiss]
+    [dismiss],
   );
 
   return (
@@ -127,9 +130,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                 {tone.glyph}
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: tokens.colors.primary }}>{n.title}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: tokens.colors.primary }}>
+                  {n.title}
+                </div>
                 {n.message && (
-                  <div style={{ fontSize: 12, color: tokens.colors.secondary, marginTop: 2, lineHeight: 1.5 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: tokens.colors.secondary,
+                      marginTop: 2,
+                      lineHeight: 1.5,
+                    }}
+                  >
                     {n.message}
                   </div>
                 )}
@@ -138,7 +150,15 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                 type="button"
                 aria-label="Zavřít notifikaci"
                 onClick={() => dismiss(n.id)}
-                style={{ background: "transparent", border: "none", cursor: "pointer", color: tokens.colors.muted, fontSize: 14, padding: 2, lineHeight: 1 }}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  color: tokens.colors.muted,
+                  fontSize: 14,
+                  padding: 2,
+                  lineHeight: 1,
+                }}
               >
                 ✕
               </button>

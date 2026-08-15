@@ -38,13 +38,14 @@ function walk(dir: string): string[] {
 const files = walk(srcDir).filter((f) => !f.includes("tests"));
 
 describe("security — secrets v client bundle (A13)", () => {
-  it("každý soubor čtoucí token env je server-only (import \"server-only\")", () => {
+  it('každý soubor čtoucí token env je server-only (import "server-only")', () => {
     const offenders = files
       .map((file) => {
         const content = readFileSync(file, "utf8");
         const usesSecret = SECRET_ENV_PATTERNS.some((pattern) => content.includes(pattern));
         if (!usesSecret) return null;
-        const isServerOnly = content.includes('import "server-only"') || content.includes("server-only");
+        const isServerOnly =
+          content.includes('import "server-only"') || content.includes("server-only");
         return isServerOnly ? null : file.replace(srcDir, "src/");
       })
       .filter((f): f is string => f !== null);
@@ -52,7 +53,7 @@ describe("security — secrets v client bundle (A13)", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("žádný soubor čtoucí token env není client komponenta (\"use client\")", () => {
+  it('žádný soubor čtoucí token env není client komponenta ("use client")', () => {
     const offenders = files
       .map((file) => {
         const content = readFileSync(file, "utf8");

@@ -3,12 +3,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.stubEnv("NODE_ENV", "production");
 vi.stubEnv("ADMIN_PROJECTS", "");
 
-const { sendPasswordResetCode, isEmailConfigured } = await import(
-  "../src/lib/services/emailService"
-);
+const { sendPasswordResetCode, isEmailConfigured } =
+  await import("../src/lib/services/emailService");
 
 function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 afterEach(() => {
@@ -33,7 +35,7 @@ describe("emailService — Web3Forms", () => {
       vi.fn((url: string, init?: RequestInit) => {
         captured = { url, init };
         return Promise.resolve(jsonResponse({ success: true }));
-      }) as unknown as typeof fetch
+      }) as unknown as typeof fetch,
     );
 
     const result = await sendPasswordResetCode({
@@ -55,7 +57,9 @@ describe("emailService — Web3Forms", () => {
     process.env.WEB3FORMS_ACCESS_KEY = "test-key";
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.resolve(new Response("Server Error", { status: 500 }))) as unknown as typeof fetch
+      vi.fn(() =>
+        Promise.resolve(new Response("Server Error", { status: 500 })),
+      ) as unknown as typeof fetch,
     );
 
     const result = await sendPasswordResetCode({
@@ -71,7 +75,7 @@ describe("emailService — Web3Forms", () => {
     process.env.WEB3FORMS_ACCESS_KEY = "test-key";
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.reject(new Error("fetch failed"))) as unknown as typeof fetch
+      vi.fn(() => Promise.reject(new Error("fetch failed"))) as unknown as typeof fetch,
     );
 
     const result = await sendPasswordResetCode({
@@ -82,20 +86,38 @@ describe("emailService — Web3Forms", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("MOCK bez klíče: ok:true, devCode jen v dev režimu", async () => {
+  it("MOCK bez klíče v produkci: ok:false (žádný tiše prošlý reset)", async () => {
     delete process.env.WEB3FORMS_ACCESS_KEY;
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      const dev = await sendPasswordResetCode({
+      const result = await sendPasswordResetCode({
         email: "owner@example.com",
         code: "123456",
         expiresAt: Date.now() + 60_000,
       });
-      expect(dev.ok).toBe(true);
-      // v production NODE_ENV se devCode nevrací
-      expect(dev.devCode).toBeUndefined();
+      // produkce bez Web3Forms MUSÍ selhat — nikdy tichý MOCK fallback
+      expect(result.ok).toBe(false);
+      expect(result.devCode).toBeUndefined();
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  it("MOCK bez klíče v dev režimu: ok:true s devCode (lokální test)", async () => {
+    delete process.env.WEB3FORMS_ACCESS_KEY;
+    vi.stubEnv("NODE_ENV", "development");
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    try {
+      const result = await sendPasswordResetCode({
+        email: "owner@example.com",
+        code: "654321",
+        expiresAt: Date.now() + 60_000,
+      });
+      expect(result.ok).toBe(true);
+      expect(result.devCode).toBe("654321");
     } finally {
       logSpy.mockRestore();
+      vi.unstubAllEnvs();
     }
   });
 
@@ -104,7 +126,9 @@ describe("emailService — Web3Forms", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.resolve(new Response("Server Error", { status: 500 }))) as unknown as typeof fetch
+      vi.fn(() =>
+        Promise.resolve(new Response("Server Error", { status: 500 })),
+      ) as unknown as typeof fetch,
     );
     try {
       await sendPasswordResetCode({

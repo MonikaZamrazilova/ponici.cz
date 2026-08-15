@@ -8,7 +8,7 @@ import type { ApiResult } from "@admin/core";
  */
 export async function apiFetch<T>(
   input: RequestInfo | URL,
-  init?: RequestInit
+  init?: RequestInit,
 ): Promise<ApiResult<T>> {
   const res = await fetch(input, init);
   if (res.status === 401) {

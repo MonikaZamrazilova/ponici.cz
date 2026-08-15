@@ -6,8 +6,14 @@ import { z } from "zod";
  */
 
 const projectsListSchema = z.preprocess(
-  (val) => (typeof val === "string" ? val.split(",").map((s) => s.trim()).filter(Boolean) : val),
-  z.array(z.string().min(1)).optional()
+  (val) =>
+    typeof val === "string"
+      ? val
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : val,
+  z.array(z.string().min(1)).optional(),
 );
 
 const hookUrlsSchema = z.preprocess(
@@ -19,10 +25,13 @@ const hookUrlsSchema = z.preprocess(
       return val; // nevalidní JSON → padne na record validaci níže
     }
   },
-  z.record(z.string().min(1), z.string().url()).optional()
+  z.record(z.string().min(1), z.string().url()).optional(),
 );
 
-const numberSchema = z.preprocess((val) => (val === undefined || val === "" ? undefined : Number(val)), z.number().optional());
+const numberSchema = z.preprocess(
+  (val) => (val === undefined || val === "" ? undefined : Number(val)),
+  z.number().optional(),
+);
 
 /** Core moduly Admin Layeru — zapnutí/vypnutí je konfigurační rozhodnutí. */
 export const CORE_MODULES = ["dashboard", "content", "media", "audit", "settings"] as const;
@@ -31,9 +40,12 @@ export type CoreModule = (typeof CORE_MODULES)[number];
 export const coreModulesSchema = z.preprocess(
   (val) =>
     typeof val === "string"
-      ? (val.split(",").map((s) => s.trim()).filter(Boolean) as CoreModule[])
+      ? (val
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean) as CoreModule[])
       : undefined,
-  z.array(z.enum(CORE_MODULES)).optional()
+  z.array(z.enum(CORE_MODULES)).optional(),
 );
 
 export const adminEnvSchema = z.object({
@@ -60,7 +72,7 @@ export function loadAdminEnv(env: NodeJS.ProcessEnv = process.env): AdminEnv {
   const parsed = adminEnvSchema.safeParse(env);
   if (!parsed.success) {
     throw new Error(
-      `Neplatná konfigurace adminu: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`
+      `Neplatná konfigurace adminu: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`,
     );
   }
   return parsed.data;

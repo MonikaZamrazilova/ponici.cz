@@ -43,14 +43,14 @@ export interface ItemVersions {
 function mergeBase(
   base: ContentItem,
   draft: ContentItem | null,
-  published: ContentItem | null
+  published: ContentItem | null,
 ): ContentItem {
   return { ...base, ...(published ?? {}), ...(draft ?? {}) };
 }
 
 function requireContentCapability(
   ctx: ProjectContext,
-  capability: keyof ProjectContentCapability
+  capability: keyof ProjectContentCapability,
 ): void {
   if (!ctx.adapter.capabilities.content[capability]) {
     throw new AdminError("Projekt tuto operaci neumožňuje (capability)", undefined, 403);
@@ -59,7 +59,7 @@ function requireContentCapability(
 
 export async function listItems(
   ctx: ProjectContext,
-  kindDef: EntityKindDef
+  kindDef: EntityKindDef,
 ): Promise<ItemSummary[]> {
   const { adapter } = ctx;
   const [drafts, published] = await Promise.all([
@@ -87,14 +87,14 @@ export async function listItems(
   }
 
   return [...rows.values()].sort((a, b) =>
-    getItemLabel(kindDef, a.item).localeCompare(getItemLabel(kindDef, b.item))
+    getItemLabel(kindDef, a.item).localeCompare(getItemLabel(kindDef, b.item)),
   );
 }
 
 export async function getItem(
   ctx: ProjectContext,
   kindDef: EntityKindDef,
-  id: string
+  id: string,
 ): Promise<ItemSummary | null> {
   const versions = await getItemVersions(ctx, kindDef, id);
   if (!versions) return null;
@@ -113,7 +113,7 @@ export async function getItem(
 export async function getItemVersions(
   ctx: ProjectContext,
   kindDef: EntityKindDef,
-  id: string
+  id: string,
 ): Promise<ItemVersions | null> {
   const { adapter } = ctx;
   const [draft, published] = await Promise.all([
@@ -142,7 +142,7 @@ export async function saveDraft(
   ctx: ProjectContext,
   kindDef: EntityKindDef,
   id: string,
-  data: unknown
+  data: unknown,
 ): Promise<ContentItem> {
   const existing = await getItem(ctx, kindDef, id);
   requireContentCapability(ctx, existing ? "edit" : "create");
@@ -152,10 +152,7 @@ export async function saveDraft(
     ...(data as object),
   });
   if (!validation.ok) {
-    throw new AdminError(
-      "Obsah neprošel validací",
-      issuesToFieldErrors(validation.issues)
-    );
+    throw new AdminError("Obsah neprošel validací", issuesToFieldErrors(validation.issues));
   }
 
   const fields: Record<string, unknown> = {};
@@ -192,7 +189,7 @@ export async function saveDraft(
 export async function publishItem(
   ctx: ProjectContext,
   kindDef: EntityKindDef,
-  id: string
+  id: string,
 ): Promise<ContentItem> {
   requireContentCapability(ctx, "publish");
 
@@ -246,12 +243,13 @@ export async function publishItem(
 export async function discardDraft(
   ctx: ProjectContext,
   kindDef: EntityKindDef,
-  id: string
+  id: string,
 ): Promise<boolean> {
   requireContentCapability(ctx, "discard");
   const removed = await ctx.adapter.drafts.remove(kindDef.kind, id);
   if (removed) {
-    void appendAudit({ projectId: ctx.adapter.identity.id,
+    void appendAudit({
+      projectId: ctx.adapter.identity.id,
       action: "delete",
       entityKind: kindDef.kind,
       entityId: id,
@@ -269,7 +267,7 @@ export async function discardDraft(
 export async function rollbackItem(
   ctx: ProjectContext,
   kindDef: EntityKindDef,
-  id: string
+  id: string,
 ): Promise<boolean> {
   requireContentCapability(ctx, "publish");
 
@@ -302,14 +300,14 @@ export async function rollbackItem(
 export async function deleteItem(
   ctx: ProjectContext,
   kindDef: EntityKindDef,
-  id: string
+  id: string,
 ): Promise<boolean> {
   requireContentCapability(ctx, "delete");
 
   const base = (kindDef.baseItems ?? []).find((item) => item.id === id);
   if (base) {
     throw new AdminError(
-      "Položka pochází z webu (base) — nelze ji smazat, jen upravit přes publish"
+      "Položka pochází z webu (base) — nelze ji smazat, jen upravit přes publish",
     );
   }
 

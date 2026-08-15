@@ -73,7 +73,10 @@ export function Field({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       {label && (
-        <label htmlFor={htmlFor} style={{ fontSize: 13, fontWeight: 600, color: tokens.colors.primary }}>
+        <label
+          htmlFor={htmlFor}
+          style={{ fontSize: 13, fontWeight: 600, color: tokens.colors.primary }}
+        >
           {label}
         </label>
       )}
@@ -140,11 +143,21 @@ export function PageHeader({
       }}
     >
       <div>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: tokens.colors.primary }}>
+        <h1
+          style={{
+            margin: 0,
+            fontSize: 24,
+            fontWeight: 700,
+            letterSpacing: "-0.02em",
+            color: tokens.colors.primary,
+          }}
+        >
           {title}
         </h1>
         {description && (
-          <p style={{ margin: "6px 0 0", fontSize: 14, color: tokens.colors.muted }}>{description}</p>
+          <p style={{ margin: "6px 0 0", fontSize: 14, color: tokens.colors.muted }}>
+            {description}
+          </p>
         )}
       </div>
       {actions && <div style={{ display: "flex", gap: 8 }}>{actions}</div>}
@@ -218,8 +231,12 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
         borderRadius: tokens.radius.lg,
       }}
     >
-      <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: tokens.colors.secondary }}>{title}</p>
-      {hint && <p style={{ margin: "6px 0 0", fontSize: 13, color: tokens.colors.muted }}>{hint}</p>}
+      <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: tokens.colors.secondary }}>
+        {title}
+      </p>
+      {hint && (
+        <p style={{ margin: "6px 0 0", fontSize: 13, color: tokens.colors.muted }}>{hint}</p>
+      )}
     </div>
   );
 }

@@ -11,7 +11,7 @@ export async function GET() {
   try {
     const session = await requireSession();
     return NextResponse.json(
-      ok({ role: session.role, permissions: rolePermissions(session.role) })
+      ok({ role: session.role, permissions: rolePermissions(session.role) }),
     );
   } catch {
     return NextResponse.json(fail("Nepřihlášeno"), { status: 401 });

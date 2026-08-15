@@ -24,7 +24,13 @@ const ACTION_TONE: Record<AuditAction, "success" | "danger" | "info" | "neutral"
  * Audit log s filtry (A8.1) — dohledatelnost podle akce, uživatele (role),
  * druhu entity a fulltextu. Filtrace klient-side nad načteným logem.
  */
-export function AuditLog({ events, showProject = false }: { events: AuditEvent[]; showProject?: boolean }) {
+export function AuditLog({
+  events,
+  showProject = false,
+}: {
+  events: AuditEvent[];
+  showProject?: boolean;
+}) {
   const [action, setAction] = useState<string>("");
   const [actor, setActor] = useState<string>("");
   const [kind, setKind] = useState<string>("");
@@ -69,22 +75,43 @@ export function AuditLog({ events, showProject = false }: { events: AuditEvent[]
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <select value={action} onChange={(e) => setAction(e.target.value)} style={selectStyle} aria-label="Filtr akce">
+        <select
+          value={action}
+          onChange={(e) => setAction(e.target.value)}
+          style={selectStyle}
+          aria-label="Filtr akce"
+        >
           <option value="">Všechny akce</option>
           {Object.keys(ACTION_TONE).map((a) => (
-            <option key={a} value={a}>{a}</option>
+            <option key={a} value={a}>
+              {a}
+            </option>
           ))}
         </select>
-        <select value={actor} onChange={(e) => setActor(e.target.value)} style={selectStyle} aria-label="Filtr uživatele">
+        <select
+          value={actor}
+          onChange={(e) => setActor(e.target.value)}
+          style={selectStyle}
+          aria-label="Filtr uživatele"
+        >
           <option value="">Všichni uživatelé</option>
           {actors.map((a) => (
-            <option key={a} value={a}>{a}</option>
+            <option key={a} value={a}>
+              {a}
+            </option>
           ))}
         </select>
-        <select value={kind} onChange={(e) => setKind(e.target.value)} style={selectStyle} aria-label="Filtr entity">
+        <select
+          value={kind}
+          onChange={(e) => setKind(e.target.value)}
+          style={selectStyle}
+          aria-label="Filtr entity"
+        >
           <option value="">Všechny entity</option>
           {kinds.map((k) => (
-            <option key={k} value={k}>{k}</option>
+            <option key={k} value={k}>
+              {k}
+            </option>
           ))}
         </select>
         <input
@@ -109,7 +136,11 @@ export function AuditLog({ events, showProject = false }: { events: AuditEvent[]
       <Card padded={false}>
         {filtered.length === 0 ? (
           <EmptyState
-            title={events.length === 0 ? "Zatím žádné auditní záznamy" : "Žádné záznamy neodpovídají filtru"}
+            title={
+              events.length === 0
+                ? "Zatím žádné auditní záznamy"
+                : "Žádné záznamy neodpovídají filtru"
+            }
             hint={events.length === 0 ? "První akce se objeví tady." : "Změňte filtry."}
           />
         ) : (
@@ -117,7 +148,13 @@ export function AuditLog({ events, showProject = false }: { events: AuditEvent[]
             {filtered.map((event) => (
               <tr key={event.id}>
                 <Td>
-                  <span style={{ fontFamily: tokens.font.mono, fontSize: 12, color: tokens.colors.muted }}>
+                  <span
+                    style={{
+                      fontFamily: tokens.font.mono,
+                      fontSize: 12,
+                      color: tokens.colors.muted,
+                    }}
+                  >
                     {new Date(event.timestamp).toLocaleString("cs-CZ")}
                   </span>
                 </Td>
@@ -129,7 +166,13 @@ export function AuditLog({ events, showProject = false }: { events: AuditEvent[]
                 </Td>
                 {showProject && (
                   <Td>
-                    <span style={{ fontFamily: tokens.font.mono, fontSize: 12, color: tokens.colors.muted }}>
+                    <span
+                      style={{
+                        fontFamily: tokens.font.mono,
+                        fontSize: 12,
+                        color: tokens.colors.muted,
+                      }}
+                    >
                       {event.projectId}
                     </span>
                   </Td>

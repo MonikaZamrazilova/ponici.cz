@@ -64,13 +64,7 @@ export function ShellLayout({
 
 /* ─────────────── Topbar ─────────────── */
 
-export function Topbar({
-  left,
-  right,
-}: {
-  left?: ReactNode;
-  right?: ReactNode;
-}) {
+export function Topbar({ left, right }: { left?: ReactNode; right?: ReactNode }) {
   return (
     <header
       style={{
@@ -106,18 +100,27 @@ export interface Crumb {
 export function Breadcrumbs({ items }: { items: Crumb[] }) {
   if (items.length === 0) return null;
   return (
-    <nav aria-label="Breadcrumb" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", minWidth: 0 }}>
+    <nav
+      aria-label="Breadcrumb"
+      style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", minWidth: 0 }}
+    >
       {items.map((item, index) => {
         const last = index === items.length - 1;
         return (
-          <span key={`${item.label}-${index}`} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            {index > 0 && (
-              <span style={{ color: tokens.colors.mutedSoft, fontSize: 12 }}>/</span>
-            )}
+          <span
+            key={`${item.label}-${index}`}
+            style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}
+          >
+            {index > 0 && <span style={{ color: tokens.colors.mutedSoft, fontSize: 12 }}>/</span>}
             {item.href && !last ? (
               <a
                 href={item.href}
-                style={{ color: tokens.colors.secondary, textDecoration: "none", fontSize: 13, whiteSpace: "nowrap" }}
+                style={{
+                  color: tokens.colors.secondary,
+                  textDecoration: "none",
+                  fontSize: 13,
+                  whiteSpace: "nowrap",
+                }}
               >
                 {item.label}
               </a>
@@ -199,8 +202,23 @@ export function UserMenu({
         }}
       >
         {trigger}
-        <svg width="10" height="10" viewBox="0 0 10 10" style={{ transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.12s", color: tokens.colors.muted }}>
-          <path d="M1 3.5 5 7l4-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          style={{
+            transform: open ? "rotate(180deg)" : undefined,
+            transition: "transform 0.12s",
+            color: tokens.colors.muted,
+          }}
+        >
+          <path
+            d="M1 3.5 5 7l4-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       </button>
 
@@ -221,8 +239,16 @@ export function UserMenu({
           }}
         >
           {header && (
-            <div style={{ padding: "8px 10px 6px", borderBottom: `1px solid ${tokens.colors.border}`, marginBottom: 4 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: tokens.colors.primary }}>{header.title}</div>
+            <div
+              style={{
+                padding: "8px 10px 6px",
+                borderBottom: `1px solid ${tokens.colors.border}`,
+                marginBottom: 4,
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 700, color: tokens.colors.primary }}>
+                {header.title}
+              </div>
               {header.caption && (
                 <div style={{ fontSize: 12, color: tokens.colors.muted }}>{header.caption}</div>
               )}
@@ -246,7 +272,13 @@ export function UserMenu({
             };
             if (item.href) {
               return (
-                <a key={item.key} role="menuitem" href={item.href} onClick={() => setOpen(false)} style={style}>
+                <a
+                  key={item.key}
+                  role="menuitem"
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  style={style}
+                >
                   {item.label}
                 </a>
               );
@@ -319,9 +351,7 @@ export function ErrorCard({
       }}
     >
       <div style={{ fontSize: 15, fontWeight: 700 }}>{title}</div>
-      {message && (
-        <p style={{ margin: "8px 0 16px", fontSize: 13, opacity: 0.85 }}>{message}</p>
-      )}
+      {message && <p style={{ margin: "8px 0 16px", fontSize: 13, opacity: 0.85 }}>{message}</p>}
       {onRetry && (
         <Button variant="danger" size="sm" onClick={onRetry}>
           Zkusit znovu

@@ -37,20 +37,24 @@ export function ListActions({
     if (!window.confirm(confirmText)) return;
     setBusy(true);
     try {
-      const json = await apiFetch<{ published?: boolean } | { discarded?: boolean } | { deleted?: boolean }>(
-        `/api/projects/${projectId}/items/${kind}/${id}`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ action }),
-        }
-      );
+      const json = await apiFetch<
+        { published?: boolean } | { discarded?: boolean } | { deleted?: boolean }
+      >(`/api/projects/${projectId}/items/${kind}/${id}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
       if (!json.ok) {
         notify({ type: "error", title: "Operace selhala", message: json.error.message });
       } else {
         notify({
           type: action === "delete" ? "warning" : "success",
-          title: action === "publish" ? "Publikováno" : action === "delete" ? "Položka smazána" : "Draft zahozen",
+          title:
+            action === "publish"
+              ? "Publikováno"
+              : action === "delete"
+                ? "Položka smazána"
+                : "Draft zahozen",
         });
       }
       router.refresh();
@@ -70,11 +74,19 @@ export function ListActions({
       {actions.map(([action, label]) => (
         <Can
           key={action}
-          permission={action === "publish" ? "content:publish" : action === "delete" ? "content:delete" : "content:delete"}
+          permission={
+            action === "publish"
+              ? "content:publish"
+              : action === "delete"
+                ? "content:delete"
+                : "content:delete"
+          }
         >
           <Button
             size="sm"
-            variant={action === "delete" ? "danger" : action === "publish" ? "primary" : "secondary"}
+            variant={
+              action === "delete" ? "danger" : action === "publish" ? "primary" : "secondary"
+            }
             onClick={() => run(action)}
             disabled={busy}
           >

@@ -16,7 +16,10 @@ function base64(text: string): string {
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 const item = {
@@ -47,7 +50,7 @@ describe("githubOverrideStore", () => {
           return Promise.resolve(jsonResponse({ content: { sha: "s" } }, 201));
         }
         return Promise.resolve(new Response("Not Found", { status: 404 }));
-      }) as unknown as typeof fetch
+      }) as unknown as typeof fetch,
     );
 
     const store = githubOverrideStore(PATH);
@@ -68,9 +71,12 @@ describe("githubOverrideStore", () => {
           return Promise.resolve(jsonResponse({ content: { sha: "s2" } }, 200));
         }
         return Promise.resolve(
-          jsonResponse({ content: base64(JSON.stringify({ note: { old: { ...item, id: "old" } } })), sha: "s1" })
+          jsonResponse({
+            content: base64(JSON.stringify({ note: { old: { ...item, id: "old" } } })),
+            sha: "s1",
+          }),
         );
-      }) as unknown as typeof fetch
+      }) as unknown as typeof fetch,
     );
 
     const store = githubOverrideStore(PATH);
@@ -86,8 +92,10 @@ describe("githubOverrideStore", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
-        Promise.resolve(jsonResponse({ content: base64(JSON.stringify({ note: { n1: item } })), sha: "s" }))
-      ) as unknown as typeof fetch
+        Promise.resolve(
+          jsonResponse({ content: base64(JSON.stringify({ note: { n1: item } })), sha: "s" }),
+        ),
+      ) as unknown as typeof fetch,
     );
 
     const store = githubOverrideStore(PATH);
@@ -100,7 +108,9 @@ describe("githubOverrideStore", () => {
   it("list: prázdný fallback, když soubor neexistuje", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.resolve(new Response("Not Found", { status: 404 }))) as unknown as typeof fetch
+      vi.fn(() =>
+        Promise.resolve(new Response("Not Found", { status: 404 })),
+      ) as unknown as typeof fetch,
     );
     const store = githubOverrideStore(PATH);
     expect(await store.list("note")).toEqual({});
@@ -118,13 +128,16 @@ describe("githubOverrideStore", () => {
       vi.fn((_url: string, init?: RequestInit) => {
         if (init?.method === "PUT") {
           const body = JSON.parse(String(init.body)) as Record<string, unknown>;
-          db = JSON.parse(Buffer.from(String(body.content), "base64").toString("utf8")) as Record<string, Record<string, unknown>>;
+          db = JSON.parse(Buffer.from(String(body.content), "base64").toString("utf8")) as Record<
+            string,
+            Record<string, unknown>
+          >;
           dbSha = "s" + (puts.length + 1);
           puts.push(JSON.stringify(db));
           return Promise.resolve(jsonResponse({ content: { sha: dbSha } }, 200));
         }
         return Promise.resolve(jsonResponse({ content: base64(JSON.stringify(db)), sha: dbSha }));
-      }) as unknown as typeof fetch
+      }) as unknown as typeof fetch,
     );
 
     const store = githubOverrideStore(PATH);
@@ -145,8 +158,10 @@ describe("githubOverrideStore", () => {
           message = (JSON.parse(String(init.body)) as { message?: string }).message;
           return Promise.resolve(jsonResponse({ content: { sha: "s" } }, 200));
         }
-        return Promise.resolve(jsonResponse({ content: base64(JSON.stringify({ note: { n1: item } })), sha: "s" }));
-      }) as unknown as typeof fetch
+        return Promise.resolve(
+          jsonResponse({ content: base64(JSON.stringify({ note: { n1: item } })), sha: "s" }),
+        );
+      }) as unknown as typeof fetch,
     );
 
     const store = githubOverrideStore(PATH);
@@ -164,7 +179,9 @@ describe("githubOverrideStore", () => {
           writes++;
           if (writes === 1) return Promise.resolve(new Response("Conflict", { status: 409 }));
           const body = JSON.parse(String(init.body)) as Record<string, unknown>;
-          const content = JSON.parse(Buffer.from(String(body.content), "base64").toString("utf8")) as Record<string, Record<string, unknown>>;
+          const content = JSON.parse(
+            Buffer.from(String(body.content), "base64").toString("utf8"),
+          ) as Record<string, Record<string, unknown>>;
           expect(content.note.n1).toBeDefined();
           expect(content.note.other).toBeDefined(); // cizí změna zachována
           return Promise.resolve(jsonResponse({ content: { sha: "s3" } }, 200));
@@ -172,8 +189,13 @@ describe("githubOverrideStore", () => {
         reads++;
         if (reads === 1) return Promise.resolve(jsonResponse({ content: base64("{}"), sha: "s1" }));
         // mezi čtením a zápisem se objevila cizí položka
-        return Promise.resolve(jsonResponse({ content: base64(JSON.stringify({ note: { other: { ...item, id: "other" } } })), sha: "s2" }));
-      }) as unknown as typeof fetch
+        return Promise.resolve(
+          jsonResponse({
+            content: base64(JSON.stringify({ note: { other: { ...item, id: "other" } } })),
+            sha: "s2",
+          }),
+        );
+      }) as unknown as typeof fetch,
     );
 
     const store = githubOverrideStore(PATH);

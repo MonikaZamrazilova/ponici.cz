@@ -35,7 +35,7 @@ export function githubRepo(): GithubRepo {
     throw new AdminError(
       "GitHub storage není nakonfigurováno — chybí GITHUB_TOKEN/GITHUB_OWNER/GITHUB_REPO",
       undefined,
-      500
+      500,
     );
   }
   return { owner, repo, branch, token };
@@ -43,9 +43,7 @@ export function githubRepo(): GithubRepo {
 
 /** True, pokud jsou GITHUB_* env proměnné nastavené → GitHub storage backend. */
 export function isGithubConfigured(): boolean {
-  return Boolean(
-    process.env.GITHUB_TOKEN && process.env.GITHUB_OWNER && process.env.GITHUB_REPO
-  );
+  return Boolean(process.env.GITHUB_TOKEN && process.env.GITHUB_OWNER && process.env.GITHUB_REPO);
 }
 
 /** Kořen projektů v repozitáři (default pro monorepo strukturu Ponici.cz). */
@@ -59,7 +57,10 @@ const WRITE_TIMEOUT_MS = 15_000;
 
 /** Cesta v repozitáři → URL-safe segment (mezery, diakritika, / v názvech). */
 function encodeRepoPath(repoPath: string): string {
-  return repoPath.split("/").map((part) => encodeURIComponent(part)).join("/");
+  return repoPath
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
 }
 
 export interface GithubFile {
@@ -87,7 +88,7 @@ export async function githubRead(gh: GithubRepo, repoPath: string): Promise<Gith
     throw new AdminError(
       `GitHub GET ${repoPath}: chybí content (soubor je pravděpodobně binární)`,
       undefined,
-      502
+      502,
     );
   }
   return {
@@ -122,7 +123,7 @@ export async function githubUpdateJson<T>(
   repoPath: string,
   fallback: T,
   update: (current: T) => T,
-  message = "admin: update"
+  message = "admin: update",
 ): Promise<boolean> {
   const gh = githubRepo();
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -135,7 +136,7 @@ export async function githubUpdateJson<T>(
   throw new AdminError(
     `GitHub zápis ${repoPath} selhal — konflikt (409) i po opakování`,
     undefined,
-    409
+    409,
   );
 }
 
@@ -145,7 +146,7 @@ async function githubPut(
   repoPath: string,
   content: string,
   sha: string | null,
-  message: string
+  message: string,
 ): Promise<boolean> {
   const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${encodeRepoPath(repoPath)}`;
   const body: Record<string, unknown> = {
@@ -178,7 +179,7 @@ async function githubPut(
 export async function githubAppendJsonl(
   repoPath: string,
   line: unknown,
-  message = "admin: audit"
+  message = "admin: audit",
 ): Promise<void> {
   const gh = githubRepo();
   const serialized = JSON.stringify(line);
@@ -191,6 +192,6 @@ export async function githubAppendJsonl(
   throw new AdminError(
     `GitHub audit append ${repoPath} selhal — konflikt (409) i po opakování`,
     undefined,
-    409
+    409,
   );
 }

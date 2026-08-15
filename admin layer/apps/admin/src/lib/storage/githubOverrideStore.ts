@@ -47,7 +47,7 @@ export function githubOverrideStore(repoPath: string): OverrideStorePort {
           all[kind] = { ...(all[kind] ?? {}), [item.id]: item };
           return all;
         },
-        `admin(${projectId}): save ${kind}/${item.id}`
+        `admin(${projectId}): save ${kind}/${item.id}`,
       );
     },
     async remove(kind, id) {
@@ -62,7 +62,7 @@ export function githubOverrideStore(repoPath: string): OverrideStorePort {
           removed = true;
           return all;
         },
-        `admin(${projectId}): remove ${kind}/${id}`
+        `admin(${projectId}): remove ${kind}/${id}`,
       );
       return removed;
     },

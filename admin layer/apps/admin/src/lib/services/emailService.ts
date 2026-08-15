@@ -60,9 +60,14 @@ export async function sendPasswordResetCode({
   const isDev = process.env.NODE_ENV === "development";
 
   if (!accessKey) {
-    // MOCK — kód se nikam neposílá, jen se loguje (bezpečné: jen v dev logu)
+    // MOCK se nikdy nesmí spustit v produkci — reset by tiše prošel bez e-mailu.
+    // V dev režimu se kód jen loguje (bezpečné: kód samotný se neloguje).
+    if (!isDev) {
+      console.error("[admin] Web3Forms není nakonfigurováno (chybí WEB3FORMS_ACCESS_KEY)");
+      return { ok: false };
+    }
     console.log(`[admin] MOCK reset kód pro ${email} (expires ${expiresAt})`);
-    return { ok: true, devCode: isDev ? code : undefined };
+    return { ok: true, devCode: code };
   }
 
   try {
@@ -89,7 +94,10 @@ export async function sendPasswordResetCode({
     return { ok: true };
   } catch (err) {
     // timeout / síť — žádná tajemství v logu
-    console.error("[admin] Web3Forms odeslání selhalo:", err instanceof Error ? err.message : "síťová chyba");
+    console.error(
+      "[admin] Web3Forms odeslání selhalo:",
+      err instanceof Error ? err.message : "síťová chyba",
+    );
     return { ok: false };
   }
 }

@@ -3,13 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Button, Field, Input, useForm, tokens } from "@admin/ui";
 
-export function VerifyResetCodeForm({
-  email,
-  devCode,
-}: {
-  email: string;
-  devCode?: string;
-}) {
+export function VerifyResetCodeForm({ email, devCode }: { email: string; devCode?: string }) {
   const router = useRouter();
 
   const form = useForm<{ code: string }>({

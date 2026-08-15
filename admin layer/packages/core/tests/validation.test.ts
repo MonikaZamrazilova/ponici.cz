@@ -8,7 +8,13 @@ const kindDef: EntityKindDef = {
   fields: [
     { type: "text", name: "title", label: "Nadpis", required: true },
     { type: "url", name: "link", label: "Odkaz" },
-    { type: "multiselect", name: "tags", label: "Štítky", required: true, options: [{ value: "a", label: "A" }] },
+    {
+      type: "multiselect",
+      name: "tags",
+      label: "Štítky",
+      required: true,
+      options: [{ value: "a", label: "A" }],
+    },
     { type: "select", name: "status", label: "Stav", options: [{ value: "ok", label: "OK" }] },
   ],
 };
@@ -83,11 +89,20 @@ describe("validace (A4.1 — client i server sdílí)", () => {
         },
       ],
     };
-    const empty = validateEntity(localizedKind, ["cs", "en"], { id: "x", title: { cs: "", en: "" } });
+    const empty = validateEntity(localizedKind, ["cs", "en"], {
+      id: "x",
+      title: { cs: "", en: "" },
+    });
     expect(empty.ok).toBe(false);
-    const partial = validateEntity(localizedKind, ["cs", "en"], { id: "x", title: { cs: "A", en: "" } });
+    const partial = validateEntity(localizedKind, ["cs", "en"], {
+      id: "x",
+      title: { cs: "A", en: "" },
+    });
     expect(partial.ok).toBe(false);
-    const ok = validateEntity(localizedKind, ["cs", "en"], { id: "x", title: { cs: "A", en: "B" } });
+    const ok = validateEntity(localizedKind, ["cs", "en"], {
+      id: "x",
+      title: { cs: "A", en: "B" },
+    });
     expect(ok.ok).toBe(true);
   });
 

@@ -28,7 +28,7 @@ const MIME_TO_EXT: Record<string, string> = {
 };
 
 const EXT_TO_MIME: Record<string, string> = Object.fromEntries(
-  Object.entries(MIME_TO_EXT).map(([mime, ext]) => [ext, mime])
+  Object.entries(MIME_TO_EXT).map(([mime, ext]) => [ext, mime]),
 );
 
 const MEDIA_PREFIX = "ponici-admin/media/";
@@ -50,7 +50,9 @@ function assetFromPut(blob: PutBlobResult, size: number): MediaAsset {
     id: idFromPathname(blob.pathname),
     name: blob.pathname.split("/").pop() ?? blob.pathname,
     url: blob.url,
-    mime: EXT_TO_MIME[blob.pathname.slice(blob.pathname.lastIndexOf(".")).toLowerCase()] ?? "application/octet-stream",
+    mime:
+      EXT_TO_MIME[blob.pathname.slice(blob.pathname.lastIndexOf(".")).toLowerCase()] ??
+      "application/octet-stream",
     size,
     createdAt: new Date().toISOString(),
   };
@@ -61,7 +63,9 @@ function assetFromList(blob: ListBlobResultBlob): MediaAsset {
     id: idFromPathname(blob.pathname),
     name: blob.pathname.split("/").pop() ?? blob.pathname,
     url: blob.url,
-    mime: EXT_TO_MIME[blob.pathname.slice(blob.pathname.lastIndexOf(".")).toLowerCase()] ?? "application/octet-stream",
+    mime:
+      EXT_TO_MIME[blob.pathname.slice(blob.pathname.lastIndexOf(".")).toLowerCase()] ??
+      "application/octet-stream",
     size: blob.size,
     createdAt: blob.uploadedAt.toISOString(),
   };

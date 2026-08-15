@@ -48,7 +48,9 @@ export default async function SettingsPage() {
                 <tr key={row.key}>
                   <Td>
                     <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{row.label}</span>
-                    <div style={{ fontSize: 11, color: tokens.colors.mutedSoft, marginTop: 2 }}>{row.key}</div>
+                    <div style={{ fontSize: 11, color: tokens.colors.mutedSoft, marginTop: 2 }}>
+                      {row.key}
+                    </div>
                   </Td>
                   <Td>{row.value}</Td>
                 </tr>

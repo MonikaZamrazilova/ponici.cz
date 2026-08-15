@@ -7,7 +7,7 @@ import { getMediaFile, removeMedia } from "@/lib/services/mediaService";
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: Promise<{ projectId: string; id: string }> }
+  { params }: { params: Promise<{ projectId: string; id: string }> },
 ) {
   try {
     // Veřejné čtení — obrázky se používají v obsahu webu (i pro návštěvníky).
@@ -36,7 +36,7 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ projectId: string; id: string }> }
+  { params }: { params: Promise<{ projectId: string; id: string }> },
 ) {
   try {
     assertSameOrigin(request);

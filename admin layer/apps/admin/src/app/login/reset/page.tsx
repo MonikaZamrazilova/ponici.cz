@@ -10,7 +10,7 @@ export default async function ResetPasswordPage({
   searchParams: Promise<{ email?: string | string[] }>;
 }) {
   const params = await searchParams;
-  const email = Array.isArray(params.email) ? params.email[0] : params.email ?? "";
+  const email = Array.isArray(params.email) ? params.email[0] : (params.email ?? "");
 
   return (
     <div
@@ -23,7 +23,16 @@ export default async function ResetPasswordPage({
       }}
     >
       <Card style={{ width: "100%", maxWidth: 380, padding: 32 }}>
-        <h1 style={{ display: "flex", alignItems: "center", gap: 6, margin: "0 0 6px", fontSize: 17, letterSpacing: "-0.02em" }}>
+        <h1
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            margin: "0 0 6px",
+            fontSize: 17,
+            letterSpacing: "-0.02em",
+          }}
+        >
           Admin Layer
           <Badge>Nové heslo</Badge>
         </h1>

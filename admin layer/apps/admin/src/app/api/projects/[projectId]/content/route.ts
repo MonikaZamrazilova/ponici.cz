@@ -13,7 +13,7 @@ import { listItems } from "@/lib/services/itemService";
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> }
+  { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
     const { projectId } = await params;
@@ -34,7 +34,10 @@ export async function GET(
     return NextResponse.json(ok({ kinds, projectsRoot: undefined }));
   } catch (error) {
     if (error instanceof AdminError) {
-      return NextResponse.json({ ok: false, error: { message: error.message } }, { status: error.status });
+      return NextResponse.json(
+        { ok: false, error: { message: error.message } },
+        { status: error.status },
+      );
     }
     console.error("[admin] content API:", error);
     return NextResponse.json({ ok: false, error: { message: "Chyba serveru" } }, { status: 500 });

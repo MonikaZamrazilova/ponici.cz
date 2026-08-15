@@ -7,5 +7,5 @@ import { githubAuditStore } from "./githubAuditStore";
  * "core" = globální událost (login, settings…).
  */
 export const centralAuditStore: AuditStorePort = githubAuditStore(
-  process.env.GITHUB_AUDIT_PATH ?? "admin layer/content/audit/central.jsonl"
+  process.env.GITHUB_AUDIT_PATH ?? "admin layer/content/audit/central.jsonl",
 );

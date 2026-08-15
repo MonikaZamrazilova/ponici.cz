@@ -17,7 +17,7 @@ export class AdminError extends Error {
   constructor(
     message: string,
     public readonly fields?: Record<string, string>,
-    public readonly status: number = 400
+    public readonly status: number = 400,
   ) {
     super(message);
   }

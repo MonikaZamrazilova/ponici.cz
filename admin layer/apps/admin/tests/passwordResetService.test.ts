@@ -7,9 +7,8 @@ vi.stubEnv("ADMIN_EMAIL", "owner@example.com");
 vi.stubEnv("NODE_ENV", "development");
 vi.stubEnv("RESET_TOKEN_SECRET", "test-reset-secret");
 
-const { requestReset, verifyResetCode, resetPassword, isResetEnabled } = await import(
-  "../src/lib/services/passwordResetService"
-);
+const { requestReset, verifyResetCode, resetPassword, isResetEnabled } =
+  await import("../src/lib/services/passwordResetService");
 const { passwordOverride } = await import("../src/lib/storage/passwordStore");
 const { createResetToken } = await import("../src/lib/auth/resetToken");
 const { hashResetCode } = await import("@admin/core");
@@ -39,9 +38,9 @@ describe("passwordResetService — serverless 3-krokový flow", () => {
   });
 
   it("requestReset při rate limit → AdminError 429", async () => {
-    await expect(
-      requestReset("owner@example.com", { allowed: false })
-    ).rejects.toMatchObject({ status: 429 });
+    await expect(requestReset("owner@example.com", { allowed: false })).rejects.toMatchObject({
+      status: 429,
+    });
   });
 
   it("verifyResetCode se správným kódem → verifiedToken", async () => {
@@ -54,19 +53,19 @@ describe("passwordResetService — serverless 3-krokový flow", () => {
   it("verifyResetCode se špatným kódem → AdminError 400", async () => {
     const reset = await requestReset("owner@example.com", { allowed: true });
     await expect(
-      verifyResetCode("000000", reset.resetToken, { allowed: true })
+      verifyResetCode("000000", reset.resetToken, { allowed: true }),
     ).rejects.toMatchObject({ status: 400 });
   });
 
   it("verifyResetCode bez tokenu → AdminError 400", async () => {
-    await expect(
-      verifyResetCode("123456", undefined, { allowed: true })
-    ).rejects.toMatchObject({ status: 400 });
+    await expect(verifyResetCode("123456", undefined, { allowed: true })).rejects.toMatchObject({
+      status: 400,
+    });
   });
 
   it("verifyResetCode s neplatným tokenem (tamper) → AdminError 400", async () => {
     await expect(
-      verifyResetCode("123456", "neplatny.token.xyz", { allowed: true })
+      verifyResetCode("123456", "neplatny.token.xyz", { allowed: true }),
     ).rejects.toMatchObject({ status: 400 });
   });
 
@@ -75,42 +74,38 @@ describe("passwordResetService — serverless 3-krokový flow", () => {
     const hash = await hashResetCode("123456");
     // token s okamžitou expirací
     const expired = await createExpired("owner@example.com", hash, -1000);
-    await expect(
-      verifyResetCode("123456", expired, { allowed: true })
-    ).rejects.toMatchObject({ status: 400 });
+    await expect(verifyResetCode("123456", expired, { allowed: true })).rejects.toMatchObject({
+      status: 400,
+    });
   });
 
   it("verifyResetCode při rate limit → AdminError 429", async () => {
-    await expect(
-      verifyResetCode("123456", "token", { allowed: false })
-    ).rejects.toMatchObject({ status: 429 });
+    await expect(verifyResetCode("123456", "token", { allowed: false })).rejects.toMatchObject({
+      status: 429,
+    });
   });
 
   it("resetPassword se slabým heslem → AdminError 400 (password policy)", async () => {
+    await expect(resetPassword("kratke", "verified-token")).rejects.toMatchObject({ status: 400 });
     await expect(
-      resetPassword("kratke", "verified-token")
+      resetPassword("aaaaaaaaaaaaaaaa", "verified-token"), // jen malá písmena
     ).rejects.toMatchObject({ status: 400 });
     await expect(
-      resetPassword("aaaaaaaaaaaaaaaa", "verified-token") // jen malá písmena
+      resetPassword("AAAAAAAAAAAAAAAA", "verified-token"), // jen velká
     ).rejects.toMatchObject({ status: 400 });
     await expect(
-      resetPassword("AAAAAAAAAAAAAAAA", "verified-token") // jen velká
-    ).rejects.toMatchObject({ status: 400 });
-    await expect(
-      resetPassword("AaAaAaAaAaAa", "verified-token") // bez číslice
+      resetPassword("AaAaAaAaAaAa", "verified-token"), // bez číslice
     ).rejects.toMatchObject({ status: 400 });
   });
 
   it("resetPassword bez verified tokenu → AdminError 400", async () => {
-    await expect(
-      resetPassword("NoveHeslo1234!", undefined)
-    ).rejects.toMatchObject({ status: 400 });
+    await expect(resetPassword("NoveHeslo1234!", undefined)).rejects.toMatchObject({ status: 400 });
   });
 
   it("resetPassword s neplatným verified tokenem → AdminError 400", async () => {
-    await expect(
-      resetPassword("NoveHeslo1234!", "neplatny.token")
-    ).rejects.toMatchObject({ status: 400 });
+    await expect(resetPassword("NoveHeslo1234!", "neplatny.token")).rejects.toMatchObject({
+      status: 400,
+    });
   });
 
   it("kompletní flow: request → verify → reset → heslo změněno", async () => {

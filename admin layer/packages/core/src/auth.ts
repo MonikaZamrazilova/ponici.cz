@@ -119,7 +119,8 @@ function b64urlEncode(bytes: Uint8Array): string {
 }
 
 function b64urlDecode(value: string): Uint8Array<ArrayBuffer> {
-  const b64 = value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (value.length % 4)) % 4);
+  const b64 =
+    value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (value.length % 4)) % 4);
   const bin = atob(b64);
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
@@ -128,13 +129,10 @@ function b64urlDecode(value: string): Uint8Array<ArrayBuffer> {
 
 async function hmacKey(password: string): Promise<CryptoKey> {
   const keyBytes = new Uint8Array(await sha256(KEY_CONTEXT + password));
-  return crypto.subtle.importKey(
-    "raw",
-    keyBytes,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"]
-  );
+  return crypto.subtle.importKey("raw", keyBytes, { name: "HMAC", hash: "SHA-256" }, false, [
+    "sign",
+    "verify",
+  ]);
 }
 
 /** Podepíše payload → cookie hodnota `base64url(payload).base64url(sig)`. */
@@ -148,19 +146,14 @@ export async function signSession(payload: SessionPayload, password: string): Pr
 /** Ověří podpis + vypršení. Nepotřebuje store — edge-safe. */
 export async function verifySignedSession(
   token: string | undefined,
-  password: string | undefined
+  password: string | undefined,
 ): Promise<SessionPayload | null> {
   if (!token || !password) return null;
   const [raw, sigB64] = token.split(".");
   if (!raw || !sigB64) return null;
   try {
     const key = await hmacKey(password);
-    const valid = await crypto.subtle.verify(
-      "HMAC",
-      key,
-      b64urlDecode(sigB64),
-      toBuffer(raw)
-    );
+    const valid = await crypto.subtle.verify("HMAC", key, b64urlDecode(sigB64), toBuffer(raw));
     if (!valid) return null;
     const payload = JSON.parse(new TextDecoder().decode(b64urlDecode(raw))) as SessionPayload;
     if (typeof payload.sid !== "string" || typeof payload.expiresAt !== "number") return null;

@@ -139,7 +139,7 @@ export async function isAuthenticated(): Promise<boolean> {
  */
 export async function requirePermission(
   permission: Permission,
-  options?: { mutating?: boolean; projectId?: string; entity?: string }
+  options?: { mutating?: boolean; projectId?: string; entity?: string },
 ): Promise<void> {
   const session = await requireSession();
   if (!hasPermission(session.role, permission)) {
@@ -160,7 +160,7 @@ export async function requirePermission(
 /** Vyhodí 403, pokud role session nemá ani jedno z oprávnění. */
 export async function requireAnyPermission(
   permissions: Permission[],
-  options?: { mutating?: boolean; projectId?: string; entity?: string }
+  options?: { mutating?: boolean; projectId?: string; entity?: string },
 ): Promise<void> {
   const session = await requireSession();
   if (!permissions.some((permission) => hasPermission(session.role, permission))) {

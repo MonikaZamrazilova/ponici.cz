@@ -111,24 +111,24 @@ export function projectConfig(
   partial: Omit<ProjectConfig, "modules" | "features"> & {
     modules?: Partial<ProjectModules>;
     features?: ProjectFeatures;
-  }
+  },
 ): ProjectConfig {
   return {
     ...partial,
     modules: mergeWithDefaults<ProjectModules>(
       { content: true, media: true, audit: true },
-      partial.modules
+      partial.modules,
     ),
     features: mergeWithDefaults<Required<ProjectFeatures>>(
       { preview: true, publishedVersion: true, richText: true, multiselect: true },
-      partial.features
+      partial.features,
     ),
   };
 }
 
 function mergeWithDefaults<T extends Record<string, boolean>>(
   defaults: T,
-  overrides?: Partial<T>
+  overrides?: Partial<T>,
 ): T {
   const out = { ...defaults } as Record<string, boolean>;
   if (overrides) {

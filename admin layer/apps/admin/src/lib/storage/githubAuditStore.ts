@@ -25,7 +25,7 @@ export function githubAuditStore(repoPath: string): AuditStorePort {
       await githubAppendJsonl(
         repoPath,
         event,
-        `admin(${event.projectId}): audit ${event.action} ${event.entityKind}/${event.entityId}`
+        `admin(${event.projectId}): audit ${event.action} ${event.entityKind}/${event.entityId}`,
       );
     },
 
@@ -43,9 +43,7 @@ export function githubAuditStore(repoPath: string): AuditStorePort {
           // poškozený řádek ignorujeme — audit nesmí shodit aplikaci
         }
       }
-      return events
-        .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
-        .slice(0, limit);
+      return events.sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, limit);
     },
   };
 }
