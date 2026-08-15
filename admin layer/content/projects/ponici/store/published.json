@@ -4,7 +4,7 @@
       "id": "main",
       "status": "published",
       "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-08-15T10:12:15.384Z",
+      "updatedAt": "2026-08-15T11:46:07.799Z",
       "publishedAt": "2026-08-13T08:14:56.785Z",
       "siteName": "Jezdecká škola",
       "baseUrl": "https://www.ponici.cz",
@@ -35,7 +35,7 @@
           "feature": "Příprava na ZZVJ"
         }
       ],
-      "aboutKicker": "O nás...",
+      "aboutKicker": "O nás",
       "aboutTitle": "Jízdy, péče\na radost z pohybu.",
       "aboutParagraphs": [
         {
