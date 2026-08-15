@@ -13,7 +13,7 @@ vi.mock("resend", () => ({
   },
 }));
 
-const { sendPasswordResetCode, isEmailConfigured } =
+const { sendPasswordResetCode, isEmailConfigured, sendPasswordChangedNotification } =
   await import("../src/lib/services/emailService");
 
 afterEach(() => {
@@ -198,6 +198,47 @@ describe("emailService — Resend", () => {
       expect(output).not.toContain("owner@example.com");
     } finally {
       logSpy.mockRestore();
+      errorSpy.mockRestore();
+    }
+  });
+
+  it("notifikace o změně hesla — správný subject/body, bez hesla", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("FROM_EMAIL", "admin@ponici.cz");
+    vi.stubEnv("RESET_TEST_EMAIL", "");
+    sendMock.mockResolvedValue({ data: { id: "email_notif" }, error: null });
+
+    await sendPasswordChangedNotification("monika.zamrazilova@seznam.cz");
+
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const payload = sendMock.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.from).toBe("admin@ponici.cz");
+    expect(payload.to).toBe("monika.zamrazilova@seznam.cz");
+    expect(payload.subject).toBe("Administrátorské heslo bylo změněno");
+    const body = String(payload.text);
+    expect(body).toContain("Dobrý den");
+    expect(body).toContain("heslo administrátorského účtu bylo právě změněno");
+    expect(body).toContain("Pokud jste tuto změnu neprovedli");
+    expect(body).toContain("Ponici.cz");
+    // nikdy žádné heslo v emailu
+    expect(body).not.toContain("heslo:");
+    expect(body).not.toContain("abcdefgh");
+  });
+
+  it("notifikace o změně hesla: chyba → bezpečný log, žádné vyhození", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("FROM_EMAIL", "admin@ponici.cz");
+    sendMock.mockResolvedValue({ data: null, error: { message: "API error" } });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      await expect(
+        sendPasswordChangedNotification("monika.zamrazilova@seznam.cz"),
+      ).resolves.toBeUndefined();
+      const output = errorSpy.mock.calls.flat().map(String).join(" ");
+      expect(output).toContain("notifikace o změně hesla selhala");
+      expect(output).not.toContain("monika.zamrazilova@seznam.cz");
+    } finally {
       errorSpy.mockRestore();
     }
   });

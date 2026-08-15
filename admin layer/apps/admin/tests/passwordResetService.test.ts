@@ -7,6 +7,16 @@ vi.stubEnv("ADMIN_EMAIL", "owner@example.com");
 vi.stubEnv("NODE_ENV", "development");
 vi.stubEnv("RESET_TOKEN_SECRET", "test-reset-secret");
 
+// notifikace — mock pro ověření volání po resetu
+const notifMock = vi.fn().mockResolvedValue(undefined);
+vi.mock("../src/lib/services/emailService", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/services/emailService")>();
+  return {
+    ...actual,
+    sendPasswordChangedNotification: notifMock,
+  };
+});
+
 const { requestReset, verifyResetCode, resetPassword, isResetEnabled } =
   await import("../src/lib/services/passwordResetService");
 const { passwordOverride } = await import("../src/lib/storage/passwordStore");
@@ -155,6 +165,16 @@ describe("passwordResetService — serverless 3-krokový flow", () => {
 
     // nové heslo → stará cookie neplatná
     expect(await verifySignedSession(oldToken, "JineHeslo5678!")).toBeNull();
+    await passwordOverride.set("admin", "");
+  });
+
+  it("resetPassword volá notifikační email po úspěšné změně hesla", async () => {
+    notifMock.mockClear();
+    const reset = await requestReset("owner@example.com", { allowed: true });
+    const verified = await verifyResetCode(reset.devCode!, reset.resetToken, { allowed: true });
+    await resetPassword("NoveHeslo5678!", verified.verifiedToken);
+
+    expect(notifMock).toHaveBeenCalledWith("owner@example.com");
     await passwordOverride.set("admin", "");
   });
 });

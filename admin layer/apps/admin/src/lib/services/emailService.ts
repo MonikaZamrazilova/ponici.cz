@@ -132,7 +132,7 @@ export async function sendPasswordResetCode({
 
 /**
  * Notifikace po změně hesla — bez hesla, bez secrets.
- * Best-effort: selhání notifikace nikdy neblokuje reset.
+ * Best-effort: selhání notifikace nikdy neblokuje reset (jen bezpečný log).
  */
 export async function sendPasswordChangedNotification(email: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -143,17 +143,34 @@ export async function sendPasswordChangedNotification(email: string): Promise<vo
     const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
     const recipient = resolveRecipient(email);
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from,
       to: recipient,
-      subject: "Vaše administrátorské heslo bylo změněno",
+      subject: "Administrátorské heslo bylo změněno",
       text: [
-        "Vaše administrátorské heslo bylo změněno.",
+        "Dobrý den,",
         "",
-        "Pokud jste změnu neprovedli, kontaktujte správce systému.",
+        "heslo administrátorského účtu bylo právě změněno.",
+        "",
+        "Pokud jste tuto změnu neprovedli, kontaktujte správce webu.",
+        "",
+        "Ponici.cz",
       ].join("\n"),
     });
-  } catch {
-    // best-effort — ticho
+    if (error || !data?.id) {
+      // bez secrets v logu — jen chybová zpráva od API
+      console.error(
+        "[admin] notifikace o změně hesla selhala:",
+        error ? String(error.message ?? error) : "neznámá chyba",
+      );
+      return;
+    }
+    console.log(`[admin] notifikace o změně hesla odeslána: id ${data.id}`);
+  } catch (err) {
+    // best-effort — reset NIKDY neblokuje; bez secrets v logu
+    console.error(
+      "[admin] notifikace o změně hesla selhala:",
+      err instanceof Error ? err.message : "síťová chyba",
+    );
   }
 }
