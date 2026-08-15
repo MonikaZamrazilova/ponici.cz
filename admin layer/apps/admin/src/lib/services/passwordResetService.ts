@@ -12,7 +12,7 @@ import {
   verifyVerifiedToken,
 } from "../auth/resetToken";
 import { validatePassword } from "../auth/passwordPolicy";
-import { getRecoveryEmails, isRecoveryEmail, isResetEnabled } from "./recoveryEmailsService";
+import { isRecoveryEmail, isResetEnabled } from "./recoveryEmailsService";
 
 /**
  * Password recovery flow (Vercel-native, 3 kroky, žádný storage):
@@ -27,15 +27,14 @@ import { getRecoveryEmails, isRecoveryEmail, isResetEnabled } from "./recoveryEm
  * Žádný stav se neukládá do fs / json / memory / db — vše je v podepsaných
  * cookies (HttpOnly, Secure, SameSite=Lax) a HMAC klíčích z env.
  *
- * Anti-enumeration: requestReset vrací vždy stejnou odpověď, ať e-mail
- * existuje nebo ne.
+ * Single-admin: jediný účet s právem obnovy hesla je ADMIN_EMAIL.
  */
 
 export const RESET_CODE_TTL_MS = 10 * 60 * 1000; // 10 minut
 export const VERIFIED_TTL_MS = 10 * 60 * 1000; // 10 minut
 
-/** E-maily s právem žádat reset kód (priorita: admin config → env → fallback). */
-export { getRecoveryEmails, isResetEnabled } from "./recoveryEmailsService";
+/** True, pokud je reset flow funkční (ADMIN_EMAIL nakonfigurován). */
+export { isResetEnabled } from "./recoveryEmailsService";
 
 /** Má zadaný e-mail právo žádat obnovu hesla? */
 function isOwnerEmail(email: string): Promise<boolean> {
@@ -63,9 +62,10 @@ export async function requestReset(
   }
 
   if (!owner) {
-    // anonymní odpověď — nepotvrzujeme existenci účtu
-    console.log("[admin] request-reset: owner-match=false (anonymní odpověď)");
-    return { ok: true, message: "If the account exists, a verification code has been sent." };
+    // Jediný administrátor je ADMIN_EMAIL — jiný email nemá oprávnění.
+    // Neposíláme email, nevytváříme reset token.
+    console.log("[admin] request-reset: owner-match=false (odepřeno)");
+    return { ok: false, message: "Nemáte oprávnění obnovit toto heslo." };
   }
 
   console.log("[admin] request-reset: owner-match=true (generuji reset kód)");

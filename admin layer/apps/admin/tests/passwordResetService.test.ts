@@ -22,11 +22,11 @@ describe("passwordResetService — serverless 3-krokový flow", () => {
     expect(await isResetEnabled()).toBe(true);
   });
 
-  it("requestReset pro cizí e-mail → anonymní ok:true bez resetToken (anti-enumeration)", async () => {
+  it("requestReset pro cizí e-mail → ok:false 'Nemáte oprávnění' bez resetToken", async () => {
     const result = await requestReset("cizi@example.com", { allowed: true });
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBe(false);
     expect(result.resetToken).toBeUndefined();
-    expect(result.message).toContain("If the account exists");
+    expect(result.message).toContain("Nemáte oprávnění");
   });
 
   it("requestReset pro majitele → vrátí devCode a resetToken (MOCK dev režim)", async () => {

@@ -46,6 +46,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await requestReset(email, { allowed: true });
+    if (!result.ok) {
+      // jiný email než ADMIN_EMAIL — bezpečná odpověď, žádný email/token
+      return NextResponse.json({ ok: false, error: { message: result.message } });
+    }
     const response = NextResponse.json({ ok: result.ok, message: result.message });
     if (rate.nextToken) {
       response.headers.set("set-cookie", resetCookie(RATE_COOKIE, rate.nextToken, 15 * 60));
