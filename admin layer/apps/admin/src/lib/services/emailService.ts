@@ -60,7 +60,9 @@ export async function sendPasswordResetCode({
   const isDev = process.env.NODE_ENV === "development";
 
   // Diagnostika (bez hodnoty klíče): je provider nakonfigurovaný?
-  console.log(`[admin] email provider configured: ${Boolean(accessKey)} (NODE_ENV=${isDev ? "development" : "production"})`);
+  console.log(
+    `[admin] email provider configured: ${Boolean(accessKey)} (NODE_ENV=${isDev ? "development" : "production"})`,
+  );
 
   if (!accessKey) {
     // MOCK se nikdy nesmí spustit v produkci — reset by tiše prošel bez e-mailu.
@@ -77,7 +79,13 @@ export async function sendPasswordResetCode({
     console.log("[admin] Web3Forms fetch spuštěn");
     const res = await fetch(WEB3FORMS_URL, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+        // Node/undici fetch posílá podezřelý User-Agent → Cloudflare WAF
+        // před Web3Forms může vrátit 403 challenge. Browser-like UA to řeší.
+        "user-agent": "Mozilla/5.0 (compatible; Ponici.cz admin/1.0; +https://www.ponici.cz)",
+      },
       body: JSON.stringify({
         access_key: accessKey,
         subject: "Admin password reset code",
@@ -91,8 +99,15 @@ export async function sendPasswordResetCode({
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
 
+    // Bezpečný debug: status + response body BEZ citlivých údajů
+    // (Web3Forms chybové body neobsahují klíč; nikdy nelogujeme email/kód).
+    const resText = (await res.text().catch(() => "")).slice(0, 200);
+    console.log(`[admin] Web3Forms response status: ${res.status}`);
+    if (resText) {
+      console.log(`[admin] Web3Forms response: ${resText.slice(0, 200)}`);
+    }
+
     if (!res.ok) {
-      // žádný kód/token v logu — jen status
       console.error(`[admin] Web3Forms odeslání selhalo: HTTP ${res.status}`);
       return { ok: false };
     }
