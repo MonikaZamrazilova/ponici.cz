@@ -77,7 +77,10 @@ export async function requestReset(
     expiresAt: Date.now() + RESET_CODE_TTL_MS,
   });
   if (!sent.ok) {
-    throw new AdminError("Odeslání e-mailu se nezdařilo — zkuste to později", undefined, 502);
+    // ANTI-ENUMERATION: vždy stejná anonymní odpověď, i když odeslání selhalo.
+    // (HTTP 500/502 by prozradil, že email je owner.) Chyba se jen loguje.
+    console.error("[admin] reset kód se nepodařilo odeslat (stav účtu se neprozrazuje)");
+    return { ok: true, message: "If the account exists, a verification code has been sent." };
   }
 
   await appendAudit({

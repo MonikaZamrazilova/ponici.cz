@@ -62,7 +62,12 @@ export async function POST(request: NextRequest) {
       response.headers.set("x-dev-code", result.devCode);
     }
     return response;
-  } catch {
+  } catch (error) {
+    // Diagnostický log BEZ secrets (email, kód, token se nikdy nelogují).
+    console.error(
+      "[admin] request-reset selhal:",
+      error instanceof Error ? error.message : "neznámá chyba",
+    );
     return NextResponse.json(
       { ok: false, error: { message: "Interní chyba — zkuste to později" } },
       { status: 500 },

@@ -78,7 +78,8 @@ export async function sendPasswordResetCode({
         access_key: accessKey,
         subject: "Admin password reset code",
         from_name: "Ponici.cz Admin",
-        to: email,
+        // Cíl e-mailu je nastavený v Web3Forms dashboardu (žádné `to` pole —
+        // není součástí oficiálního API a může způsobit 4xx).
         email,
         message: buildEmailBody(code, expiresAt),
         code, // Web3Forms umí poslat pole; kód jde jen do e-mailu

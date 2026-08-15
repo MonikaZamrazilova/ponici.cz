@@ -43,6 +43,23 @@ describe("passwordResetService — serverless 3-krokový flow", () => {
     });
   });
 
+  it("requestReset v produkci bez Web3Forms → anonymní odpověď (anti-enumeration)", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("WEB3FORMS_ACCESS_KEY", "");
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const result = await requestReset("owner@example.com", { allowed: true });
+      // nikdy 502/500 — stejná odpověď jako pro neexistující e-mail
+      expect(result.ok).toBe(true);
+      expect(result.resetToken).toBeUndefined();
+      expect(result.message).toContain("If the account exists");
+    } finally {
+      errorSpy.mockRestore();
+      vi.stubEnv("NODE_ENV", "development");
+      vi.stubEnv("WEB3FORMS_ACCESS_KEY", undefined);
+    }
+  });
+
   it("verifyResetCode se správným kódem → verifiedToken", async () => {
     const reset = await requestReset("owner@example.com", { allowed: true });
     const result = await verifyResetCode(reset.devCode!, reset.resetToken, { allowed: true });
