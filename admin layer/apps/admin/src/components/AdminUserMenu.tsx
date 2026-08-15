@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { UserMenu, tokens } from "@admin/ui";
 
 /**
- * Uživatelské menu v topbaru — role + odkazy + odhlášení.
+ * Uživatelské menu v topbaru — role + odhlášení.
+ * Navigace je výhradně v sidebaru (layout) — žádné duplicitní odkazy.
  * Client pouze kvůli onClick odhlášení; samotná ochrana je server-side.
  */
 export function AdminUserMenu({ role, roleLabel }: { role: string; roleLabel: string }) {
@@ -16,12 +17,7 @@ export function AdminUserMenu({ role, roleLabel }: { role: string; roleLabel: st
     router.refresh();
   }
 
-  const items = [
-    ...(role === "admin"
-      ? [{ key: "settings", label: "Nastavení", href: "/admin/settings" as string }]
-      : []),
-    { key: "logout", label: "Odhlásit se", danger: true, onClick: logout },
-  ];
+  const items = [{ key: "logout", label: "Odhlásit se", danger: true, onClick: logout }];
 
   return (
     <UserMenu

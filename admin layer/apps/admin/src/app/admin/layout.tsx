@@ -47,15 +47,18 @@ export default async function AdminShellLayout({ children }: { children: React.R
   const currentId = headersList.get("x-project-id");
   const current = projects.find((p) => p.identity.id === currentId) ?? null;
 
-  // nav — zjednodušený režim: jen Nastavení + vstup do editace webu
-  const navItems: NavItem[] = [];
+  // Kanonická navigace — jeden zdroj pravdy (sidebar + mobilní drawer).
+  const navItems: NavItem[] = [{ href: "/admin", label: "Dashboard" }];
+  if (current) {
+    navItems.push({ href: `/admin/projects/${current.identity.id}/media`, label: "Média" });
+  }
   if (session.role === "admin" && coreModules.settings) {
     navItems.push({ href: "/admin/settings", label: "Nastavení" });
   }
   const webBase = adminConfig.webUrl.replace(/\/$/, "");
   navItems.push({
     href: webBase === "" ? "/?edit=1" : `${webBase}?edit=1`,
-    label: "Vstup do edit web",
+    label: "Edit web",
     external: true,
   });
 
@@ -148,7 +151,8 @@ export default async function AdminShellLayout({ children }: { children: React.R
 
 /**
  * Breadcrumbs odvozené z pathname — generické, fungují pro každý nový modul
- * bez úprav (známé segmenty se pojmenují, jiné se humanizují).
+ * bez úprav. Root crumb je Dashboard (/admin) — NE "Nastavení" (žádné
+ * duplicitní labely).
  */
 function buildBreadcrumbs(
   pathname: string,
@@ -158,9 +162,9 @@ function buildBreadcrumbs(
     .replace(/^\/admin\/?/, "")
     .split("/")
     .filter(Boolean);
-  const crumbs: Crumb[] = [{ label: "Nastavení", href: "/admin/settings" }];
+  const crumbs: Crumb[] = [{ label: "Dashboard", href: "/admin" }];
 
-  if (segments.length === 0) return [{ label: "Nastavení" }];
+  if (segments.length === 0) return crumbs;
 
   if (segments[0] === "projects") {
     const projectId = segments[1];
@@ -178,10 +182,10 @@ function buildBreadcrumbs(
     } else if (rest[0] === "audit") {
       crumbs.push({ label: "Audit", href: `/admin/projects/${projectId}/audit` });
     } else if (rest[0] === "media") {
-      crumbs.push({ label: "Media", href: `/admin/projects/${projectId}/media` });
+      crumbs.push({ label: "Média", href: `/admin/projects/${projectId}/media` });
     }
   } else if (segments[0] === "settings") {
-    crumbs.push({ label: "Nastavení", href: "/admin/settings" });
+    crumbs.push({ label: "Nastavení" });
   } else {
     crumbs.push({ label: humanize(segments[0]) });
   }
