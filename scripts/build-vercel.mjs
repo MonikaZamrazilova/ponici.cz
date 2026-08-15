@@ -71,6 +71,25 @@ for (const dir of ["node_modules", "packages"]) {
 cpSync(path.join(standaloneRoot, "package.json"), path.join(adminFunc, "package.json"));
 cpSync(adminStandalone, adminFunc, { recursive: true });
 
+// BEZPEČNOST: Next standalone output tracing zkopíroval .env — secrets
+// se na Vercel dodávají přes Environment Variables, nikdy ne přes output.
+rmSync(path.join(adminFunc, ".env"), { force: true });
+for (const f of [".env.local", ".env.production", ".env.production.local"]) {
+  rmSync(path.join(adminFunc, f), { force: true });
+}
+
+// Vercel Build Output API v3 — povinný konfig funkce.
+// Next.js standalone server: handler = server.js, Node.js launcher,
+// runtime nodejs24.x (konzistentní s web funkcí od nitro).
+const vcConfig = {
+  runtime: "nodejs24.x",
+  handler: "server.js",
+  launcherType: "Nodejs",
+  shouldAddHelpers: false,
+  supportsResponseStreaming: true,
+};
+writeFileSync(path.join(adminFunc, ".vc-config.json"), JSON.stringify(vcConfig, null, 2) + "\n");
+
 // static assety adminu (Next.js /_next/static)
 const nextStatic = path.join(adminDir, ".next", "static");
 if (existsSync(nextStatic)) {
