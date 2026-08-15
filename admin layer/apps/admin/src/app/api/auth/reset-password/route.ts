@@ -27,12 +27,16 @@ export async function POST(request: NextRequest) {
     }
     return response;
   } catch (err) {
-    const message =
-      err instanceof Error && "status" in err
-        ? (err as { status?: number }).status === 400
-          ? (err as Error).message
-          : "Změna hesla selhala — zkuste to později"
-        : "Interní chyba — zkuste to později";
-    return NextResponse.json({ ok: false, error: { message } }, { status: 400 });
+    // Bezpečná diagnostika 400 — nikdy nelogujeme heslo/token/email.
+    // Loguje se typ chyby + validační důvod + stav verified tokenu.
+    const isAdminError = err instanceof Error && "status" in err;
+    const status = isAdminError ? (err as { status?: number }).status : undefined;
+    const message = isAdminError ? (err as Error).message : "neznámá chyba";
+    console.error(
+      `[admin] reset-password 400 — typ=${status ?? "unknown"} důvod=${message} ` +
+        `verifiedToken=${verifiedToken ? "přítomen" : "CHYBÍ"}`,
+    );
+    const userMessage = status === 400 ? message : "Změna hesla selhala — zkuste to později";
+    return NextResponse.json({ ok: false, error: { message: userMessage } }, { status: 400 });
   }
 }
