@@ -83,6 +83,34 @@ describe("updateAdminPasswordOnVercel", () => {
     expect(redeploy?.init?.method).toBe("POST");
   });
 
+  it("redeploy čeká na READY (polling) — nová env aktivní pro login", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        const u = String(url);
+        if (!init?.method && u.includes("/deployments?projectId")) {
+          return jsonResponse({ deployments: [{ uid: "dpl_xyz" }] });
+        }
+        if (init?.method === "POST" && u.includes("/redeploy")) {
+          return jsonResponse({ id: "dpl_new" }, 200);
+        }
+        if (!init?.method && u.includes("/deployments/dpl_new")) {
+          return jsonResponse({ readyState: "READY" }, 200);
+        }
+        if (!init?.method && u.includes("/projects/prj_test123/env")) {
+          return jsonResponse({ envs: [{ id: "env_abc", key: "ADMIN_PASSWORD" }] });
+        }
+        if (init?.method === "PATCH") {
+          return jsonResponse({ id: "env_abc" }, 200);
+        }
+        return jsonResponse({}, 200);
+      }) as unknown as typeof fetch,
+    );
+
+    const ok = await updateAdminPasswordOnVercel("nove-heslo");
+    expect(ok).toBe(true);
+  });
+
   it("neexistující env → POST create", async () => {
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     vi.stubGlobal(

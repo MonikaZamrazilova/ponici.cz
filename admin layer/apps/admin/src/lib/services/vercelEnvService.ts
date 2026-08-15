@@ -131,25 +131,46 @@ async function createAdminPassword(cfg: VercelConfig, value: string): Promise<vo
 }
 
 /**
- * Best-effort redeploy produkčního deploymentu — nová env se projeví
- * v běžícím deploymentu. Selhání redeployu neznamená selhání resetu
- * (env je už uložená; projeví se při příštím deployi).
+ * Spustí redeploy produkčního deploymentu a ČEKÁ na READY.
+ *
+ * Proč: Vercel env změna se projeví až na NOVÝ deployment — běžící
+ * instance čtou starou env. Bez dokončeného redeployu by login novým
+ * heslem selhal (in-memory override je per-instance).
+ *
+ * Vrací true, když redeploy doběhl do READY; false při timeoutu/chybě
+ * (env je uložená a projeví se při příštím deployi).
  */
-async function triggerProductionRedeploy(cfg: VercelConfig): Promise<void> {
+async function triggerProductionRedeploy(cfg: VercelConfig): Promise<boolean> {
   try {
     const list = await apiFetch(
       cfg,
       `/v13/deployments?projectId=${cfg.projectId}${cfg.teamId ? `&teamId=${encodeURIComponent(cfg.teamId)}` : ""}&target=production&limit=1&state=READY`,
     );
-    if (!list.ok) return;
+    if (!list.ok) return false;
     const json = (await list.json()) as { deployments?: { uid?: string }[] };
     const deploymentId = json.deployments?.[0]?.uid;
-    if (!deploymentId) return;
-    await apiFetch(cfg, `/v13/deployments/${deploymentId}/redeploy${query(cfg)}`, {
+    if (!deploymentId) return false;
+
+    const res = await apiFetch(cfg, `/v13/deployments/${deploymentId}/redeploy${query(cfg)}`, {
       method: "POST",
     });
+    if (!res.ok) return false;
+    const redeployed = (await res.json()) as { id?: string };
+    if (!redeployed.id) return false;
+
+    // polling do READY (max ~90 s; build obvykle 30-60 s)
+    const DEADLINE = Date.now() + 90_000;
+    for (;;) {
+      await new Promise((r) => setTimeout(r, 3_000));
+      if (Date.now() > DEADLINE) return false;
+      const check = await apiFetch(cfg, `/v13/deployments/${redeployed.id}${query(cfg)}`);
+      if (!check.ok) return false;
+      const state = ((await check.json()) as { readyState?: string }).readyState;
+      if (state === "READY") return true;
+      if (state === "ERROR" || state === "CANCELED" || state === "BLOCKED") return false;
+    }
   } catch {
-    // best-effort — ticho
+    return false;
   }
 }
 

@@ -129,3 +129,31 @@ export async function sendPasswordResetCode({
     return { ok: false };
   }
 }
+
+/**
+ * Notifikace po změně hesla — bez hesla, bez secrets.
+ * Best-effort: selhání notifikace nikdy neblokuje reset.
+ */
+export async function sendPasswordChangedNotification(email: string): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.FROM_EMAIL;
+  if (!apiKey || !from) return;
+
+  try {
+    const { Resend } = await import("resend");
+    const resend = new Resend(apiKey);
+    const recipient = resolveRecipient(email);
+    await resend.emails.send({
+      from,
+      to: recipient,
+      subject: "Vaše administrátorské heslo bylo změněno",
+      text: [
+        "Vaše administrátorské heslo bylo změněno.",
+        "",
+        "Pokud jste změnu neprovedli, kontaktujte správce systému.",
+      ].join("\n"),
+    });
+  } catch {
+    // best-effort — ticho
+  }
+}

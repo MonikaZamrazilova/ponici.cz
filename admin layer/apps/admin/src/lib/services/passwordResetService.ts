@@ -1,6 +1,6 @@
 import "server-only";
 import { AdminError, generateResetCode, hashResetCode } from "@admin/core";
-import { sendPasswordResetCode } from "./emailService";
+import { sendPasswordChangedNotification, sendPasswordResetCode } from "./emailService";
 import { appendAudit } from "./auditService";
 import { passwordOverride } from "../storage/passwordStore";
 import { sessionStore } from "../storage/sessionStore";
@@ -183,6 +183,9 @@ export async function resetPassword(
     summary: "Heslo admin role změněno (obnova e-mailem)",
     details: { email: payload.email },
   }).catch(() => {});
+
+  // notifikace o změně hesla — bez hesla, best-effort (nikdy neblokuje reset)
+  void sendPasswordChangedNotification(payload.email).catch(() => {});
 
   return { ok: true, message: "Heslo bylo změněno" };
 }
