@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button, Field, Input, useForm, tokens } from "@admin/ui";
+import { Button, Field, useForm, tokens } from "@admin/ui";
+import { PasswordInput } from "./PasswordInput";
 
 export function ResetPasswordForm({ email }: { email: string }) {
   const router = useRouter();
@@ -10,17 +11,8 @@ export function ResetPasswordForm({ email }: { email: string }) {
     initialValues: { password: "", confirm: "" },
     validate: (values) => {
       const errors: Record<string, string> = {};
-      if (values.password.length < 12) {
-        errors.password = "Heslo musí mít alespoň 12 znaků";
-      }
-      if (!/[A-Z]/.test(values.password)) {
-        errors.password = "Heslo musí obsahovat velké písmeno";
-      }
-      if (!/[a-z]/.test(values.password)) {
-        errors.password = "Heslo musí obsahovat malé písmeno";
-      }
-      if (!/\d/.test(values.password)) {
-        errors.password = "Heslo musí obsahovat číslici";
+      if (values.password.length < 8) {
+        errors.password = "Heslo musí mít alespoň 8 znaků";
       }
       if (values.confirm !== values.password) {
         errors.confirm = "Hesla se neshodují";
@@ -52,20 +44,18 @@ export function ResetPasswordForm({ email }: { email: string }) {
       style={{ display: "flex", flexDirection: "column", gap: 12 }}
     >
       <Field label="Nové heslo" error={form.errors["password"]} htmlFor="reset-password">
-        <Input
+        <PasswordInput
           id="reset-password"
-          type="password"
           value={form.values.password}
           onChange={(e) => form.setValue("password", e.target.value)}
-          placeholder="Minimálně 12 znaků (velké, malé písmeno, číslice)"
+          placeholder="Minimálně 8 znaků"
           autoComplete="new-password"
           disabled={form.submitting}
         />
       </Field>
       <Field label="Potvrzení hesla" error={form.errors["confirm"]} htmlFor="reset-confirm">
-        <Input
+        <PasswordInput
           id="reset-confirm"
-          type="password"
           value={form.values.confirm}
           onChange={(e) => form.setValue("confirm", e.target.value)}
           placeholder="Ještě jednou"

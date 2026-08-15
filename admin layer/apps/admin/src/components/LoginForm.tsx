@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button, Field, Input, useForm, tokens } from "@admin/ui";
+import { Button, Field, useForm, tokens } from "@admin/ui";
+import { PasswordInput } from "./PasswordInput";
 
 export function LoginForm({ disabled = false }: { disabled?: boolean }) {
   const router = useRouter();
@@ -35,9 +36,8 @@ export function LoginForm({ disabled = false }: { disabled?: boolean }) {
       style={{ display: "flex", flexDirection: "column", gap: 12 }}
     >
       <Field label="Heslo" error={form.errors["password"]} htmlFor="login-password">
-        <Input
+        <PasswordInput
           id="login-password"
-          type="password"
           value={form.values.password}
           onChange={(e) => form.setValue("password", e.target.value)}
           placeholder="Heslo"

@@ -1,11 +1,8 @@
 /**
  * Password policy — centrální validace hesel.
  *
- * Bezpečnostní požadavky (security-first, viz master prompt):
- *  - minimálně 12 znaků
- *  - alespoň jedno velké písmeno (A-Z)
- *  - alespoň jedno malé písmeno (a-z)
- *  - alespoň jedna číslice (0-9)
+ * Požadavek (UX): minimálně 8 znaků, žádné povinné speciální znaky,
+ * žádná povinná čísla. Pouze kontrola délky.
  *
  * Vrací pole chyb — UI zobrazí všechny najednou, server je vynucuje
  * znovu (client validace není ochrana).
@@ -23,17 +20,8 @@ export function validatePassword(password: string): PasswordValidationResult {
     errors.push("Heslo je povinné");
     return { ok: false, errors };
   }
-  if (password.length < 12) {
-    errors.push("Heslo musí mít alespoň 12 znaků");
-  }
-  if (!/[A-Z]/.test(password)) {
-    errors.push("Heslo musí obsahovat alespoň jedno velké písmeno");
-  }
-  if (!/[a-z]/.test(password)) {
-    errors.push("Heslo musí obsahovat alespoň jedno malé písmeno");
-  }
-  if (!/\d/.test(password)) {
-    errors.push("Heslo musí obsahovat alespoň jednu číslici");
+  if (password.length < 8) {
+    errors.push("Heslo musí mít alespoň 8 znaků");
   }
 
   return { ok: errors.length === 0, errors };

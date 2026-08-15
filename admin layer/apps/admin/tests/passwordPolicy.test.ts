@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { validatePassword } from "../src/lib/auth/passwordPolicy";
 
 describe("passwordPolicy", () => {
-  it("validní heslo (12+, velké, malé, číslice) → ok", () => {
+  it("validní heslo (8+ znaků, bez povinných znaků) → ok", () => {
     expect(validatePassword("NoveHeslo1234!")).toEqual({ ok: true, errors: [] });
-    expect(validatePassword("Abcdefghijkl1")).toEqual({ ok: true, errors: [] });
+    expect(validatePassword("abcdefgh")).toEqual({ ok: true, errors: [] });
+    expect(validatePassword("12345678")).toEqual({ ok: true, errors: [] });
+    expect(validatePassword("vsechnomaly")).toEqual({ ok: true, errors: [] });
   });
 
   it("prázdné heslo → error", () => {
@@ -13,32 +15,18 @@ describe("passwordPolicy", () => {
     expect(result.errors).toContain("Heslo je povinné");
   });
 
-  it("méně než 12 znaků → error", () => {
-    const result = validatePassword("Aa1");
+  it("méně než 8 znaků → error", () => {
+    const result = validatePassword("Aa1b2");
     expect(result.ok).toBe(false);
-    expect(result.errors).toContain("Heslo musí mít alespoň 12 znaků");
+    expect(result.errors).toContain("Heslo musí mít alespoň 8 znaků");
   });
 
-  it("bez velkého písmena → error", () => {
-    const result = validatePassword("abcdefghijkl1");
+  it("7 znaků → error", () => {
+    const result = validatePassword("abcdefg");
     expect(result.ok).toBe(false);
-    expect(result.errors).toContain("Heslo musí obsahovat alespoň jedno velké písmeno");
   });
 
-  it("bez malého písmena → error", () => {
-    const result = validatePassword("ABCDEFGHIJKL1");
-    expect(result.ok).toBe(false);
-    expect(result.errors).toContain("Heslo musí obsahovat alespoň jedno malé písmeno");
-  });
-
-  it("bez číslice → error", () => {
-    const result = validatePassword("Abcdefghijkl!");
-    expect(result.ok).toBe(false);
-    expect(result.errors).toContain("Heslo musí obsahovat alespoň jednu číslici");
-  });
-
-  it("vrátí všechny chyby najednou", () => {
-    const result = validatePassword("abc");
-    expect(result.errors.length).toBeGreaterThanOrEqual(2);
+  it("přesně 8 znaků → ok (žádné speciální požadavky)", () => {
+    expect(validatePassword("abcdefgh").ok).toBe(true);
   });
 });
