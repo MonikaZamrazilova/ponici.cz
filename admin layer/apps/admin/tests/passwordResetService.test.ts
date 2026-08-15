@@ -43,9 +43,10 @@ describe("passwordResetService — serverless 3-krokový flow", () => {
     });
   });
 
-  it("requestReset v produkci bez Web3Forms → bezpečná hláška, žádný 500", async () => {
+  it("requestReset v produkci bez Resend → bezpečná hláška, žádný 500", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("WEB3FORMS_ACCESS_KEY", "");
+    vi.stubEnv("RESEND_API_KEY", "");
+    vi.stubEnv("FROM_EMAIL", "");
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
       const result = await requestReset("owner@example.com", { allowed: true });
@@ -56,7 +57,8 @@ describe("passwordResetService — serverless 3-krokový flow", () => {
     } finally {
       errorSpy.mockRestore();
       vi.stubEnv("NODE_ENV", "development");
-      vi.stubEnv("WEB3FORMS_ACCESS_KEY", undefined);
+      vi.stubEnv("RESEND_API_KEY", undefined);
+      vi.stubEnv("FROM_EMAIL", undefined);
     }
   });
 

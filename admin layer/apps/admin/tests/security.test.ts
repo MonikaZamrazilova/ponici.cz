@@ -7,7 +7,7 @@ import path from "node:path";
  * Security guard — secrets nikdy v client bundle.
  *
  * Env proměnné s tokeny (GITHUB_*, BLOB_READ_WRITE_TOKEN, VERCEL_TOKEN,
- * WEB3FORMS_ACCESS_KEY) smí být čtené JEN v server-only souborech
+ * RESEND_API_KEY) smí být čtené JEN v server-only souborech
  * (`import "server-only"`) a nikdy v "use client" komponentách.
  */
 
@@ -19,7 +19,7 @@ const SECRET_ENV_PATTERNS = [
   "process.env.GITHUB_REPO",
   "process.env.BLOB_READ_WRITE_TOKEN",
   "process.env.VERCEL_TOKEN",
-  "process.env.WEB3FORMS_ACCESS_KEY",
+  "process.env.RESEND_API_KEY",
 ];
 
 function walk(dir: string): string[] {

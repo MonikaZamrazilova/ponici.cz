@@ -1,22 +1,23 @@
 import "server-only";
 
 /**
- * Email delivery přes Web3Forms — žádný SMTP, žádný externí backend.
+ * Email delivery přes Resend API — systémové recovery emaily.
  *
- * Web3Forms: POST https://api.web3forms.com/submit s access_key.
- * (Formulářová služba pro statické weby; funguje z browseru i serverless.)
+ * Resend je server-to-server email API (na rozdíl od Web3Forms, který
+ * Cloudflare blokuje pro headless requesty). Doména ponici.cz je
+ * ověřená v Resend dashboardu.
+ *
+ * Env:
+ *   RESEND_API_KEY — API klíč (server-only, nikdy na klienta)
+ *   FROM_EMAIL     — ověřená odesílací adresa
  *
  * Bezpečnost:
- *  - nikdy neloguje reset kód, heslo ani token (jen stav/statusy)
- *  - žádné ukládání e-mailů
- *  - timeout 10 s, error handling bez úniku detailů
- *
- * Env: WEB3FORMS_ACCESS_KEY (veřejný klíč z web3forms.com)
- * MOCK: bez WEB3FORMS_ACCESS_KEY se kód jen loguje (dev) —
- *       flow je testovatelné lokálně bez skutečného e-mailu.
+ *   - nikdy neloguje reset kód, heslo, email ani token (jen stav/statusy)
+ *   - žádné ukládání e-mailů
+ *   - error handling bez úniku detailů
+ *   - žádný hardcoded email ani klíč
  */
 
-const WEB3FORMS_URL = "https://api.web3forms.com/submit";
 const TIMEOUT_MS = 10_000;
 
 export interface SendPasswordResetCodeInput {
@@ -32,22 +33,21 @@ export interface SendResult {
   devCode?: string;
 }
 
+/** True, pokud je Resend nakonfigurovaný (API klíč + FROM_EMAIL). */
 export function isEmailConfigured(): boolean {
-  return Boolean(process.env.WEB3FORMS_ACCESS_KEY);
+  return Boolean(process.env.RESEND_API_KEY && process.env.FROM_EMAIL);
 }
 
 function buildEmailBody(code: string, expiresAt: number): string {
   const minutes = Math.max(1, Math.round((expiresAt - Date.now()) / 60_000));
   return [
-    "Subject: Admin password reset code",
-    "",
-    "Body:",
-    "",
-    "Your verification code:",
+    "Váš kód pro obnovení hesla administrátora:",
     "",
     code,
     "",
-    `This code expires in ${minutes} minutes.`,
+    `Kód je platný ${minutes} minut.`,
+    "",
+    "Pokud jste obnovení hesla nevyžádali, tento e-mail ignorujte.",
   ].join("\n");
 }
 
@@ -56,66 +56,53 @@ export async function sendPasswordResetCode({
   code,
   expiresAt,
 }: SendPasswordResetCodeInput): Promise<SendResult> {
-  const accessKey = process.env.WEB3FORMS_ACCESS_KEY;
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.FROM_EMAIL;
   const isDev = process.env.NODE_ENV === "development";
 
-  // Diagnostika (bez hodnoty klíče): je provider nakonfigurovaný?
+  // Diagnostika (bez hodnoty klíče/emailu): je provider nakonfigurovaný?
   console.log(
-    `[admin] email provider configured: ${Boolean(accessKey)} (NODE_ENV=${isDev ? "development" : "production"})`,
+    `[admin] email provider configured: ${Boolean(apiKey && from)} (NODE_ENV=${isDev ? "development" : "production"})`,
   );
 
-  if (!accessKey) {
+  if (!apiKey || !from) {
     // MOCK se nikdy nesmí spustit v produkci — reset by tiše prošel bez e-mailu.
     // V dev režimu se kód jen loguje (bezpečné: kód samotný se neloguje).
     if (!isDev) {
-      console.error("[admin] Web3Forms není nakonfigurováno (chybí WEB3FORMS_ACCESS_KEY)");
+      console.error("[admin] Resend není nakonfigurováno (chybí RESEND_API_KEY/FROM_EMAIL)");
       return { ok: false };
     }
-    console.log(`[admin] MOCK reset kód pro ${email} (expires ${expiresAt})`);
+    console.log(`[admin] MOCK reset kód (expires ${expiresAt})`);
     return { ok: true, devCode: code };
   }
 
   try {
-    console.log("[admin] Web3Forms fetch spuštěn");
-    const res = await fetch(WEB3FORMS_URL, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        accept: "application/json",
-        // Node/undici fetch posílá podezřelý User-Agent → Cloudflare WAF
-        // před Web3Forms může vrátit 403 challenge. Browser-like UA to řeší.
-        "user-agent": "Mozilla/5.0 (compatible; Ponici.cz admin/1.0; +https://www.ponici.cz)",
-      },
-      body: JSON.stringify({
-        access_key: accessKey,
-        subject: "Admin password reset code",
-        from_name: "Ponici.cz Admin",
-        // Cíl e-mailu je nastavený v Web3Forms dashboardu (žádné `to` pole —
-        // není součástí oficiálního API a může způsobit 4xx).
-        email,
-        message: buildEmailBody(code, expiresAt),
-        code, // Web3Forms umí poslat pole; kód jde jen do e-mailu
-      }),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+    console.log("[admin] Resend send spuštěn");
+    const { Resend } = await import("resend");
+    const resend = new Resend(apiKey);
+
+    const { data, error } = await resend.emails.send({
+      from,
+      to: email,
+      subject: "Obnovení hesla administrátora",
+      text: buildEmailBody(code, expiresAt),
     });
 
-    // Bezpečný debug: status + response body BEZ citlivých údajů
-    // (Web3Forms chybové body neobsahují klíč; nikdy nelogujeme email/kód).
-    const resText = (await res.text().catch(() => "")).slice(0, 200);
-    console.log(`[admin] Web3Forms response status: ${res.status}`);
-    if (resText) {
-      console.log(`[admin] Web3Forms response: ${resText.slice(0, 200)}`);
-    }
-
-    if (!res.ok) {
-      console.error(`[admin] Web3Forms odeslání selhalo: HTTP ${res.status}`);
+    if (error || !data?.id) {
+      // bez secrets v logu — jen chybová zpráva od API
+      console.error(
+        "[admin] Resend odeslání selhalo:",
+        error ? String(error.message ?? error) : "neznámá chyba",
+      );
       return { ok: false };
     }
+
+    console.log(`[admin] Resend response: id ${data.id}`);
     return { ok: true };
   } catch (err) {
     // timeout / síť — žádná tajemství v logu
     console.error(
-      "[admin] Web3Forms odeslání selhalo:",
+      "[admin] Resend odeslání selhalo:",
       err instanceof Error ? err.message : "síťová chyba",
     );
     return { ok: false };
