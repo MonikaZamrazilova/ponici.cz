@@ -184,8 +184,11 @@ export async function resetPassword(
     details: { email: payload.email },
   }).catch(() => {});
 
-  // notifikace o změně hesla — bez hesla, best-effort (nikdy neblokuje reset)
-  void sendPasswordChangedNotification(payload.email).catch(() => {});
+  // notifikace o změně hesla — bez hesla, best-effort (nikdy neblokuje reset).
+  // AWAIT: ve serverless by fire-and-forget (`void ...`) nedokončil fetch na
+  // Resend před ukončením funkce → email by nepřišel. Funkce má vlastní
+  // try/catch, takže await nikdy nevyhodí (reset zůstává bezpečný).
+  await sendPasswordChangedNotification(payload.email);
 
   return { ok: true, message: "Heslo bylo změněno" };
 }

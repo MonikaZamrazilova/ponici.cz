@@ -137,9 +137,13 @@ export async function sendPasswordResetCode({
 export async function sendPasswordChangedNotification(email: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.FROM_EMAIL;
-  if (!apiKey || !from) return;
+  if (!apiKey || !from) {
+    console.error("[admin] password changed notification: chybí RESEND_API_KEY/FROM_EMAIL");
+    return;
+  }
 
   try {
+    console.log("[admin] password changed notification sending");
     const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
     const recipient = resolveRecipient(email);
@@ -160,16 +164,16 @@ export async function sendPasswordChangedNotification(email: string): Promise<vo
     if (error || !data?.id) {
       // bez secrets v logu — jen chybová zpráva od API
       console.error(
-        "[admin] notifikace o změně hesla selhala:",
+        "[admin] password changed notification failed:",
         error ? String(error.message ?? error) : "neznámá chyba",
       );
       return;
     }
-    console.log(`[admin] notifikace o změně hesla odeslána: id ${data.id}`);
+    console.log(`[admin] password changed notification sent: id ${data.id}`);
   } catch (err) {
     // best-effort — reset NIKDY neblokuje; bez secrets v logu
     console.error(
-      "[admin] notifikace o změně hesla selhala:",
+      "[admin] password changed notification failed:",
       err instanceof Error ? err.message : "síťová chyba",
     );
   }

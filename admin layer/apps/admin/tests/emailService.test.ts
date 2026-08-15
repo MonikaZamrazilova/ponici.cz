@@ -236,10 +236,29 @@ describe("emailService — Resend", () => {
         sendPasswordChangedNotification("monika.zamrazilova@seznam.cz"),
       ).resolves.toBeUndefined();
       const output = errorSpy.mock.calls.flat().map(String).join(" ");
-      expect(output).toContain("notifikace o změně hesla selhala");
+      expect(output).toContain("password changed notification failed");
       expect(output).not.toContain("monika.zamrazilova@seznam.cz");
     } finally {
       errorSpy.mockRestore();
+    }
+  });
+
+  it("notifikace: logy 'sending' + 'sent' bez secrets", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("FROM_EMAIL", "admin@ponici.cz");
+    vi.stubEnv("RESET_TEST_EMAIL", "");
+    sendMock.mockResolvedValue({ data: { id: "email_ok" }, error: null });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    try {
+      await sendPasswordChangedNotification("monika.zamrazilova@seznam.cz");
+      const output = logSpy.mock.calls.flat().map(String).join(" ");
+      expect(output).toContain("password changed notification sending");
+      expect(output).toContain("password changed notification sent");
+      expect(output).toContain("email_ok");
+      expect(output).not.toContain("monika.zamrazilova@seznam.cz");
+    } finally {
+      logSpy.mockRestore();
     }
   });
 });
