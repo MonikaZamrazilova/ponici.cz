@@ -51,6 +51,42 @@
   }
 }
 
+/* ── Elegantní scrollbar (desktop) ─────────────────────────────────────────
+ * Minimalistický, tenký, nenápadný — ladí s design systémem (cream/sage).
+ * Thumb je jemná sage-deep neutrální barva s border-radius full a lehkým
+ * alpha; na hover se plynule zvýrazní. Mobil ponechává nativní chování.
+ * Pouze zařízení s přesným pointerem (myš/trackpad). */
+@media (hover: hover) and (pointer: fine) {
+  /* Firefox */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.42 0.055 145 / 0.35) transparent;
+  }
+
+  /* WebKit (Safari/Chrome/Edge) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.42 0.055 145 / 0.35);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: background-color 250ms ease;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.28 0.028 55 / 0.55);
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
 @utility fade-up {
   animation: fadeUp 1s ease-out both;
 }
