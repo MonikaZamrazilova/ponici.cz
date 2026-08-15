@@ -24,6 +24,17 @@ export function MobileNav({ items }: { items: NavItem[] }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
+  // auto-zavření při překročení md breakpointu (otočení zařízení / resize):
+  // na desktopu sidebar přebírá navigaci, drawer by se překrýval
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 48rem)");
+    function onDesktop(event: MediaQueryListEvent) {
+      if (event.matches) setOpen(false);
+    }
+    mq.addEventListener("change", onDesktop);
+    return () => mq.removeEventListener("change", onDesktop);
+  }, []);
+
   return (
     <>
       <button
