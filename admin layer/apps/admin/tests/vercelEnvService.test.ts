@@ -73,9 +73,11 @@ describe("updateAdminPasswordOnVercel", () => {
     const patchCall = calls.find((c) => c.url.includes("/env/env_abc"));
     expect(patchCall?.init?.method).toBe("PATCH");
     const patchBody = JSON.parse(String(patchCall?.init?.body)) as {
+      key: string;
       value: string;
       target: string[];
     };
+    expect(patchBody.key).toBe("ADMIN_PASSWORD");
     expect(patchBody.value).toBe("nove-silne-heslo");
     expect(patchBody.target).toContain("production");
 
@@ -124,6 +126,37 @@ describe("updateAdminPasswordOnVercel", () => {
 
     const { AdminError } = await import("@admin/core");
     await expect(updateAdminPasswordOnVercel("heslo")).rejects.toMatchObject({ status: 502 });
+  });
+
+  it("Vercel API 400 na PATCH → AdminError 502 + diagnostika bez secrets", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        const u = String(url);
+        // GET list env — bez query (teamId chybí) → '/env' na konci
+        if (init?.method !== "PATCH" && u.includes("/projects/prj_test123/env")) {
+          return jsonResponse({ envs: [{ id: "env_x", key: "ADMIN_PASSWORD" }] });
+        }
+        if (init?.method === "PATCH" && u.includes("/env/env_x")) {
+          return jsonResponse({ error: { message: "One of the provided values is invalid" } }, 400);
+        }
+        return new Response("Not Found", { status: 404 });
+      }) as unknown as typeof fetch,
+    );
+
+    try {
+      await expect(updateAdminPasswordOnVercel("nove-heslo")).rejects.toMatchObject({
+        status: 502,
+      });
+      const output = errorSpy.mock.calls.flat().map(String).join(" ");
+      expect(output).toContain("HTTP 400");
+      expect(output).toContain("One of the provided values");
+      expect(output).not.toContain("nove-heslo");
+      expect(output).not.toContain("test-vercel-token");
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 
   it("bez Vercel konfigurace → false, žádné API volání (bezpečný fallback)", async () => {

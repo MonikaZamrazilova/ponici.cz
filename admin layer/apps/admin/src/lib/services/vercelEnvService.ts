@@ -76,14 +76,40 @@ async function findAdminPasswordVar(cfg: VercelConfig): Promise<VercelEnvVar | n
   return json.envs?.find((env) => env.key === "ADMIN_PASSWORD") ?? null;
 }
 
+/**
+ * Bezpečná diagnostika Vercel API — status + error body BEZ tokenu/hesla.
+ * (Vercel chybové body neobsahují value; nikdy nelogujeme heslo.)
+ */
+async function logVercelError(step: string, res: Response): Promise<void> {
+  const body = await res.text().catch(() => "");
+  let safe = body.slice(0, 200);
+  try {
+    const parsed = JSON.parse(safe) as {
+      error?: { message?: string; code?: string };
+      message?: string;
+    };
+    safe = parsed.error?.message ?? parsed.message ?? "bez detailu";
+  } catch {
+    // ne-JSON body → jen status (safe)
+  }
+  console.error(`[admin] Vercel ${step} selhal (HTTP ${res.status}): ${safe}`);
+}
+
 /** Přepíše existující env var (PATCH). */
-async function patchAdminPassword(cfg: VercelConfig, envId: string, value: string): Promise<void> {
+async function patchAdminPassword(
+  cfg: VercelConfig,
+  envId: string,
+  key: string,
+  value: string,
+): Promise<void> {
   const target = ["production", "preview", "development"];
   const res = await apiFetch(cfg, `/v9/projects/${cfg.projectId}/env/${envId}${query(cfg)}`, {
     method: "PATCH",
-    body: JSON.stringify({ value, target }),
+    // Vercel API vyžaduje key v body — bez něj vrací 400
+    body: JSON.stringify({ key, value, target }),
   });
   if (!res.ok) {
+    await logVercelError("env update (PATCH)", res);
     throw new AdminError(`Vercel env update selhal (HTTP ${res.status})`, undefined, 502);
   }
 }
@@ -101,6 +127,7 @@ async function createAdminPassword(cfg: VercelConfig, value: string): Promise<vo
     }),
   });
   if (!res.ok) {
+    await logVercelError("env create (POST)", res);
     throw new AdminError(`Vercel env create selhal (HTTP ${res.status})`, undefined, 502);
   }
 }
@@ -141,7 +168,7 @@ export async function updateAdminPasswordOnVercel(newPassword: string): Promise<
 
   const existing = await findAdminPasswordVar(cfg);
   if (existing?.id) {
-    await patchAdminPassword(cfg, existing.id, newPassword);
+    await patchAdminPassword(cfg, existing.id, existing.key ?? "ADMIN_PASSWORD", newPassword);
   } else {
     await createAdminPassword(cfg, newPassword);
   }
