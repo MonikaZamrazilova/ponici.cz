@@ -14,7 +14,7 @@ function resetCookie(name: string, value: string, maxAgeSeconds: number): string
 
 /** POST /api/auth/request-reset { email } */
 export async function POST(request: NextRequest) {
-  if (!isResetEnabled()) {
+  if (!(await isResetEnabled())) {
     return NextResponse.json(
       { ok: false, error: { message: "Obnova hesla není nastavená (chybí ADMIN_EMAIL)" } },
       { status: 503 },

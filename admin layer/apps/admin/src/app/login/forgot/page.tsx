@@ -5,8 +5,8 @@ import { ForgotPasswordForm } from "@/components/ForgotPasswordForm";
 
 export const dynamic = "force-dynamic";
 
-export default function ForgotPasswordPage() {
-  const enabled = isResetEnabled();
+export default async function ForgotPasswordPage() {
+  const enabled = await isResetEnabled();
 
   return (
     <div

@@ -16,6 +16,7 @@ export default async function LoginPage({
   const expired = Array.isArray(params.expired) ? params.expired[0] : params.expired;
   const reset = Array.isArray(params.reset) ? params.reset[0] : params.reset;
   const disabled = !Object.values(adminConfig.passwords).some(isAdminEnabled);
+  const resetEnabled = await isResetEnabled();
 
   const notice = disabled
     ? "Admin je vypnutý — chybí ADMIN_PASSWORD v konfiguraci."
@@ -68,7 +69,7 @@ export default async function LoginPage({
           </div>
         )}
         <LoginForm disabled={disabled} />
-        {isResetEnabled() && !disabled && (
+        {resetEnabled && !disabled && (
           <div style={{ marginTop: 16, textAlign: "center" }}>
             <Link
               href="/login/forgot"

@@ -12,6 +12,7 @@ import {
   verifyVerifiedToken,
 } from "../auth/resetToken";
 import { validatePassword } from "../auth/passwordPolicy";
+import { getRecoveryEmails, isRecoveryEmail, isResetEnabled } from "./recoveryEmailsService";
 
 /**
  * Password recovery flow (Vercel-native, 3 kroky, žádný storage):
@@ -33,18 +34,12 @@ import { validatePassword } from "../auth/passwordPolicy";
 export const RESET_CODE_TTL_MS = 10 * 60 * 1000; // 10 minut
 export const VERIFIED_TTL_MS = 10 * 60 * 1000; // 10 minut
 
-/** E-mail majitele (jediný příjemce reset kódu). */
-export function ownerEmail(): string {
-  return process.env.ADMIN_EMAIL ?? "";
-}
-
-export function isResetEnabled(): boolean {
-  return Boolean(ownerEmail());
-}
+/** E-maily s právem žádat reset kód (priorita: admin config → env → fallback). */
+export { getRecoveryEmails, isResetEnabled } from "./recoveryEmailsService";
 
 /** Má zadaný e-mail právo žádat obnovu hesla? */
-function isOwnerEmail(email: string): boolean {
-  return email.trim().toLowerCase() === ownerEmail().trim().toLowerCase();
+function isOwnerEmail(email: string): Promise<boolean> {
+  return isRecoveryEmail(email);
 }
 
 /**
@@ -61,7 +56,7 @@ export async function requestReset(
   devCode?: string;
 }> {
   const normalized = email.trim().toLowerCase();
-  const owner = isOwnerEmail(normalized);
+  const owner = await isOwnerEmail(normalized);
 
   if (!rateLimit.allowed) {
     throw new AdminError("Příliš mnoho žádostí — zkuste to později", undefined, 429);

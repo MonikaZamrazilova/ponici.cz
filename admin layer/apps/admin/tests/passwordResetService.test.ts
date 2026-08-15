@@ -18,8 +18,8 @@ afterAll(() => {
 });
 
 describe("passwordResetService — serverless 3-krokový flow", () => {
-  it("isResetEnabled() podle ADMIN_EMAIL", () => {
-    expect(isResetEnabled()).toBe(true);
+  it("isResetEnabled() podle ADMIN_EMAIL", async () => {
+    expect(await isResetEnabled()).toBe(true);
   });
 
   it("requestReset pro cizí e-mail → anonymní ok:true bez resetToken (anti-enumeration)", async () => {
