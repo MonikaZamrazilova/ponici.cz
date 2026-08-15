@@ -2192,6 +2192,21 @@ function Footer() {
               {site.footerCopyright}
             </EditableText>
           </div>
+          <div className="flex items-baseline gap-2">
+            <span className="opacity-70">Web vytvořil</span>
+            <a
+              href="https://recepce.tech"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative text-foreground/60 transition-colors duration-300 hover:text-foreground focus-visible:outline-2 focus-visible:outline-sage-deep focus-visible:outline-offset-4"
+            >
+              Recepce.tech
+              <span
+                aria-hidden
+                className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-current opacity-40 transition-transform duration-300 ease-out group-hover:scale-x-100 group-focus-visible:scale-x-100"
+              />
+            </a>
+          </div>
         </div>
       </div>
     </footer>
