@@ -15,5 +15,15 @@
       "publishedAt": "2026-08-15T07:46:45.750Z"
     }
   },
-  "faq": {}
+  "faq": {
+    "omluveni-lekce": {
+      "id": "omluveni-lekce",
+      "status": "published",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-08-15T07:46:59.059Z",
+      "question": "QA test otázka?",
+      "answer": "Lekci je potřeba omluvit nejpozději 24 hodin předem.",
+      "publishedAt": "2026-08-15T07:46:59.059Z"
+    }
+  }
 }
