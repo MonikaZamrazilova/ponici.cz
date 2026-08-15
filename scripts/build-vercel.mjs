@@ -44,7 +44,10 @@ if (!existsSync(path.join(adminDir, "next.config.ts"))) {
   console.error("CHYBA: admin neexistuje na", adminDir);
   process.exit(1);
 }
-run("npm run build -- --no-lint", adminDir);
+// npm workspace command — `next` binárka se resolvuje z admin layer node_modules
+// (Vercel nainstaluje admin layer přes installCommand; root nemá workspaces,
+//  proto NEPOUŽÍVÁME `cd adminDir && npm run build`).
+run('npm --prefix "admin layer" run build -w admin -- --no-lint', root);
 
 const standaloneRoot = path.join(adminDir, ".next", "standalone");
 const adminStandalone = path.join(standaloneRoot, "apps", "admin");
