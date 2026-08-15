@@ -59,6 +59,9 @@ export async function sendPasswordResetCode({
   const accessKey = process.env.WEB3FORMS_ACCESS_KEY;
   const isDev = process.env.NODE_ENV === "development";
 
+  // Diagnostika (bez hodnoty klíče): je provider nakonfigurovaný?
+  console.log(`[admin] email provider configured: ${Boolean(accessKey)} (NODE_ENV=${isDev ? "development" : "production"})`);
+
   if (!accessKey) {
     // MOCK se nikdy nesmí spustit v produkci — reset by tiše prošel bez e-mailu.
     // V dev režimu se kód jen loguje (bezpečné: kód samotný se neloguje).
@@ -71,6 +74,7 @@ export async function sendPasswordResetCode({
   }
 
   try {
+    console.log("[admin] Web3Forms fetch spuštěn");
     const res = await fetch(WEB3FORMS_URL, {
       method: "POST",
       headers: { "content-type": "application/json" },

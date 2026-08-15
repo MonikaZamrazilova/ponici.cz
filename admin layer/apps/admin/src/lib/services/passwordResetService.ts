@@ -64,9 +64,11 @@ export async function requestReset(
 
   if (!owner) {
     // anonymní odpověď — nepotvrzujeme existenci účtu
+    console.log("[admin] request-reset: owner-match=false (anonymní odpověď)");
     return { ok: true, message: "If the account exists, a verification code has been sent." };
   }
 
+  console.log("[admin] request-reset: owner-match=true (generuji reset kód)");
   const code = generateResetCode();
   const codeHash = await hashResetCode(code);
   const resetToken = await createResetToken(normalized, codeHash, RESET_CODE_TTL_MS);
@@ -76,6 +78,7 @@ export async function requestReset(
     code,
     expiresAt: Date.now() + RESET_CODE_TTL_MS,
   });
+  console.log(`[admin] request-reset: email-sent=${sent.ok}`);
   if (!sent.ok) {
     // ANTI-ENUMERATION: vždy stejná anonymní odpověď, i když odeslání selhalo.
     // (HTTP 500/502 by prozradil, že email je owner.) Chyba se jen loguje.
