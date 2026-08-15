@@ -102,7 +102,9 @@ async function patchAdminPassword(
   key: string,
   value: string,
 ): Promise<void> {
-  const target = ["production", "preview", "development"];
+  // ADMIN_PASSWORD je sensitive env — Vercel zakazuje target development.
+  // Míříme jen na production (výjimka platí i pro POST).
+  const target = ["production"];
   const res = await apiFetch(cfg, `/v9/projects/${cfg.projectId}/env/${envId}${query(cfg)}`, {
     method: "PATCH",
     // Vercel API vyžaduje key v body — bez něj vrací 400
@@ -116,7 +118,8 @@ async function patchAdminPassword(
 
 /** Vytvoří env var, pokud neexistuje (POST). */
 async function createAdminPassword(cfg: VercelConfig, value: string): Promise<void> {
-  const target = ["production", "preview", "development"];
+  // sensitive env — pouze production target
+  const target = ["production"];
   const res = await apiFetch(cfg, `/v10/projects/${cfg.projectId}/env${query(cfg)}`, {
     method: "POST",
     body: JSON.stringify({

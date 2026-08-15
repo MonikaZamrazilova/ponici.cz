@@ -79,7 +79,10 @@ describe("updateAdminPasswordOnVercel", () => {
     };
     expect(patchBody.key).toBe("ADMIN_PASSWORD");
     expect(patchBody.value).toBe("nove-silne-heslo");
-    expect(patchBody.target).toContain("production");
+    expect(patchBody.target).toEqual(["production"]);
+    // sensitive env — nikdy development/preview
+    expect(patchBody.target).not.toContain("development");
+    expect(patchBody.target).not.toContain("preview");
 
     const redeploy = calls.find((c) => c.url.includes("/redeploy"));
     expect(redeploy?.init?.method).toBe("POST");
@@ -110,10 +113,13 @@ describe("updateAdminPasswordOnVercel", () => {
       key: string;
       value: string;
       type: string;
+      target: string[];
     };
     expect(body.key).toBe("ADMIN_PASSWORD");
     expect(body.value).toBe("jine-heslo");
     expect(body.type).toBe("encrypted");
+    expect(body.target).toEqual(["production"]);
+    expect(body.target).not.toContain("development");
   });
 
   it("chyba Vercel API (500) → AdminError 502", async () => {
