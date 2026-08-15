@@ -2,10 +2,10 @@
   "site": {
     "main": {
       "id": "main",
-      "slug": "main",
       "status": "published",
       "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-08-15T10:03:44.819Z",
+      "updatedAt": "2026-08-15T10:12:15.384Z",
+      "publishedAt": "2026-08-13T08:14:56.785Z",
       "siteName": "Jezdecká škola",
       "baseUrl": "https://www.ponici.cz",
       "web3formsKey": "0a16a815-8bdb-45d9-9685-c61f374be991",
@@ -35,7 +35,7 @@
           "feature": "Příprava na ZZVJ"
         }
       ],
-      "aboutKicker": "O nás",
+      "aboutKicker": "O nás...",
       "aboutTitle": "Jízdy, péče\na radost z pohybu.",
       "aboutParagraphs": [
         {
@@ -66,8 +66,8 @@
           "label": "Zkoušky základního výcviku jezdce"
         }
       ],
-      "setkaniKicker": "Setkání",
       "setkaniImage": "/images/ponici/detail-tvar-ponika.jpg",
+      "setkaniKicker": "Setkání",
       "setkaniTitle": "Každý kůň má\nsvou povahu.",
       "setkaniText": "Nejde jen o jízdy. Jde o vztah a o moment, kdy si člověk ke koni najde cestu sám. Poznává jeho povahu, učí se mu naslouchat a respektovat ho. Více než 20 let zkušeností nás naučilo, že každý kůň i každý jezdec potřebuje svůj čas.",
       "setkaniCta": "Domluvit jízdu",
@@ -167,8 +167,7 @@
       "contactExpandable": "Máte otázku k jízdám, táborům nebo narozeninové oslavě? Zavolejte nám nebo napište. Rádi vám řekneme, jak to u nás funguje, a domluvíme další krok.",
       "footerDescription": "Jezdecká škola pro děti i dospělé. Císařský ostrov, Praha.",
       "footerCopyright": "Jezdecká škola · Císařský ostrov, Praha",
-      "jsonLdDescription": "Jezdecká škola, individuální lekce, skokový výcvik, tábory a vyjížďky s koňmi na Císařském ostrově v Praze.",
-      "publishedAt": "2026-08-13T08:14:56.785Z"
+      "jsonLdDescription": "Jezdecká škola, individuální lekce, skokový výcvik, tábory a vyjížďky s koňmi na Císařském ostrově v Praze."
     }
   },
   "service": {},
