@@ -1,20 +1,7 @@
 {
   "site": {},
   "service": {},
-  "price": {
-    "kurz-3-mesice": {
-      "id": "kurz-3-mesice",
-      "status": "published",
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-08-15T07:46:45.750Z",
-      "type": "course",
-      "name": "3 měsíční kurz",
-      "title": "Kurz začíná každoročně ve středu 9. 9., 16:30–18:00",
-      "price": "999 Kč [QA]",
-      "note": "Pravidelný kurz v malé skupině, celkem 12 lekcí.",
-      "publishedAt": "2026-08-15T07:46:45.750Z"
-    }
-  },
+  "price": {},
   "faq": {
     "omluveni-lekce": {
       "id": "omluveni-lekce",
