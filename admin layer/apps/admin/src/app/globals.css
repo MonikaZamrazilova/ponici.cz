@@ -71,3 +71,16 @@ body {
     opacity: 0.55;
   }
 }
+
+/* ── Dashboard — vstupní brány (hover efekty) ─────────────────────
+   Gate (editace webu) i sekundární karty: jemný lift + stín. */
+.admin-gate:hover {
+  transform: translateY(-2px);
+  border-color: rgba(17, 17, 17, 0.22);
+  box-shadow: 0 12px 32px rgba(17, 17, 17, 0.1);
+}
+.admin-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(17, 17, 17, 0.18);
+  box-shadow: 0 8px 24px rgba(17, 17, 17, 0.07);
+}

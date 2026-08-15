@@ -20,7 +20,7 @@ export function LoginForm({ disabled = false }: { disabled?: boolean }) {
       if (!json.ok) {
         return { ok: false, message: json.error?.message ?? "Přihlášení selhalo" };
       }
-      router.push("/admin");
+      router.push("/admin/dashboard");
       router.refresh();
       return { ok: true };
     },

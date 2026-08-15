@@ -48,7 +48,7 @@ export default async function AdminShellLayout({ children }: { children: React.R
   const current = projects.find((p) => p.identity.id === currentId) ?? null;
 
   // Kanonická navigace — jeden zdroj pravdy (sidebar + mobilní drawer).
-  const navItems: NavItem[] = [{ href: "/admin", label: "Dashboard" }];
+  const navItems: NavItem[] = [{ href: "/admin/dashboard", label: "Dashboard" }];
   if (current) {
     navItems.push({ href: `/admin/projects/${current.identity.id}/media`, label: "Média" });
   }
@@ -151,8 +151,8 @@ export default async function AdminShellLayout({ children }: { children: React.R
 
 /**
  * Breadcrumbs odvozené z pathname — generické, fungují pro každý nový modul
- * bez úprav. Root crumb je Dashboard (/admin) — NE "Nastavení" (žádné
- * duplicitní labely).
+ * bez úprav. Root crumb je Dashboard (/admin/dashboard) — NE "Nastavení"
+ * (žádné duplicitní labely).
  */
 function buildBreadcrumbs(
   pathname: string,
@@ -162,9 +162,10 @@ function buildBreadcrumbs(
     .replace(/^\/admin\/?/, "")
     .split("/")
     .filter(Boolean);
-  const crumbs: Crumb[] = [{ label: "Dashboard", href: "/admin" }];
+  const crumbs: Crumb[] = [{ label: "Dashboard", href: "/admin/dashboard" }];
 
   if (segments.length === 0) return crumbs;
+  if (segments[0] === "dashboard") return crumbs;
 
   if (segments[0] === "projects") {
     const projectId = segments[1];
