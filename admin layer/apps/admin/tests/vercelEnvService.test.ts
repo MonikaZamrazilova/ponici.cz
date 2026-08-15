@@ -73,16 +73,11 @@ describe("updateAdminPasswordOnVercel", () => {
     const patchCall = calls.find((c) => c.url.includes("/env/env_abc"));
     expect(patchCall?.init?.method).toBe("PATCH");
     const patchBody = JSON.parse(String(patchCall?.init?.body)) as {
-      key: string;
       value: string;
-      target: string[];
     };
-    expect(patchBody.key).toBe("ADMIN_PASSWORD");
+    // sensitive env: PATCH posílá JEN value (key nelze měnit)
     expect(patchBody.value).toBe("nove-silne-heslo");
-    expect(patchBody.target).toEqual(["production"]);
-    // sensitive env — nikdy development/preview
-    expect(patchBody.target).not.toContain("development");
-    expect(patchBody.target).not.toContain("preview");
+    expect(Object.keys(patchBody)).toEqual(["value"]);
 
     const redeploy = calls.find((c) => c.url.includes("/redeploy"));
     expect(redeploy?.init?.method).toBe("POST");
@@ -117,7 +112,7 @@ describe("updateAdminPasswordOnVercel", () => {
     };
     expect(body.key).toBe("ADMIN_PASSWORD");
     expect(body.value).toBe("jine-heslo");
-    expect(body.type).toBe("encrypted");
+    expect(body.type).toBe("sensitive");
     expect(body.target).toEqual(["production"]);
     expect(body.target).not.toContain("development");
   });
