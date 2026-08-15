@@ -80,10 +80,9 @@ export async function requestReset(
   });
   console.log(`[admin] request-reset: email-sent=${sent.ok}`);
   if (!sent.ok) {
-    // ANTI-ENUMERATION: vždy stejná anonymní odpověď, i když odeslání selhalo.
-    // (HTTP 500/502 by prozradil, že email je owner.) Chyba se jen loguje.
+    // Single-admin: žádná anonymizace — selhání odeslání se jen loguje.
     console.error("[admin] reset kód se nepodařilo odeslat (stav účtu se neprozrazuje)");
-    return { ok: true, message: "If the account exists, a verification code has been sent." };
+    return { ok: true, message: "Pokyny k obnovení hesla byly odeslány." };
   }
 
   await appendAudit({
@@ -97,7 +96,7 @@ export async function requestReset(
 
   return {
     ok: true,
-    message: "If the account exists, a verification code has been sent.",
+    message: "Pokyny k obnovení hesla byly odeslány.",
     resetToken,
     devCode: sent.devCode,
   };

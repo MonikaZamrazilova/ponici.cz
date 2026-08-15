@@ -26,7 +26,12 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as { email?: unknown };
     if (typeof body.email === "string") email = body.email;
   } catch {
-    // nevalidní tělo → anonymní odpověď níže
+    // nevalidní tělo → prázdný email → validace níže
+  }
+
+  // validace: prázdný email je chyba formuláře, ne "nemá oprávnění"
+  if (!email.trim()) {
+    return NextResponse.json({ ok: false, error: { message: "Zadejte e-mail" } }, { status: 400 });
   }
 
   // rate limit (podepsaný token v cookie) — vždy, i pro neexistující e-mail

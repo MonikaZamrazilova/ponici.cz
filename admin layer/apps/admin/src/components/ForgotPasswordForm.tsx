@@ -42,7 +42,10 @@ export function ForgotPasswordForm() {
       }
       router.push(`/login/verify?email=${encodeURIComponent(email.trim())}`);
       router.refresh();
-      return { ok: true, message: json.message ?? "Kód byl odeslán na zadaný e-mail." };
+      return {
+        ok: true,
+        message: json.message ?? "Pokyny k obnovení hesla byly odeslány.",
+      };
     },
   });
 
