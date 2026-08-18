@@ -26,9 +26,15 @@ export function FormField(props: FormFieldProps) {
     <label className={`block${span === 2 ? " md:col-span-2" : ""}`}>
       <span className="text-micro uppercase tracking-caption text-muted-foreground">{label}</span>
       {isTextarea(props) ? (
-        <textarea className={`${inputClasses} resize-none`} {...(fieldProps as TextareaHTMLAttributes<HTMLTextAreaElement>)} />
+        <textarea
+          className={`${inputClasses} resize-none`}
+          {...(fieldProps as TextareaHTMLAttributes<HTMLTextAreaElement>)}
+        />
       ) : (
-        <input className={inputClasses} {...(fieldProps as InputHTMLAttributes<HTMLInputElement>)} />
+        <input
+          className={inputClasses}
+          {...(fieldProps as InputHTMLAttributes<HTMLInputElement>)}
+        />
       )}
     </label>
   );

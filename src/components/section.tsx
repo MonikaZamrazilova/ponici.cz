@@ -13,16 +13,24 @@ export function Section({ id, background, narrow, snap, children }: SectionProps
   const [visible, setVisible] = useState(!snap);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       setVisible(true);
       return;
     }
-    if (!snap) { setVisible(true); return; }
+    if (!snap) {
+      setVisible(true);
+      return;
+    }
     const el = contentRef.current;
     if (!el) return;
 
     const obs = new IntersectionObserver(
-      ([e]) => { setVisible(e.isIntersecting); },
+      ([e]) => {
+        setVisible(e.isIntersecting);
+      },
       { threshold: 0.18 },
     );
     obs.observe(el);

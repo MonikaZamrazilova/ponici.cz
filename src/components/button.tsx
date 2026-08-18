@@ -8,8 +8,10 @@ type BaseProps = {
   className?: string;
 };
 
-type ButtonAsAnchor = BaseProps & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "children"> & { href: string };
-type ButtonAsButton = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & { href?: never };
+type ButtonAsAnchor = BaseProps &
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "children"> & { href: string };
+type ButtonAsButton = BaseProps &
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & { href?: never };
 
 type ButtonProps = ButtonAsAnchor | ButtonAsButton;
 
@@ -42,7 +44,11 @@ export function Button(props: ButtonProps) {
   if ("href" in rest && rest.href) {
     const { href, ...anchorRest } = rest;
     return (
-      <a href={href} className={`${variants[variant]}${className ? " " + className : ""}`} {...anchorRest}>
+      <a
+        href={href}
+        className={`${variants[variant]}${className ? " " + className : ""}`}
+        {...anchorRest}
+      >
         {content}
       </a>
     );

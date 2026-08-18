@@ -27,6 +27,7 @@ export function Expandable({ children, className = "" }: ExpandableProps) {
       </button>
       <div
         id={contentId}
+        inert={!expanded}
         className="grid transition-[grid-template-rows] duration-[400ms] ease-out"
         style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
       >

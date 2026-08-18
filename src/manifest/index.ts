@@ -24,7 +24,12 @@ export const manifest: ContentManifest = {
       fields: [
         { type: "text", name: "siteName", label: "Název webu", required: true },
         { type: "url", name: "baseUrl", label: "URL webu", required: true },
-        { type: "text", name: "web3formsKey", label: "Web3Forms access key (formulář táboru)", help: "Z web3forms.com — přihlášky jdou na e-mail účtu." },
+        {
+          type: "text",
+          name: "web3formsKey",
+          label: "Web3Forms access key (formulář táboru)",
+          help: "Z web3forms.com — přihlášky jdou na e-mail účtu.",
+        },
         { type: "text", name: "phone", label: "Telefon (zobrazení)", required: true },
         { type: "text", name: "email", label: "E-mail", required: true },
         { type: "text", name: "locality", label: "Lokalita (např. Císařský ostrov)" },

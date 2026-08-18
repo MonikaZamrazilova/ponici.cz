@@ -24,5 +24,7 @@ const headingSizes: Record<string, string> = {
 
 export function Heading({ as = "h2", size = "lg", children, className = "" }: HeadingProps) {
   const Tag = as;
-  return <Tag className={`${headingSizes[size]}${className ? " " + className : ""}`}>{children}</Tag>;
+  return (
+    <Tag className={`${headingSizes[size]}${className ? " " + className : ""}`}>{children}</Tag>
+  );
 }

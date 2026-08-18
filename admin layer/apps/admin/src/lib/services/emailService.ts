@@ -10,8 +10,6 @@ import "server-only";
  * Env:
  *   RESEND_API_KEY — API klíč (server-only, nikdy na klienta)
  *   FROM_EMAIL     — ověřená odesílací adresa
- *   RESET_TEST_EMAIL — [TEMPORARY] dočasný příjemce pro testování bez
- *                      přístupu k ADMIN_EMAIL (viz REMOVE BEFORE)
  *
  * Bezpečnost:
  *   - nikdy neloguje reset kód, heslo, email ani token (jen stav/statusy)
@@ -38,23 +36,6 @@ export interface SendResult {
 /** True, pokud je Resend nakonfigurovaný (API klíč + FROM_EMAIL). */
 export function isEmailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY && process.env.FROM_EMAIL);
-}
-
-/**
- * REMOVE BEFORE CLIENT HANDOVER — dočasný override příjemce reset emailu.
- * Pouze změní příjemce (to:), NE permission check (ADMIN_EMAIL dál
- * rozhoduje, kdo smí reset spustit). Kód se nikdy neposílá cizím lidem —
- * jen na testovací adresu místo admin adresy.
- */
-function resolveRecipient(adminEmail: string): string {
-  const testEmail = process.env.RESET_TEST_EMAIL?.trim().toLowerCase();
-  if (testEmail) {
-    // TODO: REMOVE BEFORE CLIENT HANDOVER — odstranit RESET_TEST_EMAIL
-    console.log("[admin] password reset email recipient mode: test override");
-    return testEmail;
-  }
-  console.log("[admin] password reset email recipient mode: admin");
-  return adminEmail;
 }
 
 function buildEmailBody(code: string, expiresAt: number): string {
@@ -100,11 +81,9 @@ export async function sendPasswordResetCode({
     const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
 
-    const recipient = resolveRecipient(email);
-
     const { data, error } = await resend.emails.send({
       from,
-      to: recipient,
+      to: email,
       subject: "Obnovení hesla administrátora",
       text: buildEmailBody(code, expiresAt),
     });
@@ -146,10 +125,9 @@ export async function sendPasswordChangedNotification(email: string): Promise<vo
     console.log("[admin] password changed notification sending");
     const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
-    const recipient = resolveRecipient(email);
     const { data, error } = await resend.emails.send({
       from,
-      to: recipient,
+      to: email,
       subject: "Administrátorské heslo bylo změněno",
       text: [
         "Dobrý den,",

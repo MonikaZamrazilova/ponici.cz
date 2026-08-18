@@ -23,6 +23,7 @@ import { EditModeProvider, useEditMode } from "@/components/edit/EditModeProvide
 import { EditableText } from "@/components/edit/EditableText";
 import { EditableImage } from "@/components/edit/EditableImage";
 import { EditModeToggle } from "@/components/edit/EditModeToggle";
+import { ScrollPositionIndicator } from "@/components/scroll-position";
 
 const img = (name: string) => `/images/ponici/${name}`;
 
@@ -69,6 +70,11 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: staticSite.jsonLdDescription },
       { property: "og:url", content: staticSite.baseUrl },
       { property: "og:type", content: "website" },
+      { property: "og:locale", content: "cs_CZ" },
+      { property: "og:image", content: `${staticSite.baseUrl}${staticSite.heroImage}` },
+      { name: "twitter:title", content: `${staticSite.siteName} | pro děti i dospělé` },
+      { name: "twitter:description", content: staticSite.jsonLdDescription },
+      { name: "twitter:image", content: `${staticSite.baseUrl}${staticSite.heroImage}` },
     ],
     links: [{ rel: "canonical", href: staticSite.baseUrl }],
     scripts: [{ type: "application/ld+json", children: JSON.stringify(jsonLd) }],
@@ -94,6 +100,15 @@ function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobileOpen]);
 
   return (
     <header
@@ -144,6 +159,8 @@ function Nav() {
             type="button"
             className="inline-flex items-center justify-center rounded-md p-2 text-foreground md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav"
             aria-label={mobileOpen ? "Zavřít menu" : "Otevřít menu"}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -152,7 +169,10 @@ function Nav() {
       </div>
 
       {mobileOpen && (
-        <nav className="border-t border-border/60 bg-background/95 backdrop-blur-md md:hidden">
+        <nav
+          id="mobile-nav"
+          className="border-t border-border/60 bg-background/95 backdrop-blur-md md:hidden"
+        >
           <div className="flex flex-col gap-1 px-4 py-4">
             {navItems.map(({ label, href }) => (
               <a
@@ -1663,7 +1683,10 @@ function useWeb3Forms(accessKey: string) {
           ...data,
         }),
       });
-      const json = (await res.json().catch(() => null)) as { success?: boolean; message?: string } | null;
+      const json = (await res.json().catch(() => null)) as {
+        success?: boolean;
+        message?: string;
+      } | null;
       if (res.ok && json?.success) {
         setState({ status: "success" });
         form.reset();
@@ -1867,12 +1890,14 @@ function CampApplication() {
               {campState.status === "submitting" ? "Odesílám…" : "Odeslat přihlášku"}
             </button>
             {campState.status === "success" && (
-              <p className="mt-4 text-sm font-medium text-green-700">
+              <p role="status" className="mt-4 text-sm font-medium text-green-700">
                 Děkujeme! Vaše přihláška byla úspěšně odeslána.
               </p>
             )}
             {campState.status === "error" && (
-              <p className="mt-4 text-sm font-medium text-red-600">{campState.message}</p>
+              <p role="alert" className="mt-4 text-sm font-medium text-red-600">
+                {campState.message}
+              </p>
             )}
           </form>
         </Reveal>
@@ -2251,6 +2276,7 @@ function Index() {
     <EditModeProvider>
       <main className="min-h-screen bg-background text-foreground">
         <Nav />
+        <ScrollPositionIndicator />
         <div>
           <Hero />
           <HeroFeatures />
