@@ -23,7 +23,6 @@ import { EditModeProvider, useEditMode } from "@/components/edit/EditModeProvide
 import { EditableText } from "@/components/edit/EditableText";
 import { EditableImage } from "@/components/edit/EditableImage";
 import { EditModeToggle } from "@/components/edit/EditModeToggle";
-import { ScrollPositionIndicator } from "@/components/scroll-position";
 
 const img = (name: string) => `/images/ponici/${name}`;
 
@@ -2276,7 +2275,6 @@ function Index() {
     <EditModeProvider>
       <main className="min-h-screen bg-background text-foreground">
         <Nav />
-        <ScrollPositionIndicator />
         <div>
           <Hero />
           <HeroFeatures />
